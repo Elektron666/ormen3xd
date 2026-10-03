@@ -1,6 +1,6 @@
 # ORMEN ATELIER: Plan (Faz 1)
 
-> Durum: **Onay bekliyor.** Bu dosya kod yazmadan önce hazırlandı. Onay gelince dilim dilim inşa edilecek ve bu dosya güncel tutulacak.
+> Durum: **Plan onaylandı, dilim 1 tamamlandı.** Sorulara verilen cevaplar ve yapılan varsayımlar `KARARLAR.md` dosyasında.
 
 ---
 
@@ -202,7 +202,7 @@ Numune: form (ad, telefon, not, KVKK onayı) → /api/samples → sample_request
 
 **Yaklaşım (performans):**
 - Dokular yüklemede 1K (telefon) ve 2K (masaüstü) WebP olarak boyutlandırılır; cihaza göre seçilir. İlk anlamlı görüntü için yalnızca model + ilk kumaşın 1K dokusu öncelikli; önizlemeler küçük (128px) ve tembel.
-- `dpr` en fazla 2, `frameloop="demand"` (sahne yalnızca hareket varken çizilir → pil ve ısı dostu), gölge için tek seferlik `ContactShadows`, gerçek zamanlı gölge haritası yok.
+- `dpr` en fazla 2, `frameloop="demand"` (sahne yalnızca hareket varken çizilir → pil ve ısı dostu). Zemin gölgesi model başına bir kez hesaplanır; anahtar ışığın gölge haritası yalnızca model ya da kumaş değişince yeniden çizilir.
 - model-viewer ve panel kodu ana pakete girmez (dinamik import).
 - Hedef: orta sınıf Android'de 4G hızında ilk görüntü < 3 sn. Playwright'ta yavaş ağ + CPU kısıtı ile ölçülür.
 
@@ -240,7 +240,7 @@ Numune: form (ad, telefon, not, KVKK onayı) → /api/samples → sample_request
 
 ## 9. Dilim sırası (her dilim: çalıştır → ekran görüntüsü → eleştir → düzelt → commit)
 
-1. **İskelet + dönen koltuk + kumaş değiştirme** (sahte veri, prosedürel koltuk ve dokular, telefon/masaüstü yerleşim). → size ekran görüntüleriyle gösterilecek.
+1. ✅ **İskelet + dönen koltuk + kumaş değiştirme** (sahte veri, prosedürel koltuk ve dokular, telefon/masaüstü yerleşim). → size ekran görüntüleriyle gösterilecek.
 2. **Oda sahneleri** (3 sahne, duvar/zemin seçenekleri, renk tutarlılığı testi), ölçü göstergesi, yakından bak, karşılaştır, beğendiklerim.
 3. **Paylaşım + numune** (`/p/[id]`, OG görseli, form + KVKK, WhatsApp yönlendirme).
 4. **Panel** (giriş, kumaş tek ekran akışı + türetilmiş haritalar + ölçek kontrol, toplu CSV, GLB model yükleme, talepler).

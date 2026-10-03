@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+/*
+ * ORMEN design tokens. Palette: walnut, off-white and anthracite with a warm
+ * gold accent. Firm pages override --accent with the firm's own colour.
+ */
+@theme {
+  --color-kirik-beyaz: #f5f1ea;
+  --color-kagit: #fbf9f5;
+  --color-antrasit: #2a2a28;
+  --color-antrasit-70: #55544f;
+  --color-antrasit-50: #7d7b75;
+  --color-cizgi: #e3ddd2;
+  --color-cizgi-koyu: #cfc7b9;
+  --color-ceviz: #5c3d2a;
+  --color-altin: #b08d57;
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+
+  --font-display: var(--font-fraunces), "Times New Roman", serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root {
+  --accent: #b08d57;
+  /* text colour used on top of the accent */
+  --accent-ink: #ffffff;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--color-kirik-beyaz);
+  color: var(--color-antrasit);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Studio backdrop behind the 3D canvas: a soft paper sweep. */
+.studio-backdrop {
+  background:
+    radial-gradient(120% 80% at 50% 30%, #fcfaf6 0%, #f1ece4 55%, #e6dfd4 100%);
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-antrasit-50);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-cizgi-koyu) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+@keyframes loadbar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
