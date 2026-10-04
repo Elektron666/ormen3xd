@@ -14,7 +14,10 @@ import {
   SIRTLAR,
   TIP_LABELS,
   TIPLER,
+  UC_LABELS,
+  UCLAR,
   paramDimensions,
+  shapeName,
   validateParams,
   type ParametricParams,
   type ParamErrors,
@@ -64,7 +67,7 @@ function SizeField({ label, value, range, error, onChange }: { label: string; va
   );
 }
 
-const autoName = (p: ParametricParams) => `${TIP_LABELS[p.tip]} ${p.tip === "kose" ? `${p.genislikCm}×${p.koseBoyCm}` : p.genislikCm}`;
+const autoName = (p: ParametricParams) => `${shapeName(p)} ${p.tip === "kose" ? `${p.genislikCm}×${paramDimensions(p).d}` : p.genislikCm}`;
 
 export function ParametricEditor({ model, fabrics, firmId = null }: { model?: FurnitureModel | null; fabrics: Fabric[]; firmId?: string | null }) {
   const router = useRouter();
@@ -89,7 +92,20 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
 
   const set = <K extends keyof ParametricParams>(k: K, v: ParametricParams[K]) => {
     setServerErrors({});
-    setParams((p) => ({ ...p, [k]: v }));
+    setParams((p) => {
+      const next = { ...p, [k]: v };
+      // a new end type gets a length that suits it (a chaise is shorter than a corner return)
+      for (const [ucKey, boyKey] of [
+        ["solUc", "solBoyCm"],
+        ["sagUc", "sagBoyCm"],
+      ] as const) {
+        if (k !== ucKey) continue;
+        const boy = next[boyKey] ?? 0;
+        if (v === "sezlong" && (boy < 130 || boy > 200)) next[boyKey] = Math.min(200, Math.max(160, next.derinlikCm + 60));
+        if (v === "kose" && boy < next.derinlikCm + 50) next[boyKey] = 220;
+      }
+      return next;
+    });
   };
   const setTip = (tip: Tip) => {
     setServerErrors({});
@@ -149,15 +165,41 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
           {params.tip !== "puf" && <Segmented label="Sırt" value={params.sirt} options={SIRTLAR} labels={SIRT_LABELS} onChange={(v) => set("sirt", v)} />}
           <Segmented label="Ayak" value={params.ayak} options={AYAKLAR} labels={AYAK_LABELS} onChange={(v) => set("ayak", v)} />
           {params.tip === "kose" && (
-            <Segmented label="Köşe hangi tarafta (önden bakınca)" value={params.koseYonu ?? "sag"} options={["sol", "sag"] as const} labels={{ sol: "Solda", sag: "Sağda" }} onChange={(v) => set("koseYonu", v)} />
+            <>
+              <p className="-mb-2 text-[13px] text-antrasit-70">
+                Uçlar (önden bakınca). Şu an: <strong className="font-medium text-antrasit">{shapeName(params)}</strong>
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Segmented label="Sol uç" value={params.solUc ?? "kol"} options={UCLAR} labels={UC_LABELS} onChange={(v) => set("solUc", v)} />
+                <Segmented label="Sağ uç" value={params.sagUc ?? "kol"} options={UCLAR} labels={UC_LABELS} onChange={(v) => set("sagUc", v)} />
+              </div>
+              {errors.uclar && <p className="text-[12px] text-[#9a3b31]">{errors.uclar}</p>}
+            </>
           )}
         </section>
 
         <section className="flex flex-col gap-4">
           <h2 className="eyebrow">2 · Ölçüler</h2>
-          <SizeField label={params.tip === "kose" ? "Arka duvar boyu (cm)" : "Genişlik (cm)"} value={params.genislikCm} range={lim.w} error={errors.genislikCm} onChange={(v) => set("genislikCm", v)} />
+          <SizeField label={params.tip === "kose" ? "Arka duvar boyu, uçlar dahil (cm)" : "Genişlik (cm)"} value={params.genislikCm} range={lim.w} error={errors.genislikCm} onChange={(v) => set("genislikCm", v)} />
           <SizeField label="Derinlik (cm)" value={params.derinlikCm} range={lim.d} error={errors.derinlikCm} onChange={(v) => set("derinlikCm", v)} />
-          {params.tip === "kose" && <SizeField label="Yan duvar boyu (cm)" value={params.koseBoyCm ?? 0} range={lim.boy!} error={errors.koseBoyCm} onChange={(v) => set("koseBoyCm", v)} />}
+          {params.tip === "kose" &&
+            (
+              [
+                ["sol", params.solUc, "solBoyCm"],
+                ["sağ", params.sagUc, "sagBoyCm"],
+              ] as const
+            ).map(([side, uc, key]) =>
+              uc && uc !== "kol" ? (
+                <SizeField
+                  key={key}
+                  label={`${uc === "kose" ? "Köşe" : "Şezlong"} boyu, ${side} (cm)`}
+                  value={params[key] ?? 0}
+                  range={uc === "sezlong" ? [130, 200] : lim.boy!}
+                  error={errors[key]}
+                  onChange={(v) => set(key, v)}
+                />
+              ) : null,
+            )}
           <p className="text-[13px] text-antrasit-70">
             Dış ölçü: <strong className="font-medium text-antrasit">{dims.w} × {dims.d} × {dims.h} cm</strong> (oturma yüksekliği 44 cm)
           </p>

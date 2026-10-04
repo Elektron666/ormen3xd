@@ -4,6 +4,16 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Faz 2, iş 2: Modüler takımlar (U, şezlonglu, şezlonglu köşe) (4 Ekim 2026)
+
+- **Plandan sapma:** Yol haritasında "sol kol, orta, köşe, şezlong modüllerini düğmelerle ekleme" vardı. Bunun yerine köşe takımını genelleştirdim: **sol uç** ve **sağ uç** ayrı ayrı Kol, Köşe ya da Şezlong olabiliyor; arka duvar boyu ve her ucun boyu giriliyor. Bununla düz kanepe hariç Türkiye'de yaygın bütün takımlar çıkıyor: L köşe (sağda/solda), U koltuk, şezlonglu kanepe, şezlonglu köşe takımı. Gerekçe: atölye modelini "kaç modül" diye değil "hangi şekil, kaç cm" diye tarif ediyor; altı düğme ve iki ölçü, modül modül dizmekten daha hızlı ve hatasız. Modül genişliklerini tek tek vermek gerekirse sonra eklenir.
+- Panelde tip adı "Köşe / modüler takım"; seçime göre şeklin adı hemen yazıyor ("Şu an: U koltuk").
+- Şezlong eni 90 cm, boyu 130–200 cm; köşe dönüşü 130–320 cm. Arkada en az bir oturum (60 cm) kalmazsa kayıt engelleniyor. Uç türü değişince boy o türe uygun bir değere çekiliyor (şezlong ~160, köşe 220).
+- İlk sürümde kaydedilen tek köşeli tarif (`koseYonu`, `koseBoyCm`) okunurken yeni biçime çevriliyor; veritabanında değişiklik gerekmedi.
+- Birim testi her şekil için dış ölçüyü ve kumaşın gerçek ölçüsünü kontrol ediyor.
+
+---
+
 ## Faz 2, iş 1: Seçerek model oluşturma (parametrik koltuk ve köşe takımı) (4 Ekim 2026)
 
 - **Varsayım:** REKABET-PLANI'nda "Faz 2'nin ilk işi parametrik koltuk ve köşe takımı olsun mu? Önerim: evet" diye sormuştum; Fatih Bey "Devam" dedi. Bunu bu öneriye onay sayıp başladım. Pilot firma seçimi hâlâ Fatih Bey'de.
@@ -15,7 +25,6 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 - **Vitrine örnek köşe takımı** eklendi (`/?y=kose-takimi…`, seed.sql'de de var).
 - **AR** parametrik modellerde de çalışıyor (aynı kod yolu).
 - **Bilinen sınır:** Yerleşimde ve teklif föyündeki planda köşe takımı dış dikdörtgeniyle hesaplanıyor; L'nin iç boşluğu da dolu sayılıyor (oraya sehpa konunca "çakışma" uyarısı çıkar). Ekrandaki 2D plan görünümü gerçek L şeklini gösteriyor.
-- **Sırada (Faz 2, iş 2):** Modüler dizilim (sol kol, orta, köşe, şezlong modüllerini ekleyerek kurma). Şezlonglu köşe ve U koltuk bugün yok.
 
 ---
 

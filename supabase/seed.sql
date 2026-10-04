@@ -65,7 +65,7 @@ select null, v.slug, v.name, v.procedural_key, v.params::jsonb, string_to_array(
 from (values
   ('moduler-kanepe', 'Modüler Kanepe', 'modular-sofa', null, 'kumas', 238, 96, 85, 'LUMA-02', true, 0),
   ('berjer', 'Berjer', 'armchair', null, 'kumas', 81, 84, 94, 'SIENA-04', true, 1),
-  ('kose-takimi', 'Köşe Takımı', 'parametric', '{"tip":"kose","kol":"kalin","sirt":"orta","ayak":"gizli","genislikCm":290,"derinlikCm":95,"koseYonu":"sag","koseBoyCm":220}', 'kumas', 290, 220, 82, 'LUMA-03', true, 2)
+  ('kose-takimi', 'Köşe Takımı', 'parametric', '{"tip":"kose","kol":"kalin","sirt":"orta","ayak":"gizli","genislikCm":290,"derinlikCm":95,"solUc":"kol","sagUc":"kose","solBoyCm":160,"sagBoyCm":220}', 'kumas', 290, 220, 82, 'LUMA-03', true, 2)
 ) as v (slug, name, procedural_key, params, materials, w, d, h, fabric, active, sort_order)
 where not exists (select 1 from public.models m where m.firm_id is null and m.slug = v.slug);
 

@@ -1,14 +1,15 @@
 import * as THREE from "three";
-import { BACK_HEIGHT_CM, SEAT_HEIGHT_CM, seatCount, type Kol, type ParametricParams } from "@/lib/parametric/spec";
+import { BACK_HEIGHT_CM, SEAT_HEIGHT_CM, SEZLONG_EN_CM, seatCount, type Kol, type ParametricParams, type Uc } from "@/lib/parametric/spec";
 import { buildParts, materials, taperedLeg, type Part } from "./furniture";
 
 // Builds a parametric sofa / corner sofa / armchair / pouf in metres.
 // Every upholstered part is a cushion primitive with UVs in metres, so the
 // fabric pipeline (real-size repeat, AR export) works without any tuning.
 //
-// A corner sofa is three modules: a straight main run along the back wall,
-// a corner square with backs on both walls, and a straight return run
-// along the side wall (rotated 90°). The piece is centred later by prepareModel.
+// A corner / modular set is a straight run along the back wall plus, on each
+// side, an arm, a corner (square with backs on both walls + a return run along
+// the side wall, rotated 90°) or a chaise. Both corners make a U. The piece
+// is centred later by prepareModel.
 
 const ARM: Record<Kol, { w: number; rise: number; r: number }> = {
   ince: { w: 0.1, rise: 0.2, r: 0.03 },
@@ -120,6 +121,74 @@ function addSupports(group: THREE.Group, c: Ctx, rects: Rect[], wood: THREE.Mate
   }
 }
 
+/** Corner square (backs on both walls) + return run along the side wall, on side s (-1 left, +1 right). */
+function addCorner(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1, W: number, L: number, hasArms: boolean): Rect[] {
+  const D = c.D;
+  const cx = s * (W / 2 - D / 2);
+  const seatD = D - BACK_D;
+  const frameTop = c.p.sirt === "alcak" ? c.H : c.H - 0.06;
+  const frameH = frameTop - c.baseTop;
+  group.add(
+    partsGroup(
+      [
+        { name: "govde", w: D, h: c.baseTop - c.legH, d: D, r: 0.035, at: [cx, c.legH + (c.baseTop - c.legH) / 2, 0] },
+        { name: "oturum", w: seatD, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.008, x: 0.008 }, at: [cx - s * (BACK_D / 2), c.baseTop + SEAT_T / 2, BACK_D / 2] },
+        { name: "sirt-govde", w: D, h: frameH, d: BACK_D, r: 0.06, at: [cx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] },
+        // side-wall back of the corner square (sized, not rotated)
+        { name: "sirt-govde", w: BACK_D, h: frameH, d: D - BACK_D, r: 0.06, at: [s * (W / 2 - BACK_D / 2), c.baseTop + frameH / 2, BACK_D / 2] },
+        backCushion(c, seatD * 0.92, cx - s * (BACK_D / 2), -D / 2 + BACK_D + 0.08),
+      ],
+      fabric,
+    ),
+  );
+  // the side-wall back cushion of the corner: a back cushion turned 90°
+  const sideCushion = partsGroup([backCushion(c, seatD * 0.92, 0, 0)], fabric);
+  sideCushion.rotation.y = -s * (Math.PI / 2);
+  sideCushion.position.set(s * (W / 2 - BACK_D - 0.08), 0, BACK_D / 2);
+  group.add(sideCushion);
+
+  // return run along the side wall, arm at its front end
+  const retLen = L - D;
+  const ret = partsGroup(straightRun(c, retLen, hasArms && s < 0, hasArms && s > 0, seatCount("kose", retLen * 100)), fabric);
+  ret.rotation.y = -s * (Math.PI / 2);
+  ret.position.set(cx, 0, D / 2 + retLen / 2);
+  group.add(ret);
+
+  const xa = s * (W / 2 - D);
+  const xb = s * (W / 2);
+  return [
+    { x0: Math.min(xa, xb), x1: Math.max(xa, xb), z0: -D / 2, z1: D / 2 },
+    { x0: Math.min(xa, xb), x1: Math.max(xa, xb), z0: D / 2, z1: L - D / 2 },
+  ];
+}
+
+/** Chaise (şezlong) on side s: one seat that runs forward to length L, arm on the outer side. */
+function addChaise(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1, W: number, L: number, hasArms: boolean): Rect {
+  const D = c.D;
+  const cw = SEZLONG_EN_CM / 100;
+  const cx = s * (W / 2 - cw / 2);
+  const zc = -D / 2 + L / 2;
+  const aw = hasArms ? c.arm.w : 0;
+  const innerCx = cx - s * (aw / 2);
+  const frameTop = c.p.sirt === "alcak" ? c.H : c.H - 0.06;
+  const frameH = frameTop - c.baseTop;
+  const seatD = L - BACK_D - 0.005;
+  const parts: Part[] = [
+    { name: "govde", w: cw - aw + 0.02, h: c.baseTop - c.legH, d: L, r: 0.035, at: [innerCx, c.legH + (c.baseTop - c.legH) / 2, zc] },
+    { name: "sirt-govde", w: cw - aw + 0.02, h: frameH, d: BACK_D, r: 0.06, bulge: { z: 0.006 }, at: [innerCx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] },
+    { name: "oturum", w: cw - aw, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.01, x: 0.006 }, at: [innerCx, c.baseTop + SEAT_T / 2, -D / 2 + BACK_D + seatD / 2 + 0.005] },
+    backCushion(c, cw - aw, innerCx, -D / 2 + BACK_D + 0.08),
+  ];
+  if (hasArms) {
+    const armH = c.seatTop + c.arm.rise - c.legH;
+    parts.push({ name: "kol", w: aw, h: armH, d: L, r: c.arm.r, bulge: { y: 0.01, x: 0.006 }, at: [s * (W / 2 - aw / 2), c.legH + armH / 2, zc] });
+  }
+  group.add(partsGroup(parts, fabric));
+  const xa = s * (W / 2 - cw);
+  const xb = s * (W / 2);
+  return { x0: Math.min(xa, xb), x1: Math.max(xa, xb), z0: -D / 2, z1: L - D / 2 };
+}
+
 export function buildParametric(p: ParametricParams): THREE.Group {
   const { fabric, wood } = materials();
   const legH = LEG_H[p.ayak];
@@ -155,52 +224,25 @@ export function buildParametric(p: ParametricParams): THREE.Group {
     return group;
   }
 
-  // corner sofa
-  const s = p.koseYonu === "sol" ? -1 : 1;
-  const L = (p.koseBoyCm ?? 220) / 100;
-  const mainLen = W - D;
-  const retLen = L - D;
-
-  // main run: from the far end to the corner square; arm only at the far end
-  const main = partsGroup(straightRun(c, mainLen, hasArms && s > 0, hasArms && s < 0, seatCount("kose", mainLen * 100)), fabric);
-  main.position.x = -s * (D / 2);
+  // corner / modular set: the back-wall run between the two ends, then each end
+  const endW = (uc: Uc) => (uc === "kose" ? D : uc === "sezlong" ? SEZLONG_EN_CM / 100 : 0);
+  const solUc = p.solUc ?? "kol";
+  const sagUc = p.sagUc ?? "kol";
+  const xl = -W / 2 + endW(solUc);
+  const xr = W / 2 - endW(sagUc);
+  const mainLen = xr - xl;
+  const main = partsGroup(straightRun(c, mainLen, hasArms && solUc === "kol", hasArms && sagUc === "kol", seatCount("kose", mainLen * 100)), fabric);
+  main.position.x = (xl + xr) / 2;
   group.add(main);
+  const rects: Rect[] = [{ x0: xl, x1: xr, z0: -D / 2, z1: D / 2 }];
 
-  // corner square: backs on the back wall and on the side wall
-  const cx = s * (W / 2 - D / 2);
-  const seatD = D - BACK_D;
-  const cornerParts: Part[] = [
-    { name: "govde", w: D, h: c.baseTop - legH, d: D, r: 0.035, at: [cx, legH + (c.baseTop - legH) / 2, 0] },
-    { name: "oturum", w: seatD, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.008, x: 0.008 }, at: [cx - s * (BACK_D / 2), c.baseTop + SEAT_T / 2, BACK_D / 2] },
-  ];
-  const frameTop = p.sirt === "alcak" ? c.H : c.H - 0.06;
-  const frameH = frameTop - c.baseTop;
-  cornerParts.push({ name: "sirt-govde", w: D, h: frameH, d: BACK_D, r: 0.06, at: [cx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] });
-  // side-wall back of the corner square (a box rotated by its dimensions, not by rotation)
-  cornerParts.push({ name: "sirt-govde", w: BACK_D, h: frameH, d: D - BACK_D, r: 0.06, at: [s * (W / 2 - BACK_D / 2), c.baseTop + frameH / 2, BACK_D / 2] });
-  cornerParts.push(backCushion(c, seatD * 0.92, cx - s * (BACK_D / 2), -D / 2 + BACK_D + 0.08));
-  group.add(partsGroup(cornerParts, fabric));
-  // the side-wall back cushion of the corner: a back cushion turned 90°
-  const sideCushion = partsGroup([backCushion(c, seatD * 0.92, 0, 0)], fabric);
-  sideCushion.rotation.y = -s * (Math.PI / 2);
-  sideCushion.position.set(s * (W / 2 - BACK_D - 0.08), 0, BACK_D / 2);
-  group.add(sideCushion);
-
-  // return run along the side wall, arm at its front end
-  const ret = partsGroup(straightRun(c, retLen, hasArms && s < 0, hasArms && s > 0, seatCount("kose", retLen * 100)), fabric);
-  ret.rotation.y = -s * (Math.PI / 2);
-  ret.position.set(cx, 0, D / 2 + retLen / 2);
-  group.add(ret);
-
-  addSupports(
-    group,
-    c,
-    [
-      { x0: Math.min(-s * (W / 2), s * (W / 2 - D)), x1: Math.max(-s * (W / 2), s * (W / 2 - D)), z0: -D / 2, z1: D / 2 },
-      { x0: Math.min(s * (W / 2 - D), s * (W / 2)), x1: Math.max(s * (W / 2 - D), s * (W / 2)), z0: -D / 2, z1: D / 2 },
-      { x0: Math.min(s * (W / 2 - D), s * (W / 2)), x1: Math.max(s * (W / 2 - D), s * (W / 2)), z0: D / 2, z1: L - D / 2 },
-    ],
-    wood,
-  );
+  for (const [s, uc, boyCm] of [
+    [-1, solUc, p.solBoyCm],
+    [1, sagUc, p.sagBoyCm],
+  ] as const) {
+    if (uc === "kose") rects.push(...addCorner(group, c, fabric, s, W, (boyCm ?? 220) / 100, hasArms));
+    if (uc === "sezlong") rects.push(addChaise(group, c, fabric, s, W, (boyCm ?? 160) / 100, hasArms));
+  }
+  addSupports(group, c, rects, wood);
   return group;
 }

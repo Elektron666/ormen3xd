@@ -13,7 +13,9 @@ export const SIRTLAR = ["alcak", "orta", "yuksek"] as const;
 export type Sirt = (typeof SIRTLAR)[number];
 export const AYAKLAR = ["konik", "metal", "gizli"] as const;
 export type Ayak = (typeof AYAKLAR)[number];
-export type KoseYonu = "sol" | "sag";
+/** What a corner/modular set ends with on each side, seen from the front. */
+export const UCLAR = ["kol", "kose", "sezlong"] as const;
+export type Uc = (typeof UCLAR)[number];
 
 export interface ParametricParams {
   tip: Tip;
@@ -24,30 +26,39 @@ export interface ParametricParams {
   genislikCm: number;
   /** Seat depth incl. back, cm. */
   derinlikCm: number;
-  /** Corner sofa only: which side the return goes, seen from the front. */
-  koseYonu?: KoseYonu;
-  /** Corner sofa only: overall length of the return (along the side wall), cm. */
-  koseBoyCm?: number;
+  /**
+   * Corner / modular set only. Each end is an arm, a corner with a return
+   * along the side wall, or a chaise (şezlong). Both corners make a U.
+   */
+  solUc?: Uc;
+  sagUc?: Uc;
+  /** Overall length of that end's return or chaise, from the back wall forward, cm. */
+  solBoyCm?: number;
+  sagBoyCm?: number;
 }
 
 export const TIP_LABELS: Record<Tip, string> = {
   ikili: "İkili kanepe",
   uclu: "Üçlü kanepe",
   dortlu: "Dörtlü kanepe",
-  kose: "Köşe takımı",
+  kose: "Köşe / modüler takım",
   berjer: "Berjer",
   puf: "Puf",
 };
 export const KOL_LABELS: Record<Kol, string> = { ince: "İnce", kalin: "Kalın", yuvarlak: "Yuvarlak", yok: "Kolsuz" };
 export const SIRT_LABELS: Record<Sirt, string> = { alcak: "Alçak", orta: "Orta", yuksek: "Yüksek" };
 export const AYAK_LABELS: Record<Ayak, string> = { konik: "Ahşap konik", metal: "İnce metal", gizli: "Gizli kaide" };
+export const UC_LABELS: Record<Uc, string> = { kol: "Kol", kose: "Köşe", sezlong: "Şezlong" };
+
+/** Chaise module width (m in the builder, cm here). */
+export const SEZLONG_EN_CM = 90;
 
 /** Allowed ranges, cm. Wide enough for real Turkish models, narrow enough to stay believable. */
 export const LIMITS: Record<Tip, { w: [number, number]; d: [number, number]; boy?: [number, number] }> = {
   ikili: { w: [130, 210], d: [75, 115] },
   uclu: { w: [180, 270], d: [75, 115] },
   dortlu: { w: [240, 340], d: [80, 120] },
-  kose: { w: [200, 380], d: [80, 115], boy: [150, 320] },
+  kose: { w: [200, 420], d: [80, 115], boy: [130, 320] },
   berjer: { w: [65, 105], d: [70, 105] },
   puf: { w: [40, 140], d: [40, 120] },
 };
@@ -56,7 +67,7 @@ export const DEFAULTS: Record<Tip, ParametricParams> = {
   ikili: { tip: "ikili", kol: "kalin", sirt: "orta", ayak: "konik", genislikCm: 170, derinlikCm: 92 },
   uclu: { tip: "uclu", kol: "kalin", sirt: "orta", ayak: "konik", genislikCm: 225, derinlikCm: 95 },
   dortlu: { tip: "dortlu", kol: "ince", sirt: "orta", ayak: "metal", genislikCm: 290, derinlikCm: 100 },
-  kose: { tip: "kose", kol: "kalin", sirt: "orta", ayak: "gizli", genislikCm: 290, derinlikCm: 95, koseYonu: "sag", koseBoyCm: 220 },
+  kose: { tip: "kose", kol: "kalin", sirt: "orta", ayak: "gizli", genislikCm: 290, derinlikCm: 95, solUc: "kol", sagUc: "kose", solBoyCm: 160, sagBoyCm: 220 },
   berjer: { tip: "berjer", kol: "ince", sirt: "yuksek", ayak: "konik", genislikCm: 80, derinlikCm: 85 },
   puf: { tip: "puf", kol: "yok", sirt: "alcak", ayak: "konik", genislikCm: 70, derinlikCm: 70 },
 };
@@ -74,7 +85,12 @@ export function seatCount(tip: Tip, runCm: number): number {
   return Math.max(1, Math.round(runCm / 65));
 }
 
-export type ParamErrors = Partial<Record<"genislikCm" | "derinlikCm" | "koseBoyCm", string>>;
+export type ParamErrors = Partial<Record<"genislikCm" | "derinlikCm" | "solBoyCm" | "sagBoyCm" | "uclar", string>>;
+
+/** Width the end takes from the back-wall run, cm (an arm is part of the run). */
+function endWidthCm(p: ParametricParams, uc: Uc | undefined): number {
+  return uc === "kose" ? p.derinlikCm : uc === "sezlong" ? SEZLONG_EN_CM : 0;
+}
 
 export function validateParams(p: ParametricParams): ParamErrors {
   const e: ParamErrors = {};
@@ -83,10 +99,21 @@ export function validateParams(p: ParametricParams): ParamErrors {
   if (!range(p.genislikCm, lim.w)) e.genislikCm = `Genişlik ${lim.w[0]}–${lim.w[1]} cm arasında olmalı.`;
   if (!range(p.derinlikCm, lim.d)) e.derinlikCm = `Derinlik ${lim.d[0]}–${lim.d[1]} cm arasında olmalı.`;
   if (p.tip === "kose") {
-    if (!range(p.koseBoyCm, lim.boy!)) e.koseBoyCm = `Köşe boyu ${lim.boy![0]}–${lim.boy![1]} cm arasında olmalı.`;
-    // the return must be longer than the seat depth, or there is no return
-    else if (p.koseBoyCm! < p.derinlikCm + 50) e.koseBoyCm = "Köşe boyu, derinlikten en az 50 cm fazla olmalı.";
-    if (p.genislikCm < p.derinlikCm + 100 && !e.genislikCm) e.genislikCm = "Genişlik, derinlikten en az 100 cm fazla olmalı.";
+    const sol = p.solUc ?? "kol";
+    const sag = p.sagUc ?? "kol";
+    if (sol === "kol" && sag === "kol") e.uclar = "En az bir uç köşe ya da şezlong olmalı; düz kanepe için ikili/üçlü/dörtlü seçin.";
+    for (const [uc, key] of [[sol, "solBoyCm"], [sag, "sagBoyCm"]] as const) {
+      if (uc === "kol") continue;
+      const v = p[key];
+      const lo = uc === "sezlong" ? 130 : lim.boy![0];
+      const hi = uc === "sezlong" ? 200 : lim.boy![1];
+      if (!range(v, [lo, hi])) e[key] = `${uc === "sezlong" ? "Şezlong" : "Köşe"} boyu ${lo}–${hi} cm arasında olmalı.`;
+      // a return/chaise must reach clearly past the seat depth
+      else if (v! < p.derinlikCm + (uc === "sezlong" ? 30 : 50)) e[key] = `Boy, derinlikten en az ${uc === "sezlong" ? 30 : 50} cm fazla olmalı.`;
+    }
+    // at least one seat (60 cm) between the ends
+    const need = endWidthCm(p, sol) + endWidthCm(p, sag) + 60;
+    if (p.genislikCm < need && !e.genislikCm) e.genislikCm = `Bu uçlarla genişlik en az ${need} cm olmalı.`;
   }
   return e;
 }
@@ -94,7 +121,10 @@ export function validateParams(p: ParametricParams): ParamErrors {
 /** Bounding box (cm) as used for the room layout and the plan. */
 export function paramDimensions(p: ParametricParams): { w: number; d: number; h: number } {
   const h = p.tip === "puf" ? SEAT_HEIGHT_CM : BACK_HEIGHT_CM[p.sirt];
-  const d = p.tip === "kose" ? (p.koseBoyCm ?? p.derinlikCm) : p.derinlikCm;
+  const d =
+    p.tip === "kose"
+      ? Math.max(p.derinlikCm, p.solUc && p.solUc !== "kol" ? (p.solBoyCm ?? 0) : 0, p.sagUc && p.sagUc !== "kol" ? (p.sagBoyCm ?? 0) : 0)
+      : p.derinlikCm;
   return { w: Math.round(p.genislikCm), d: Math.round(d), h };
 }
 
@@ -115,17 +145,44 @@ export function normaliseParams(raw: unknown): ParametricParams | null {
     derinlikCm: num(r.derinlikCm, base.derinlikCm),
   };
   if (p.tip === "kose") {
-    p.koseYonu = r.koseYonu === "sol" ? "sol" : "sag";
-    p.koseBoyCm = num(r.koseBoyCm, base.koseBoyCm!);
+    if (r.solUc === undefined && r.sagUc === undefined && (r.koseYonu === "sol" || r.koseYonu === "sag")) {
+      // first version stored one corner as koseYonu + koseBoyCm
+      const boy = num(r.koseBoyCm, base.sagBoyCm!);
+      p.solUc = r.koseYonu === "sol" ? "kose" : "kol";
+      p.sagUc = r.koseYonu === "sag" ? "kose" : "kol";
+      p.solBoyCm = r.koseYonu === "sol" ? boy : base.solBoyCm;
+      p.sagBoyCm = r.koseYonu === "sag" ? boy : base.sagBoyCm;
+    } else {
+      p.solUc = pick(r.solUc, UCLAR, base.solUc!);
+      p.sagUc = pick(r.sagUc, UCLAR, base.sagUc!);
+      p.solBoyCm = num(r.solBoyCm, base.solBoyCm!);
+      p.sagBoyCm = num(r.sagBoyCm, base.sagBoyCm!);
+    }
   }
   return p;
 }
 
-/** Short human description, e.g. "Köşe takımı · 290 × 220 cm · kalın kol". */
+/** Everyday name of a corner/modular set from its two ends. */
+export function shapeName(p: ParametricParams): string {
+  if (p.tip !== "kose") return TIP_LABELS[p.tip];
+  const ends = [p.solUc ?? "kol", p.sagUc ?? "kol"];
+  const corners = ends.filter((u) => u === "kose").length;
+  const chaises = ends.filter((u) => u === "sezlong").length;
+  if (corners === 2) return "U koltuk";
+  if (corners === 1 && chaises === 1) return "Şezlonglu köşe takımı";
+  if (corners === 1) return "Köşe takımı";
+  return "Şezlonglu kanepe";
+}
+
+/** Short human description, e.g. "Köşe takımı · 290 × 220 cm · kalın kol · köşe sağda". */
 export function describeParams(p: ParametricParams): string {
-  const size = p.tip === "kose" ? `${p.genislikCm} × ${p.koseBoyCm} cm` : `${p.genislikCm} × ${p.derinlikCm} cm`;
-  const parts = [TIP_LABELS[p.tip], size];
+  const d = paramDimensions(p).d;
+  const size = p.tip === "kose" ? `${p.genislikCm} × ${d} cm` : `${p.genislikCm} × ${p.derinlikCm} cm`;
+  const parts = [shapeName(p), size];
   if (p.tip !== "puf") parts.push(p.kol === "yok" ? "kolsuz" : `${KOL_LABELS[p.kol].toLocaleLowerCase("tr-TR")} kol`);
-  if (p.tip === "kose") parts.push(p.koseYonu === "sol" ? "köşe solda" : "köşe sağda");
+  if (p.tip === "kose") {
+    const side = (uc: Uc | undefined, where: string) => (uc === "kose" ? `köşe ${where}` : uc === "sezlong" ? `şezlong ${where}` : null);
+    parts.push(...[side(p.solUc, "solda"), side(p.sagUc, "sağda")].filter((x): x is string => !!x));
+  }
   return parts.join(" · ");
 }

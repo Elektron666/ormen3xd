@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { DEFAULTS, TIPLER, describeParams, normaliseParams, paramDimensions, validateParams, type ParametricParams } from "@/lib/parametric/spec";
+import { DEFAULTS, TIPLER, describeParams, normaliseParams, paramDimensions, shapeName, validateParams, type ParametricParams } from "@/lib/parametric/spec";
 import { buildParametric } from "@/lib/three/procedural/parametric";
 import { prepareModel } from "@/lib/three/prepare-model";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
 
 const cases: ParametricParams[] = [
   ...TIPLER.map((t) => DEFAULTS[t]),
-  { ...DEFAULTS.kose, koseYonu: "sol" },
+  { ...DEFAULTS.kose, solUc: "kose", sagUc: "kol" },
   { ...DEFAULTS.uclu, kol: "yok", ayak: "gizli", sirt: "yuksek" },
-  { ...DEFAULTS.kose, kol: "yok", genislikCm: 340, koseBoyCm: 280, derinlikCm: 105 },
+  { ...DEFAULTS.kose, kol: "yok", genislikCm: 340, sagBoyCm: 280, derinlikCm: 105 },
+  // U, chaise sofa, corner + chaise
+  { ...DEFAULTS.kose, solUc: "kose", sagUc: "kose", genislikCm: 360, solBoyCm: 200, sagBoyCm: 240 },
+  { ...DEFAULTS.kose, solUc: "kol", sagUc: "sezlong", genislikCm: 260, sagBoyCm: 165, ayak: "metal" },
+  { ...DEFAULTS.kose, solUc: "sezlong", sagUc: "kose", genislikCm: 320, solBoyCm: 160, sagBoyCm: 230, kol: "ince" },
 ];
 
 describe("parametric spec", () => {
@@ -18,16 +22,25 @@ describe("parametric spec", () => {
   });
   it("rejects sizes outside the type's range and a corner without a return", () => {
     expect(Object.keys(validateParams({ ...DEFAULTS.ikili, genislikCm: 400 }))).toEqual(["genislikCm"]);
-    expect(validateParams({ ...DEFAULTS.kose, koseBoyCm: 120 }).koseBoyCm).toBeTruthy();
-    expect(validateParams({ ...DEFAULTS.kose, koseBoyCm: 150, derinlikCm: 110 }).koseBoyCm).toMatch(/50 cm/);
+    expect(validateParams({ ...DEFAULTS.kose, sagBoyCm: 120 }).sagBoyCm).toBeTruthy();
+    expect(validateParams({ ...DEFAULTS.kose, sagBoyCm: 150, derinlikCm: 110 }).sagBoyCm).toMatch(/50 cm/);
+    expect(validateParams({ ...DEFAULTS.kose, solUc: "kol", sagUc: "kol" }).uclar).toBeTruthy();
+    expect(validateParams({ ...DEFAULTS.kose, sagUc: "sezlong", sagBoyCm: 210 }).sagBoyCm).toMatch(/130–200/);
+    // U with two 95 cm corners needs at least 250 cm
+    expect(validateParams({ ...DEFAULTS.kose, solUc: "kose", sagUc: "kose", genislikCm: 240, solBoyCm: 200 }).genislikCm).toMatch(/250/);
   });
   it("normalises stored data and falls back to defaults", () => {
     expect(normaliseParams({ tip: "kose", kol: "uydurma", genislikCm: 300.4 })).toEqual({ ...DEFAULTS.kose, genislikCm: 300 });
+    // first stored format (one corner) still opens
+    expect(normaliseParams({ tip: "kose", koseYonu: "sol", koseBoyCm: 240 })).toMatchObject({ solUc: "kose", sagUc: "kol", solBoyCm: 240 });
     expect(normaliseParams({ tip: "masa" })).toBeNull();
     expect(normaliseParams({ tip: "puf", kol: "kalin" })!.kol).toBe("yok");
   });
   it("describes a model in Turkish", () => {
     expect(describeParams(DEFAULTS.kose)).toBe("Köşe takımı · 290 × 220 cm · kalın kol · köşe sağda");
+    expect(shapeName({ ...DEFAULTS.kose, solUc: "kose" })).toBe("U koltuk");
+    expect(shapeName({ ...DEFAULTS.kose, sagUc: "sezlong" })).toBe("Şezlonglu kanepe");
+    expect(shapeName({ ...DEFAULTS.kose, solUc: "sezlong" })).toBe("Şezlonglu köşe takımı");
   });
 });
 
@@ -47,7 +60,7 @@ describe("parametric builder", () => {
 
   it("puts the corner on the chosen side", () => {
     const side = (yon: "sol" | "sag") => {
-      const prepared = prepareModel(buildParametric({ ...DEFAULTS.kose, koseYonu: yon }), [FABRIC_MATERIAL]);
+      const prepared = prepareModel(buildParametric({ ...DEFAULTS.kose, solUc: yon === "sol" ? "kose" : "kol", sagUc: yon === "sag" ? "kose" : "kol" }), [FABRIC_MATERIAL]);
       // the deepest point (front of the return) is on the corner side
       const box = new THREE.Box3();
       let x = 0, zMax = -Infinity;
