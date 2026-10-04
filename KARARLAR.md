@@ -4,6 +4,18 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Dilim 7: Kullanım kaydı, rapor, Faz 3 yeri (4 Ekim 2026)
+
+- **Olaylar:** sayfa açıldı, kumaş denendi, oda değişti, AR açıldı (telefonda AR oturumu gerçekten başlayınca, düğmeye basınca değil), paylaşıldı, numune istendi. Tarayıcı `sendBeacon` ile gönderiyor; sayfa yavaşlamıyor, gönderilemezse sessizce vazgeçiliyor.
+- **Kişisel veri yok:** IP, tarayıcı bilgisi, konum tutulmuyor; sunucu bunları istekten okumuyor bile. "Ziyaret" sayımı için sekme kapanınca silinen rastgele bir numara (`sessionStorage`) kullanılıyor; kimseyi tanımlamıyor. Cihaz yalnızca telefon/tablet/masaüstü. API bilinmeyen alanı ve türü kaydetmiyor.
+- **Sayılmayanlar:** Panelde oturumu açık olan ORMEN çalışanları ve otomatik testler. Aynı şeyin 2 saniye içinde tekrarı tek sayılıyor.
+- **Rapor (`/panel/rapor`):** Dönem (7/30/90 gün) ve sayfa (hepsi, ORMEN ana sayfası, tek firma) süzgeci. Özet kutuları, en çok denenen 10 kumaş, günlük ziyaret, firma tablosu. "Ziyaret başına deneme" ve "100 ziyarette numune" REKABET-PLANI'ndaki hedeflerle (5 ve 3) birlikte gösteriliyor. Günler İstanbul saatine göre.
+- Rapor hesabı uygulamada yapılıyor (dönemdeki en fazla 50.000 olay). Faz 1 hacmi için yeterli; büyüyünce SQL görünümüne taşınacak (YOL-HARITASI).
+- **Faz 3 yeri:** `lib/ai/reupholster.ts` yalnızca arayüz ve "yakında" diyen sahte (mock) bir uygulama. Hiçbir servise istek atmıyor. Kumaş panelinin altında "Kendi koltuğunuzda görün · Yakında" kutusu var; tıklanmıyor.
+- **Belgeler:** `YOL-HARITASI.md` (yayın öncesi yapılacaklar ve sonraki fazlar) ve `KUMAS-CEKIM-REHBERI.md` (ORMEN ekibi için kumaş çekimi) eklendi.
+
+---
+
 ## Dilim 6: AR, "Odamda gör" (4 Ekim 2026)
 
 - **Akış:** Üst çubukta "Odamda gör". Telefonda seçili parça, seçili kumaşıyla bir pencerede açılıyor; "Odamda gör"e dokununca telefonun AR'ı açılıyor (iPhone: Quick Look, Android: Chrome'un WebXR'ı, olmazsa Scene Viewer). Bilgisayarda QR çıkıyor; QR telefonda `/ar/…` sayfasını, aynı parça ve kumaşla açıyor. Firma sayfasından gelindiyse logo ve renk de taşınıyor.

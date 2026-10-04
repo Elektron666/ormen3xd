@@ -12,7 +12,21 @@ import { Dialog } from "@/components/ui/Dialog";
 
 const ArViewer = dynamic(() => import("@/components/ar/ArViewer").then((m) => m.ArViewer), { ssr: false });
 
-export function ArDialog({ open, onClose, model, fabric, phoneUrl }: { open: boolean; onClose: () => void; model: FurnitureModel; fabric: Fabric; phoneUrl: () => string }) {
+export function ArDialog({
+  open,
+  onClose,
+  model,
+  fabric,
+  phoneUrl,
+  firmSlug = null,
+}: {
+  open: boolean;
+  onClose: () => void;
+  model: FurnitureModel;
+  fabric: Fabric;
+  phoneUrl: () => string;
+  firmSlug?: string | null;
+}) {
   const [device] = useState(currentArDevice);
   const [qr, setQr] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
@@ -29,7 +43,7 @@ export function ArDialog({ open, onClose, model, fabric, phoneUrl }: { open: boo
   if (device !== "desktop") {
     return (
       <Dialog open={open} onClose={onClose} title={`${model.name} · ${fabric.code}`} wide>
-        {open && <ArViewer model={model} fabric={fabric} className="h-[62dvh]" />}
+        {open && <ArViewer model={model} fabric={fabric} firmSlug={firmSlug} className="h-[62dvh]" />}
         <p className="mt-3 text-[13px] leading-snug text-antrasit-70">
           “Odamda gör”e dokunun, telefonu yere doğru tutup yavaşça gezdirin. Koltuk gerçek boyutunda yerleşir; parmağınızla kaydırıp döndürebilirsiniz.
         </p>

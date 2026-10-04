@@ -4,6 +4,7 @@ import { buildSeedFabrics } from "@/lib/seed/fabrics";
 import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
 import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
+import type { StoredEvent, UsageEvent } from "@/lib/events";
 
 /**
  * In-memory repository backed by the seed catalogue; used when Supabase is
@@ -18,6 +19,7 @@ export class MemoryRepository implements Repository {
   private firms: Firm[] = structuredClone(SEED_FIRMS);
   private firmShowcase = new Map<string, string[]>();
   private samples: SampleRequest[] = [];
+  private events: StoredEvent[] = [];
   readonly files = new Map<string, { data: ArrayBuffer; type: string }>();
 
   async listFabrics(opts?: { includeInactive?: boolean }) {
@@ -117,6 +119,16 @@ export class MemoryRepository implements Repository {
 
   async listSampleRequests() {
     return [...this.samples];
+  }
+
+  async recordEvent(e: UsageEvent) {
+    this.events.unshift({ ...e, createdAt: new Date().toISOString() });
+    if (this.events.length > 50_000) this.events.length = 50_000;
+  }
+
+  async listEvents(since: Date, firmSlug?: string) {
+    const t = since.toISOString();
+    return this.events.filter((e) => e.createdAt >= t && (firmSlug === undefined || (e.firmSlug ?? "") === firmSlug));
   }
 
   async putFile(path: string, data: ArrayBuffer, contentType: string) {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Fabric, FurnitureModel } from "@/lib/types";
 import { arGlb } from "@/lib/ar/build";
 import { currentArDevice } from "@/lib/ar/device";
+import { track } from "@/lib/track";
 
 // One piece of furniture in one ORMEN fabric, in <model-viewer>: a 3D preview
 // on any screen, and "Odamda gör" on phones that can do AR (Android: WebXR /
@@ -16,7 +17,7 @@ interface ModelViewerElement extends HTMLElement {
   canActivateAR?: boolean;
 }
 
-export function ArViewer({ model, fabric, className = "" }: { model: FurnitureModel; fabric: Fabric; className?: string }) {
+export function ArViewer({ model, fabric, firmSlug = null, className = "" }: { model: FurnitureModel; fabric: Fabric; firmSlug?: string | null; className?: string }) {
   const [state, setState] = useState<State>({ kind: "loading" });
   const [arReady, setArReady] = useState<boolean | null>(null);
   const [arFailed, setArFailed] = useState(false);
@@ -46,7 +47,9 @@ export function ArViewer({ model, fabric, className = "" }: { model: FurnitureMo
     if (!el || state.kind !== "ready") return;
     const onLoad = () => setArReady(!!el.canActivateAR);
     const onStatus = (e: Event) => {
-      if ((e as CustomEvent<{ status: string }>).detail?.status === "failed") setArFailed(true);
+      const status = (e as CustomEvent<{ status: string }>).detail?.status;
+      if (status === "failed") setArFailed(true);
+      if (status === "session-started") track("ar_acildi", { firmSlug, modelSlug: model.slug, fabricCode: fabric.code });
     };
     el.addEventListener("load", onLoad);
     el.addEventListener("ar-status", onStatus);
@@ -54,7 +57,7 @@ export function ArViewer({ model, fabric, className = "" }: { model: FurnitureMo
       el.removeEventListener("load", onLoad);
       el.removeEventListener("ar-status", onStatus);
     };
-  }, [state]);
+  }, [state, firmSlug, model.slug, fabric.code]);
 
   return (
     <div className={`studio-backdrop relative overflow-hidden rounded-2xl ${className}`}>

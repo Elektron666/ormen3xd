@@ -248,7 +248,7 @@ Numune: form (ad, telefon, not, KVKK onayı) → /api/samples → sample_request
 4. ✅ **Panel** (giriş, kumaş tek ekran akışı + türetilmiş haritalar + ölçek kontrol, toplu CSV, GLB model yükleme, talepler). Sapmalar: işleme sunucuda değil tarayıcıda; model ölçüleri elle düzeltilmiyor, birim yanlışsa kayıt engelleniyor (bkz. KARARLAR.md, Dilim 4).
 5. ✅ **Firma sayfaları + QR** (`/f/...`, firma oluşturma akışı, SVG/PNG/A6 PDF).
 6. ✅ **AR** (model-viewer, cihaz tespiti, masaüstü QR). Sapma: GLB sunucuda değil tarayıcıda üretiliyor (bkz. KARARLAR.md, Dilim 6).
-7. **Olay kaydı + rapor**, Faz 3 `reupholster.ts` mock + "yakında" yeri.
+7. ✅ **Olay kaydı + rapor**, Faz 3 `reupholster.ts` mock + "yakında" yeri.
 8. **Supabase migration'ları, README, rehberler**, uçtan uca testler, son kalite turu.
 
 ---

@@ -19,7 +19,8 @@ export default function KvkkPage() {
         <p>
           <strong className="text-antrasit">Hangi veriler:</strong> Numune talep formunda yazdığınız ad, telefon numarası ve isteğe bağlı not ile seçtiğiniz kumaş kodları.
           Bu araç; adınızı ve telefonunuzu yalnızca numune talebiyle birlikte saklar. Kumaş denemeleri gibi kullanım kayıtları kimliğinizle ilişkilendirilmez,
-          IP adresi tutulmaz.
+          IP adresi ve tarayıcı bilgisi tutulmaz. Ziyaretleri saymak için tarayıcı sekmesinde, sekme kapanınca silinen rastgele bir numara kullanılır; çerez
+          kullanılmaz.
         </p>
         <p>
           <strong className="text-antrasit">Amaç:</strong> Talep ettiğiniz kumaş numunesinin size ulaştırılması ve bu amaçla sizinle iletişime geçilmesi.

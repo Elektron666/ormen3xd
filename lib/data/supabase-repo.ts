@@ -2,6 +2,7 @@ import "server-only";
 import { codeUpper } from "@/lib/i18n/tr";
 import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel } from "@/lib/types";
 import type { SampleRequestInput } from "@/lib/samples";
+import type { Device, EventType, StoredEvent, UsageEvent } from "@/lib/events";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
@@ -294,6 +295,50 @@ export class SupabaseRepository implements Repository {
     check(await this.db.from("firm_models").delete().eq("firm_id", firmId));
     const ids = [...new Set(modelIds)];
     if (ids.length) check(await this.db.from("firm_models").insert(ids.map((model_id, i) => ({ firm_id: firmId, model_id, sort_order: i }))));
+  }
+
+  async recordEvent(e: UsageEvent) {
+    check(
+      await this.db.from("events").insert({
+        type: e.type,
+        session_id: e.sessionId,
+        device: e.device ?? null,
+        firm_slug: e.firmSlug ?? null,
+        model_slug: e.modelSlug ?? null,
+        fabric_code: e.fabricCode ?? null,
+      }),
+    );
+  }
+
+  async listEvents(since: Date, firmSlug?: string) {
+    // aggregated in the app; fine for Faz 1 volumes (a SQL view can take over later)
+    let q = this.db
+      .from("events")
+      .select("type, session_id, device, firm_slug, model_slug, fabric_code, created_at")
+      .gte("created_at", since.toISOString())
+      .order("created_at", { ascending: false })
+      .limit(50_000);
+    if (firmSlug !== undefined) q = firmSlug ? q.eq("firm_slug", firmSlug) : q.is("firm_slug", null);
+    const rows = check(await q) as {
+      type: EventType;
+      session_id: string;
+      device: Device | null;
+      firm_slug: string | null;
+      model_slug: string | null;
+      fabric_code: string | null;
+      created_at: string;
+    }[];
+    return rows.map(
+      (r): StoredEvent => ({
+        type: r.type,
+        sessionId: r.session_id,
+        device: r.device ?? undefined,
+        firmSlug: r.firm_slug,
+        modelSlug: r.model_slug,
+        fabricCode: r.fabric_code,
+        createdAt: r.created_at,
+      }),
+    );
   }
 
   async createSampleRequest(input: SampleRequestInput) {

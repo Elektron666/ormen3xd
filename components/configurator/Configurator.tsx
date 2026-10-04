@@ -21,6 +21,8 @@ import { composeShareImage, groupByFabric } from "@/lib/share-image";
 import { SampleDialog } from "./SampleDialog";
 import { ArDialog } from "./ArDialog";
 import { arPath } from "@/lib/ar/device";
+import { track } from "@/lib/track";
+import { reupholsterService } from "@/lib/ai/reupholster";
 import { ShareDialog } from "./ShareDialog";
 import { PrintSheet, type PrintData } from "./PrintSheet";
 
@@ -107,11 +109,12 @@ export function Configurator({
     (spec: RoomSpec, preset?: RoomPreset) => {
       setRoom(spec);
       if (preset) setAmbient(preset.ambient);
+      track("oda_degisti", { firmSlug: firm?.slug });
       setQuery({ oda: matchingPreset(spec)?.id ?? encodeRoom(spec) });
       // keep every piece inside the new walls
       commit(items.map((p) => constrain(p, dimsOf(p.modelSlug), spec)));
     },
-    [commit, items, dimsOf],
+    [commit, items, dimsOf, firm],
   );
 
   const [closeUp, setCloseUp] = useState(false);
@@ -141,8 +144,9 @@ export function Configurator({
         return;
       }
       commit(items.map((p) => (p.id === selectedItem.id ? { ...p, fabricCode: f.code } : p)));
+      track("kumas_denendi", { firmSlug: firm?.slug, modelSlug: selectedItem.modelSlug, fabricCode: f.code });
     },
-    [compare, commit, items, selectedItem.id],
+    [compare, commit, items, selectedItem.id, selectedItem.modelSlug, firm],
   );
 
   const applyToAll = () => commit(items.map((p) => ({ ...p, fabricCode: selected.code })));
@@ -210,6 +214,10 @@ export function Configurator({
   );
   const shareUrl = useCallback(() => `${window.location.origin}/p/${shareId()}`, [shareId]);
 
+  useEffect(() => {
+    track("sayfa_acildi", { firmSlug: firm?.slug });
+  }, [firm?.slug]);
+
   // AR: the selected piece in its fabric
   const [arOpen, setArOpen] = useState(false);
   const selectedIndex = Math.max(0, items.findIndex((p) => p.id === selectedItem.id));
@@ -228,6 +236,7 @@ export function Configurator({
       .join(", ");
 
   const openShare = async () => {
+    track("paylasildi", { firmSlug: firm?.slug, modelSlug: selectedItem.modelSlug, fabricCode: selected.code });
     const snapshot = stageApi.current?.snapshot() ?? "";
     const url = shareUrl();
     setShare({ image: null, snapshot, url });
@@ -507,6 +516,16 @@ export function Configurator({
             </section>
           )}
           <FabricPicker fabrics={fabrics} selectedCode={shownFabric.code} onSelect={select} onIntent={intent} />
+          {/* Faz 3 placeholder (lib/ai/reupholster.ts is a mock; no AI service is called) */}
+          {!reupholsterService.available && (
+            <div className="mt-8 flex items-start gap-3 rounded-2xl border border-dashed border-cizgi-koyu p-4" aria-disabled="true">
+              <span className="mt-0.5 rounded-full bg-cizgi/70 px-2 py-0.5 text-[11px] tracking-wide text-antrasit-70">Yakında</span>
+              <p className="text-[13px] leading-snug text-antrasit-70">
+                <span className="block font-medium text-antrasit">Kendi koltuğunuzda görün</span>
+                Evdeki koltuğunuzun fotoğrafını çekin, ORMEN kumaşıyla kaplandığında nasıl duracağını görün.
+              </p>
+            </div>
+          )}
         </div>
         <div id="bolum-oda" role="tabpanel" aria-labelledby="sekme-oda" hidden={tab !== "oda"}>
           <RoomPanel spec={room} onChange={changeRoom} furnitureCm={selectedModel.dimensionsCm} />
@@ -525,6 +544,7 @@ export function Configurator({
           whatsapp={whatsappNumber}
           modelSlugs={items.map((p) => p.modelSlug)}
           link={shareUrl}
+          onSent={(codes) => track("numune_istendi", { firmSlug: firm?.slug, fabricCode: codes[0] })}
         />
       )}
       {share && (
@@ -539,7 +559,7 @@ export function Configurator({
         />
       )}
       {printing && <PrintSheet data={printing} onDone={() => setPrinting(null)} />}
-      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} phoneUrl={arUrl} />}
+      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>
   );
 }

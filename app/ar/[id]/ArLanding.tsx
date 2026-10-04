@@ -30,7 +30,7 @@ export function ArLanding({ model, fabric, firm, backHref }: { model: FurnitureM
           <span className="font-medium tracking-wide text-antrasit">{fabric.code}</span> · {fabric.series} {fabric.colorName} · {FABRIC_TYPE_LABELS[fabric.type]}
         </p>
       </div>
-      <ArViewer model={model} fabric={fabric} className="h-[58dvh] min-h-[320px]" />
+      <ArViewer model={model} fabric={fabric} firmSlug={firm?.slug ?? null} className="h-[58dvh] min-h-[320px]" />
       <ol className="flex flex-col gap-1 text-[13px] leading-snug text-antrasit-70">
         <li>1. “Odamda gör”e dokunun.</li>
         <li>2. Telefonu yere doğru tutup yavaşça gezdirin; zemin bulununca koltuk gerçek boyutunda yerleşir.</li>
