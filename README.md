@@ -36,6 +36,12 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 
 Kumaş ya da model silinmez, **gizlenir** (listedeki anahtar). Gizlenen konfigüratörden kalkar; anahtarı tekrar açınca bilgileriyle geri gelir.
 
+## Showroom ekranı (kiosk)
+
+Mağazadaki dokunmatik ekran ya da tablet için firma bağlantısının sonuna `?kiosk` ekleyin (panelde firma sayfasında hazır yazıyor), ör. `https://atelier.ormentekstil.com.tr/f/firma-adi?kiosk`. Ekran bir karşılama sayfasıyla açılır; 90 saniye dokunulmazsa bir sonraki müşteri için baştan başlar ve önceki kişinin seçimleri silinir. Ziyaretçi “Telefona al” ile seçtiği kombinasyonu QR'la telefonuna alır.
+
+Cihazda: tarayıcıyı tam ekran açın (Chrome'da F11 ya da cihazın “kiosk/ekran sabitleme” ayarı) ve ekranın kendiliğinden kararmasını kapatın.
+
 ## Telefonda AR denemesi (5 dakika)
 
 Bu denemeler gerçek telefon gerektirdiği için geliştirme ortamında yapılamadı. Kurulumdan sonra bir iPhone ve bir Android telefonla:

@@ -34,7 +34,7 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 1. ✅ **Parametrik koltuk ve köşe takımı.** 2'li, 3'lü, 4'lü, köşe, berjer, puf; kol, sırt, ayak tipi ve ölçü seçerek GLB'siz model (panelde "Seçerek oluştur"). Ölçü aralıkları pilot firmalarla düzeltilecek.
 2. ✅ **Modüler takımlar:** her uç kol, köşe ya da şezlong; L, U, şezlonglu kanepe, şezlonglu köşe.
 3. ✅ **Firma ve model başına kumaş serisi:** firma sayfası ve her model belirli serilerle sınırlanabiliyor.
-4. **Showroom kiosk modu:** tam ekran, dokunmatik, bir süre dokunulmazsa başa dönen sayfa.
+4. ✅ **Showroom kiosk modu:** `?kiosk`; karşılama ekranı, "Telefona al" QR'ı, dokunulmazsa uyarı ve sıfırlama.
 5. **Kısa paylaşım linki** (`shares` tablosu hazır); bugünkü link uzun ama her zaman çalışıyor.
 6. **AR için sunucuda GLB:** Gerçek cihaz testinde Samsung Internet gibi WebXR'sız tarayıcılarda sorun çıkarsa.
 7. **Rapor için SQL görünümü:** Olay sayısı yüz binleri geçince hesap veritabanına taşınır.

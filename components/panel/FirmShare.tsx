@@ -60,6 +60,13 @@ export function FirmShare({ firmId, slug, base, models, finalDomain }: { firmId:
               A6 kart (PDF)
             </a>
           </div>
+          <p className="text-[13px] text-antrasit-70">
+            Showroom ekranı için:{" "}
+            <a href={`${path}?kiosk`} target="_blank" rel="noopener" className="font-medium text-antrasit underline underline-offset-2" data-testid="kiosk-baglantisi">
+              {url}?kiosk
+            </a>{" "}
+            · dokunmatik ekranda tam ekran açılır, 90 sn dokunulmazsa baştan başlar (süreyi değiştirmek için ör. <code>?kiosk=120</code>).
+          </p>
           {!finalDomain && (
             <p className="rounded-xl bg-[#F4E9DD] px-3 py-2 text-[13px] text-ceviz">
               QR şu an geçici adresi gösteriyor. Alan adı (atelier.ormentekstil.com.tr) bağlanıp <code>NEXT_PUBLIC_SITE_URL</code> girilmeden QR bastırmayın.

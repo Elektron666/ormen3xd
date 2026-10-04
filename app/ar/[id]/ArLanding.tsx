@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { BrandMark } from "@/components/configurator/BrandMark";
-import { inkFor } from "@/lib/firm";
+import { accentStyle } from "@/lib/firm";
 import { FABRIC_TYPE_LABELS, t } from "@/lib/i18n/tr";
 
 const ArViewer = dynamic(() => import("@/components/ar/ArViewer").then((m) => m.ArViewer), {
@@ -12,9 +12,7 @@ const ArViewer = dynamic(() => import("@/components/ar/ArViewer").then((m) => m.
 });
 
 export function ArLanding({ model, fabric, firm, backHref }: { model: FurnitureModel; fabric: Fabric; firm: Firm | null; backHref: string }) {
-  const style = firm
-    ? ({ "--accent": firm.accentColor, "--color-accent": firm.accentColor, "--accent-ink": inkFor(firm.accentColor), "--color-accent-ink": inkFor(firm.accentColor) } as React.CSSProperties)
-    : undefined;
+  const style = accentStyle(firm) as React.CSSProperties | undefined;
   return (
     <div style={style} className="flex min-h-dvh flex-col gap-4 bg-kirik-beyaz p-4 pt-[max(1rem,env(safe-area-inset-top))] md:mx-auto md:max-w-3xl md:p-8">
       <header className="flex items-center justify-between">

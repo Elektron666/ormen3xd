@@ -16,10 +16,11 @@ import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomS
 import { constrain, encodeLayout, findFreeSpot, newId, overlapping, type Placement } from "@/lib/room/layout";
 import type { StageApi } from "@/components/three/Stage";
 import { encodeShare } from "@/lib/share";
-import { inkFor } from "@/lib/firm";
+import { accentStyle } from "@/lib/firm";
 import { composeShareImage, groupByFabric } from "@/lib/share-image";
 import { SampleDialog } from "./SampleDialog";
 import { ArDialog } from "./ArDialog";
+import { QrDialog } from "@/components/ui/QrDialog";
 import { arPath } from "@/lib/ar/device";
 import { track } from "@/lib/track";
 import { fabricsForModel, seriesOf, startFabric } from "@/lib/fabric/allowed";
@@ -42,6 +43,8 @@ export interface ConfiguratorProps {
   initialLayout?: Placement[] | null;
   initialPlan?: boolean;
   firm?: Firm | null;
+  /** Showroom kiosk: sharing becomes a QR the visitor scans to take the combination home. */
+  kiosk?: boolean;
 }
 
 type Tab = "kumas" | "oda";
@@ -69,6 +72,7 @@ export function Configurator({
   initialLayout,
   initialPlan = false,
   firm,
+  kiosk = false,
 }: ConfiguratorProps) {
   const byCode = useMemo(() => new Map(fabrics.map((f) => [f.code, f])), [fabrics]);
   const bySlug = useMemo(() => new Map(models.map((m) => [m.slug, m])), [models]);
@@ -243,8 +247,13 @@ export function Configurator({
       .map((g) => `${g.fabric.code} (${g.models.join(", ")})`)
       .join(", ");
 
+  const [takeHome, setTakeHome] = useState<string | null>(null);
   const openShare = async () => {
     track("paylasildi", { firmSlug: firm?.slug, modelSlug: selectedItem.modelSlug, fabricCode: selected.code });
+    if (kiosk) {
+      setTakeHome(shareUrl());
+      return;
+    }
     const snapshot = stageApi.current?.snapshot() ?? "";
     const url = shareUrl();
     setShare({ image: null, snapshot, url });
@@ -268,11 +277,7 @@ export function Configurator({
     if (first) setReady(true);
   }, []);
 
-  // the theme's --color-* tokens are resolved on :root, so they are set here too
-  const ink = firm ? inkFor(firm.accentColor) : null;
-  const style = firm
-    ? ({ "--accent": firm.accentColor, "--color-accent": firm.accentColor, "--accent-ink": ink, "--color-accent-ink": ink } as React.CSSProperties)
-    : undefined;
+  const style = accentStyle(firm) as React.CSSProperties | undefined;
 
   return (
     <div style={style} className="relative h-dvh w-full overflow-hidden bg-kirik-beyaz md:grid md:grid-cols-[minmax(0,1fr)_380px] lg:grid-cols-[minmax(0,1fr)_420px]">
@@ -322,7 +327,7 @@ export function Configurator({
                 className="flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-cizgi bg-kagit/90 px-3 text-[13px] text-antrasit backdrop-blur-[2px] transition-colors hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit sm:px-4"
               >
                 <IconShare width={17} height={17} className="sm:hidden" />
-                <span className="max-sm:sr-only">Paylaş</span>
+                <span className="max-sm:sr-only">{kiosk ? "Telefona al" : "Paylaş"}</span>
               </button>
               <button
                 type="button"
@@ -574,6 +579,15 @@ export function Configurator({
         />
       )}
       {printing && <PrintSheet data={printing} onDone={() => setPrinting(null)} />}
+      {takeHome && (
+        <QrDialog
+          open
+          onClose={() => setTakeHome(null)}
+          title="Telefonunuza alın"
+          text="Telefonunuzun kamerasıyla okutun: bu kombinasyon telefonunuzda açılır; evde odanıza bakabilir, numune isteyebilirsiniz."
+          url={takeHome}
+        />
+      )}
       {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>
   );

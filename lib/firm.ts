@@ -43,3 +43,10 @@ export function validateFirm(f: FirmFields): { ok: true; value: { name: string; 
   if (Object.keys(errors).length) return { ok: false, errors };
   return { ok: true, value: { name, slug: f.slug, accentColor: f.accentColor.toUpperCase(), whatsapp } };
 }
+
+/** CSS variables that paint a subtree in the firm's colour (the theme's --color-* tokens resolve on :root, so they are set too). */
+export function accentStyle(firm: { accentColor: string } | null | undefined): Record<string, string> | undefined {
+  if (!firm) return undefined;
+  const ink = inkFor(firm.accentColor);
+  return { "--accent": firm.accentColor, "--color-accent": firm.accentColor, "--accent-ink": ink, "--color-accent-ink": ink };
+}

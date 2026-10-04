@@ -4,6 +4,18 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Faz 2, iş 4: Showroom kiosk modu (4 Ekim 2026)
+
+- **Açılış:** Herhangi bir konfigüratör adresinin sonuna `?kiosk` (ör. `/f/firma?kiosk`). Bekleme süresi varsayılan 90 sn; `?kiosk=120` gibi 30–600 sn verilebilir. Panelde firma sayfasında kiosk bağlantısı yazıyor. Ayrı bir kiosk uygulaması ya da hesap yok; bir tarayıcıyı tam ekran açmak yetiyor.
+- **Karşılama ekranı:** Firma logosu, "Kumaşı koltuğun üstünde görün", firma renginde "Başlamak için dokunun". İlk dokunuşta tam ekrana geçiyor (tarayıcı izin verirse).
+- **Sıfırlama:** Son dokunuştan sonra süre dolmadan 10 sn önce "Hâlâ burada mısınız?" sayacı; dokunulmazsa sayfa başlangıç adresine dönüyor. Sekme belleği (beğendiklerim, ziyaret numarası) siliniyor; açık pencereler ve yarım kalmış numune formu da gidiyor. Böylece bir sonraki kişi öncekinin seçimlerini ya da yazdığı telefonu görmüyor ve raporda yeni ziyaret sayılıyor. Sıfırlama sayfayı yeniden yükleyerek yapılıyor: en güvenilir temizlik bu.
+- **"Telefona al":** Kioskta "Paylaş" yerine kombinasyonun QR'ı çıkıyor; ziyaretçi telefonuyla okutup evine götürüyor. WhatsApp, indirme ve yazdırma kioskta yok (ortak cihazda anlamsız).
+- Uzun basınca açılan menü ve metin seçimi kapalı; çift dokunmayla yakınlaşma engelli.
+- **Test:** Uçtan uca testte Playwright'ın saatiyle 30 sn'lik bekleme hızlandırılıp karşılama, QR, uyarı, "Devam et" ve sıfırlama (kumaş ve beğendiklerim başa dönüyor) doğrulanıyor.
+- **Bilinen sınır:** Tarayıcının kendi tam ekran/kiosk ayarı (adres çubuğunu tamamen gizleme, ekran kararmasını kapatma) cihazdan yapılmalı; README'de kısa not var.
+
+---
+
 ## Faz 2, iş 3: Firma ve model başına kumaş serisi (4 Ekim 2026)
 
 - **Firma:** Panelde firma ayarlarında "Firma sayfasında gösterilecek ORMEN serileri". Seçilirse firma sayfasında (ve o sayfadan paylaşılan linkte) yalnızca o seriler var. Boşsa yayındaki bütün kumaşlar.
