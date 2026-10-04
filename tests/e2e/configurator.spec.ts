@@ -80,3 +80,23 @@ test("oda bağlantısı aynı odayı açar, araçlar çalışır", async ({ page
 
   expect(errors).toEqual([]);
 });
+
+test("plan görünümü ölçüleri gösterir ve bağlantıda saklanır", async ({ page, isMobile }) => {
+  test.skip(isMobile, "plan masaüstü öncelikli");
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/?oda=acik-salon&k=LUMA-03");
+  await expect.poll(() => fabricOnModel(page)).toEqual(["LUMA-03"]);
+  await page.getByRole("button", { name: "Plan" }).click();
+  await expect(page).toHaveURL(/g=plan/);
+  for (const text of ["520 cm", "440 cm", "238 cm", "340 cm"]) await expect(page.getByText(text, { exact: true })).toBeVisible();
+  await expect(page.getByText("141 cm", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("1 m", { exact: true })).toBeVisible();
+  // fabric changes are visible in the plan too
+  await page.getByRole("radio", { name: /SIENA-06/ }).click();
+  await expect.poll(() => fabricOnModel(page)).toEqual(["SIENA-06"]);
+  await page.getByRole("button", { name: "3B" }).click();
+  await expect(page).toHaveURL(/g=3b/);
+  await expect(page.getByText("340 cm", { exact: true })).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

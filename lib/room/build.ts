@@ -38,7 +38,7 @@ function pointInPolygon(x: number, z: number, pts: [number, number][]): boolean 
 export function buildRoom(
   spec: RoomSpec,
   backZ: number,
-  materials: { floor: THREE.Material; wall: THREE.Material; skirting: THREE.Material },
+  materials: { floor: THREE.Material; wall: THREE.Material; skirting: THREE.Material; cap?: THREE.Material },
 ): BuiltRoom {
   const group = new THREE.Group();
   group.name = "oda";
@@ -57,6 +57,21 @@ export function buildRoom(
     group.add(floor);
   }
 
+  // Walls are extended at convex corners so they close neatly, but not at
+  // reflex (inner) corners such as the notch of an L room, where an
+  // extension would poke into the room.
+  let area = 0;
+  pts.forEach(([xa, za], i) => {
+    const [xb, zb] = pts[(i + 1) % pts.length];
+    area += xa * zb - xb * za;
+  });
+  const convex = pts.map((p, i) => {
+    const prev = pts[(i - 1 + pts.length) % pts.length];
+    const next = pts[(i + 1) % pts.length];
+    const cross = (p[0] - prev[0]) * (next[1] - p[1]) - (p[1] - prev[1]) * (next[0] - p[0]);
+    return Math.sign(cross) === Math.sign(area);
+  });
+
   const walls: WallPart[] = [];
   pts.forEach(([x0, z0], i) => {
     if (!hasWall[i]) return;
@@ -67,15 +82,31 @@ export function buildRoom(
     const normal = new THREE.Vector3(dz / len, 0, -dx / len);
     if (pointInPolygon(mid.x + normal.x * 0.05, mid.z + normal.z * 0.05, pts)) normal.negate();
 
+    const extStart = convex[i] ? WALL_THICKNESS : 0;
+    const extEnd = convex[(i + 1) % pts.length] ? WALL_THICKNESS : 0;
+    const bodyLen = len + extStart + extEnd;
+
     const wall = new THREE.Group();
     wall.name = `duvar-${i}`;
     wall.position.copy(mid);
     wall.rotation.y = Math.atan2(-normal.x, -normal.z); // local +z faces into the room
+    // Centre of the extended box, in the wall's local x: it moves along the
+    // edge (point i → i+1) by half the difference of the two extensions.
+    const localX = new THREE.Vector3(1, 0, 0).applyEuler(wall.rotation);
+    const along = (localX.x * dx + localX.z * dz) / len; // ±1
+    const offsetX = ((extEnd - extStart) / 2) * along;
 
-    const body = new THREE.Mesh(new THREE.BoxGeometry(len + 2 * WALL_THICKNESS, h, WALL_THICKNESS), materials.wall);
-    body.position.set(0, h / 2, -WALL_THICKNESS / 2);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(bodyLen, h, WALL_THICKNESS), materials.wall);
+    body.position.set(offsetX, h / 2, -WALL_THICKNESS / 2);
     body.receiveShadow = true;
     wall.add(body);
+
+    if (materials.cap) {
+      // dark wall top, like the cut walls of an architectural plan
+      const cap = new THREE.Mesh(new THREE.BoxGeometry(bodyLen, 0.004, WALL_THICKNESS), materials.cap);
+      cap.position.set(offsetX, h + 0.002, -WALL_THICKNESS / 2);
+      wall.add(cap);
+    }
 
     const skirt = new THREE.Mesh(new THREE.BoxGeometry(len, SKIRTING_H, SKIRTING_D), materials.skirting);
     skirt.position.set(0, SKIRTING_H / 2, SKIRTING_D / 2);

@@ -13,6 +13,7 @@ import { encodeRoom, type RoomSpec } from "@/lib/room/spec";
 import { Room } from "./Room";
 import { CameraRig, FOV } from "./CameraRig";
 import { Dimensions } from "./Dimensions";
+import { PlanView } from "./PlanView";
 import { enableAllLayers, renderSplit, showPrimary } from "@/lib/three/layers";
 import { LAYER_COMPARE } from "@/lib/three/constants";
 
@@ -28,6 +29,8 @@ export interface StageProps {
   split?: number;
   closeUp?: boolean;
   showDimensions?: boolean;
+  /** Top-down 2D plan instead of the 3D view. */
+  plan?: boolean;
   onFabricShown?: (code: string, first: boolean) => void;
   onError?: (err: unknown) => void;
 }
@@ -107,6 +110,7 @@ export function Stage({
   split = 0.5,
   closeUp = false,
   showDimensions = false,
+  plan = false,
   onFabricShown,
   onError,
 }: StageProps) {
@@ -118,6 +122,9 @@ export function Stage({
   const [roomExtent, setRoomExtent] = useState(0);
   const onRoomBuilt = useCallback((s: THREE.Vector3) => setRoomExtent(Math.hypot(s.x, s.z)), []);
   const inRoom = room.shape !== "yok";
+  // the orbit camera; the plan view swaps in its own camera without touching this one
+  const [orbitCamera, setOrbitCamera] = useState<THREE.Camera | null>(null);
+  const backZ = prepared ? -(prepared.size.z / 2 + 0.04) : 0;
 
   const handleShown = useCallback(
     (code: string, first: boolean) => {
@@ -150,6 +157,7 @@ export function Stage({
       style={{ touchAction: "none" }}
       onCreated={(state) => {
         showPrimary(state.camera);
+        setOrbitCamera(state.camera);
         // Exposed for automated tests (colour check, screenshots); harmless in production.
         (window as unknown as { __ormenStage?: unknown }).__ormenStage = state;
       }}
@@ -181,7 +189,8 @@ export function Stage({
         </Suspense>
       )}
       {compareFabric && <SplitRender split={split} />}
-      {visible && prepared && showDimensions && <Dimensions size={prepared.size} />}
+      {visible && prepared && showDimensions && !plan && <Dimensions size={prepared.size} />}
+      {visible && prepared && plan && <PlanView room={room} backZ={backZ} furniture={prepared.size} />}
       {visible && prepared && (
         <GroundShadow
           key={`${model.id}-shadow`}
@@ -193,11 +202,13 @@ export function Stage({
         />
       )}
       {visible && prepared && inRoom && (
-        <Room spec={room} backZ={-(prepared.size.z / 2 + 0.04)} onBuilt={onRoomBuilt} />
+        <Room spec={room} backZ={backZ} onBuilt={onRoomBuilt} />
       )}
       <ShadowMapRefresh version={`${model.id}:${shownCode}:${compareFabric?.code}:${encodeRoom(room)}:${prepared?.size.z ?? 0}`} />
       <OrbitControls
         makeDefault
+        camera={orbitCamera ?? undefined}
+        enabled={!plan}
         enablePan={false}
         enableDamping
         dampingFactor={0.08}
@@ -206,7 +217,7 @@ export function Stage({
         minPolarAngle={0.35}
         maxPolarAngle={Math.PI / 2 - 0.06}
       />
-      <CameraRig prepared={prepared} started={visible} roomExtent={inRoom ? roomExtent : 0} closeUp={closeUp} />
+      <CameraRig prepared={prepared} started={visible} roomExtent={inRoom ? roomExtent : 0} closeUp={closeUp && !plan} />
     </Canvas>
   );
 }

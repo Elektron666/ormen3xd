@@ -17,7 +17,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
   return (
     <main>
       <h1 className="sr-only">ORMEN Atelier: kumaşı koltuğun üstünde görün</h1>
-      <Configurator models={models} initialModelSlug={initialModel.slug} fabrics={fabrics} initialFabricCode={k} initialRoom={room} />
+      <Configurator models={models} initialModelSlug={initialModel.slug} fabrics={fabrics} initialFabricCode={k} initialRoom={room} initialPlan={sp.g === "plan"} />
     </main>
   );
 }

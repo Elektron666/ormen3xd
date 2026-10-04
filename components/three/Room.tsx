@@ -27,10 +27,11 @@ function RoomMesh({ spec, backZ, floorMaterial, onBuilt }: RoomProps & { floorMa
     [spec.wallId],
   );
   const skirting = useMemo(() => new THREE.MeshStandardMaterial({ name: "supurgelik", color: "#F2EFEA", roughness: 0.6 }), []);
+  const cap = useMemo(() => new THREE.MeshBasicMaterial({ name: "duvar-kesit", color: "#3a3936" }), []);
 
   const room = useMemo(
-    () => buildRoom(spec, backZ, { floor: floorMaterial, wall, skirting }),
-    [spec, backZ, floorMaterial, wall, skirting],
+    () => buildRoom(spec, backZ, { floor: floorMaterial, wall, skirting, cap }),
+    [spec, backZ, floorMaterial, wall, skirting, cap],
   );
 
   useEffect(() => {
@@ -42,6 +43,7 @@ function RoomMesh({ spec, backZ, floorMaterial, onBuilt }: RoomProps & { floorMa
 
   useEffect(() => () => wall.dispose(), [wall]);
   useEffect(() => () => skirting.dispose(), [skirting]);
+  useEffect(() => () => cap.dispose(), [cap]);
 
   useFrame(() => {
     if (updateWallVisibility(room.walls, camera.position)) invalidate();

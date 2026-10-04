@@ -37,3 +37,9 @@ export const IconCompare = (p: P) => (
 export const IconArrowsH = (p: P) => (
   <svg {...base} {...p} aria-hidden="true"><path d="M7 6l-4 4 4 4M13 6l4 4-4 4" /></svg>
 );
+export const IconPlan = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><path d="M3 3h14v14H3z" /><path d="M3 10h6M12 3v5M12 12v5M9 10v7" /></svg>
+);
+export const IconCube = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><path d="M10 2.5l6.5 3.75v7.5L10 17.5l-6.5-3.75v-7.5z" /><path d="M3.5 6.25L10 10l6.5-3.75M10 10v7.5" /></svg>
+);

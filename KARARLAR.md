@@ -4,6 +4,24 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Dilim 2c: 2D plan görünümü ve rekabet planı (4 Ekim 2026)
+
+Fatih Bey'in isteği: "3D ve 2D ayrımı olsun", ve ORMEN Atelier, EasternGraphics'in (pCon) Türkiye'deki rakibi olarak konumlansın. Strateji `REKABET-PLANI.md` dosyasında.
+
+- **3B / Plan düğmesi** sahne araç çubuğunda. Plan, tepeden ve perspektifsiz bir görünüm. Bir mimari çizim gibi okunuyor:
+  - Duvar kesitleri koyu antrasit (mimari "poşe").
+  - Oda iç ölçüleri duvarların dışında, koltuğun genişliği ve derinliği koltuğun yanında yazılı.
+  - Koltuktan sol ve sağ duvarlara mesafe ile koltuğun önündeki boşluk kesikli çizgilerle gösteriliyor.
+  - 1 metrelik ölçek çubuğu var.
+  - Plan modunda fareyle kaydırılabiliyor ve tekerlekle yakınlaştırılabiliyor; döndürme kapalı.
+- **Teknik:** Plan, ayrı bir dik izdüşüm (orthographic) kamerayı geçici olarak varsayılan kamera yapıyor. 3D kamera ve onun yörünge kontrolü hiç değişmiyor; plandan çıkınca aynı 3D görünüme dönülüyor. Etiketler ve karşılaştırma sürgüsü plan modunda da çalışıyor.
+- **Geçiş:** 160 ms'lik bir solma kamera değişimini gizliyor. Plan durumu adrese yazılıyor (`?g=plan`), paylaşılan link planla açılabiliyor.
+- **Duvar köşeleri:** Duvarlar dış köşelerde uzatılarak birleşiyor, L odanın iç köşesinde uzatılmıyor. Önceki sürümde iç köşede duvar oda içine 12 cm taşıyordu; bunu bir test denetliyor.
+- **Duvar üst kapakları** 3D'de de koyu görünüyor (maket kesiti). Bu bilerek yapıldı.
+- Plan yalnızca bakmak ve ölçmek için. Mobilya sürükleme, kapı ve pencere yok (bkz. `REKABET-PLANI.md`, "Bilerek yapmadıklarımız").
+
+---
+
 ## Dilim 2b: Ölçüler, yakından bak, karşılaştır, beğendiklerim, renk testi (4 Ekim 2026)
 
 - **Ölçü göstergesi:** Ölçüler modelin gerçek sınır kutusundan okunuyor; veritabanındaki elle girilmiş değerden değil. Böylece yüklenen her GLB'de ekranda görünen ölçü modelin kendisiyle tutarlı. Örnek kanepe ve berjerin kayıtlı ölçüleri de ölçülen geometriye göre düzeltildi (238×96×85 ve 81×84×94 cm). Bir test, ikisinin 1 cm'den fazla ayrışmamasını denetliyor.

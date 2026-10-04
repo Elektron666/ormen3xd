@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type KeyboardEvent, type PointerEvent as RPointerEvent } from "react";
-import { IconArrowsH, IconCompare, IconRuler, IconZoom, IconZoomOut } from "@/components/ui/icons";
+import { IconArrowsH, IconCompare, IconCube, IconPlan, IconRuler, IconZoom, IconZoomOut } from "@/components/ui/icons";
 
 function ToolButton({
   pressed,
@@ -30,6 +30,8 @@ function ToolButton({
 }
 
 export function SceneTools({
+  plan,
+  onPlan,
   closeUp,
   onCloseUp,
   dimensions,
@@ -37,6 +39,8 @@ export function SceneTools({
   comparing,
   onCompare,
 }: {
+  plan: boolean;
+  onPlan: () => void;
   closeUp: boolean;
   onCloseUp: () => void;
   dimensions: boolean;
@@ -46,13 +50,36 @@ export function SceneTools({
 }) {
   return (
     <div role="toolbar" aria-label="Sahne araçları" className="flex items-center gap-0.5 rounded-full border border-cizgi bg-kagit/90 p-1 shadow-[0_6px_24px_-12px_rgba(42,42,40,0.35)] backdrop-blur-[2px]">
-      <ToolButton
-        pressed={closeUp}
-        onClick={onCloseUp}
-        icon={closeUp ? <IconZoomOut width={18} height={18} /> : <IconZoom width={18} height={18} />}
-        label={closeUp ? "Uzaklaş" : "Yakından bak"}
-      />
-      <ToolButton pressed={dimensions} onClick={onDimensions} icon={<IconRuler width={18} height={18} />} label="Ölçüler" />
+      <div role="group" aria-label="Görünüm" className="mr-1 flex rounded-full bg-cizgi/60 p-0.5">
+        {(
+          [
+            [false, "3B", <IconCube key="c" width={17} height={17} />],
+            [true, "Plan", <IconPlan key="p" width={17} height={17} />],
+          ] as const
+        ).map(([isPlan, label, icon]) => (
+          <button
+            key={label}
+            type="button"
+            aria-pressed={plan === isPlan}
+            onClick={() => plan !== isPlan && onPlan()}
+            className={`flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[13px] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-antrasit ${
+              plan === isPlan ? "bg-kagit text-antrasit shadow-[0_1px_3px_rgba(0,0,0,0.1)]" : "text-antrasit-70 hover:text-antrasit"
+            }`}
+          >
+            {icon}
+            {label}
+          </button>
+        ))}
+      </div>
+      {!plan && (
+        <ToolButton
+          pressed={closeUp}
+          onClick={onCloseUp}
+          icon={closeUp ? <IconZoomOut width={18} height={18} /> : <IconZoom width={18} height={18} />}
+          label={closeUp ? "Uzaklaş" : "Yakından bak"}
+        />
+      )}
+      {!plan && <ToolButton pressed={dimensions} onClick={onDimensions} icon={<IconRuler width={18} height={18} />} label="Ölçüler" />}
       <ToolButton pressed={comparing} onClick={onCompare} icon={<IconCompare width={18} height={18} />} label="Karşılaştır" />
     </div>
   );

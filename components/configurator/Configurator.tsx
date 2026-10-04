@@ -25,6 +25,7 @@ export interface ConfiguratorProps {
   fabrics: Fabric[];
   initialFabricCode?: string;
   initialRoom?: RoomSpec | null;
+  initialPlan?: boolean;
   firm?: Firm | null;
 }
 
@@ -41,7 +42,7 @@ function setQuery(params: Record<string, string>) {
   window.history.replaceState(window.history.state, "", url);
 }
 
-export function Configurator({ models, initialModelSlug, fabrics, initialFabricCode, initialRoom, firm }: ConfiguratorProps) {
+export function Configurator({ models, initialModelSlug, fabrics, initialFabricCode, initialRoom, initialPlan = false, firm }: ConfiguratorProps) {
   const [modelSlug, setModelSlug] = useState(initialModelSlug);
   const model = models.find((m) => m.slug === modelSlug) ?? models[0];
   const byCode = useMemo(() => new Map(fabrics.map((f) => [f.code, f])), [fabrics]);
@@ -65,6 +66,20 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
   }, []);
 
   const [closeUp, setCloseUp] = useState(false);
+  const [plan, setPlan] = useState(initialPlan);
+  const [fading, setFading] = useState(false);
+
+  // 3D ⇄ plan: a short fade hides the camera swap
+  const togglePlan = () => {
+    setFading(true);
+    window.setTimeout(() => {
+      const next = !plan;
+      setPlan(next);
+      setQuery({ g: next ? "plan" : "3b" });
+      setCloseUp(false);
+      window.setTimeout(() => setFading(false), 60);
+    }, 160);
+  };
   const [showDims, setShowDims] = useState(false);
   const [compare, setCompare] = useState<CompareState | null>(null);
   const [split, setSplit] = useState(0.5);
@@ -117,7 +132,7 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
     <div style={style} className="relative h-dvh w-full overflow-hidden bg-kirik-beyaz md:grid md:grid-cols-[minmax(0,1fr)_380px] lg:grid-cols-[minmax(0,1fr)_420px]">
       {/* ---------------------------------------------------------------- scene */}
       <section className="studio-backdrop relative h-[60dvh] md:h-dvh" aria-label="3B sahne">
-        <div className="absolute inset-0">
+        <div className={`absolute inset-0 transition-opacity duration-150 ${fading ? "opacity-0" : "opacity-100"}`}>
           <Stage
             model={model}
             fabric={selected}
@@ -127,6 +142,7 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
             split={split}
             closeUp={closeUp}
             showDimensions={showDims}
+            plan={plan}
             onFabricShown={onFabricShown}
             onError={() => setFailed(true)}
           />
@@ -165,6 +181,8 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
           <div className="pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+2.75rem)] flex justify-center px-4 md:bottom-12">
             <div className="pointer-events-auto">
               <SceneTools
+                plan={plan}
+                onPlan={togglePlan}
                 closeUp={closeUp}
                 onCloseUp={() => setCloseUp((v) => !v)}
                 dimensions={showDims}

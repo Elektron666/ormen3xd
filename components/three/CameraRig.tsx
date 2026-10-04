@@ -111,10 +111,13 @@ export interface CameraRigProps {
 
 /** Frames the model, plays the intro, and moves to / from the close-up view. */
 export function CameraRig({ prepared, started, roomExtent, closeUp }: CameraRigProps) {
-  const camera = useThree((s) => s.camera);
+  const storeCamera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const invalidate = useThree((s) => s.invalidate);
   const controls = useThree((s) => s.controls) as OrbitControlsImpl | null;
+  // Always drive the orbit (perspective) camera, even while the plan view has
+  // temporarily made an orthographic camera the default.
+  const camera = (controls?.object as THREE.Camera | undefined) ?? storeCamera;
   const intro = useRef<{ t: number; active: boolean }>({ t: 0, active: false });
   const framing = useRef<Framing | null>(null);
   const move = useRef<Move | null>(null);
