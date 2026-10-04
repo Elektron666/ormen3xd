@@ -8,6 +8,7 @@ import { contrast, inkFor, validateFirm, type FirmErrors } from "@/lib/firm";
 import { slugify, stamp, uploadFile } from "@/lib/panel/upload";
 import { saveFirmAction } from "@/app/panel/actions";
 import { buttonClass, Field, inputClass } from "./ui";
+import { SeriesPicker } from "./SeriesPicker";
 
 // Firm settings: name and link, logo, colour, WhatsApp number and which
 // models the firm page shows. Firm-only models are added from the model page.
@@ -21,7 +22,9 @@ export function FirmEditor({
   showcaseIds = [],
   showcase,
   ownModels = [],
+  allSeries,
 }: {
+  allSeries: string[];
   firm?: Firm | null;
   showcaseIds?: string[];
   showcase: FurnitureModel[];
@@ -35,6 +38,7 @@ export function FirmEditor({
   const [whatsapp, setWhatsapp] = useState(firm?.whatsapp ?? "");
   const [isActive, setIsActive] = useState(firm?.isActive ?? true);
   const [picked, setPicked] = useState<string[]>(showcaseIds);
+  const [series, setSeries] = useState<string[]>(firm?.fabricSeries ?? []);
   const [logo, setLogo] = useState<{ file: File; preview: string } | null>(null);
   const [logoUrl, setLogoUrl] = useState(firm?.logoUrl);
   const [errors, setErrors] = useState<FirmErrors>({});
@@ -87,7 +91,7 @@ export function FirmEditor({
         setLogo(null);
       }
       setStatus("Kaydediliyor…");
-      const res = await saveFirmAction({ id: firm?.id, fields, logoUrl: url, isActive, showcaseIds: picked });
+      const res = await saveFirmAction({ id: firm?.id, fields, logoUrl: url, isActive, showcaseIds: picked, fabricSeries: series });
       if (!res.ok) {
         setErrors(res.errors ?? {});
         setStatus(res.error ?? "Kaydedilemedi; işaretli alanlara bakın.");
@@ -216,6 +220,17 @@ export function FirmEditor({
               " Firmaya özel model, firma kaydedildikten sonra eklenebilir."
             )}
           </p>
+        </section>
+
+        <section>
+          <h2 className="eyebrow mb-2">4 · Kumaşlar</h2>
+          <SeriesPicker
+            all={allSeries}
+            value={series}
+            onChange={setSeries}
+            label="Firma sayfasında gösterilecek ORMEN serileri"
+            emptyHint="Hiçbiri seçilmezse yayındaki bütün ORMEN kumaşları gösterilir."
+          />
         </section>
 
         <label className="flex items-center gap-2 text-[14px]">

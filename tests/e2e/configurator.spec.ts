@@ -111,7 +111,7 @@ test("mobilya eklenir, sürüklenir, döndürülür; yerleşim bağlantıya yaz�
   await expect.poll(() => fabricOnModel(page)).toEqual(["LUMA-02"]);
 
   await page.getByRole("button", { name: "Mobilya ekle" }).click();
-  await page.getByRole("menuitem", { name: /Berjer/ }).click();
+  await page.getByRole("menuitem", { name: /^Berjer 81×84/ }).click();
   await page.getByRole("radio", { name: /SIENA-03/ }).click();
   await expect.poll(async () => (await fabricOnModel(page)).sort()).toEqual(["LUMA-02", "SIENA-03"]);
   await expect(page).toHaveURL(/y=moduler-kanepe\.LUMA-02\.[^_]+_berjer\.SIENA-03\./);

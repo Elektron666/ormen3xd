@@ -4,6 +4,17 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Faz 2, iş 3: Firma ve model başına kumaş serisi (4 Ekim 2026)
+
+- **Firma:** Panelde firma ayarlarında "Firma sayfasında gösterilecek ORMEN serileri". Seçilirse firma sayfasında (ve o sayfadan paylaşılan linkte) yalnızca o seriler var. Boşsa yayındaki bütün kumaşlar.
+- **Model:** Her modelde (dosyadan ya da seçerek) "Bu modelde sunulan kumaş serileri" (ör. bir koltuk yalnızca bukle serileriyle). Konfigüratörde seçili parçanın modeline göre kumaş listesi değişiyor ve üstte "… bu serilerle sunuluyor" yazıyor. Yeni eklenen parça, seçili kumaş o modelde yoksa modelin varsayılan kumaşıyla, o da yoksa izinli ilk kumaşla geliyor. "Bu kumaşı tümüne uygula" yalnızca o kumaşı sunan parçalara uygulanıyor.
+- **Seri düzeyinde, kumaş düzeyinde değil:** Plan `model_fabrics` (kumaş kumaş seçim) tablosu öngörüyordu. Firmaların "şu koleksiyonlar" diye düşündüğünü varsayıp seri seçtirdim: on kumaşı tek tek işaretlemekten hızlı, yeni renk eklenince kendiliğinden dahil oluyor. `model_fabrics` tablosu kullanılmıyor; kumaş kumaş seçim gerekirse oradan devam edilir.
+- **Kırılmaz kural:** Kısıt hiçbir kumaşa uymuyorsa (seri gizlendi ya da kaldırıldı) liste boş kalmıyor, sayfanın bütün kumaşları gösteriliyor.
+- Eski paylaşım linkleri kısıt yüzünden bozulmuyor: linkteki kumaş firma sayfasında yoksa o parça linkten düşüyor, sayfa açılıyor.
+- **Veritabanı:** Üçüncü migration (`20261006000000_fabric_series_limits.sql`): `firms.fabric_series`, `models.fabric_series` (boş liste = hepsi). Panelden gelen seri adları kayıtta katalogla karşılaştırılıp temizleniyor.
+
+---
+
 ## Faz 2, iş 2: Modüler takımlar (U, şezlonglu, şezlonglu köşe) (4 Ekim 2026)
 
 - **Plandan sapma:** Yol haritasında "sol kol, orta, köşe, şezlong modüllerini düğmelerle ekleme" vardı. Bunun yerine köşe takımını genelleştirdim: **sol uç** ve **sağ uç** ayrı ayrı Kol, Köşe ya da Şezlong olabiliyor; arka duvar boyu ve her ucun boyu giriliyor. Bununla düz kanepe hariç Türkiye'de yaygın bütün takımlar çıkıyor: L köşe (sağda/solda), U koltuk, şezlonglu kanepe, şezlonglu köşe takımı. Gerekçe: atölye modelini "kaç modül" diye değil "hangi şekil, kaç cm" diye tarif ediyor; altı düğme ve iki ölçü, modül modül dizmekten daha hızlı ve hatasız. Modül genişliklerini tek tek vermek gerekirse sonra eklenir.

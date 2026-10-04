@@ -28,6 +28,8 @@ import { saveParametricModelAction } from "@/app/panel/actions";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
 import { buttonClass, Field, inputClass } from "./ui";
 import { FabricPreview } from "./FabricPreview";
+import { SeriesPicker } from "./SeriesPicker";
+import { seriesOf } from "@/lib/fabric/allowed";
 
 // "Seçerek oluştur": a workshop without a 3D file describes its model with a
 // few choices; the preview shows it in an ORMEN fabric as the values change.
@@ -79,6 +81,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
   const [slugTouched, setSlugTouched] = useState(!!model);
   const [defaultFabric, setDefaultFabric] = useState(model?.defaultFabricCode ?? fabrics[0]?.code ?? "");
   const [isActive, setIsActive] = useState(model?.isActive ?? true);
+  const [series, setSeries] = useState<string[]>(model?.fabricSeries ?? []);
   const [error, setError] = useState<string | null>(null);
   const [serverErrors, setServerErrors] = useState<ParamErrors>({});
   const [saving, setSaving] = useState(false);
@@ -139,7 +142,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
     if (!/^[a-z0-9-]{2,60}$/.test(effectiveSlug)) return setError("Bağlantı adı yalnızca küçük harf, rakam ve tire içerebilir.");
     setSaving(true);
     try {
-      const res = await saveParametricModelAction({ id: model?.id, name: effectiveName, slug: effectiveSlug, params, defaultFabricCode: defaultFabric || undefined, isActive, firmId });
+      const res = await saveParametricModelAction({ id: model?.id, name: effectiveName, slug: effectiveSlug, params, defaultFabricCode: defaultFabric || undefined, isActive, firmId, fabricSeries: series });
       if (!res.ok) {
         setError(res.error);
         setServerErrors(res.errors ?? {});
@@ -236,6 +239,9 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
               ))}
             </select>
           </Field>
+          <div className="col-span-2">
+            <SeriesPicker all={seriesOf(fabrics)} value={series} onChange={setSeries} label="Bu modelde sunulan kumaş serileri" emptyHint="Hiçbiri seçilmezse bütün seriler sunulur." />
+          </div>
           <label className="col-span-2 flex items-center gap-2 text-[14px]">
             <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[#2a2a28]" />
             Konfigüratörde göster

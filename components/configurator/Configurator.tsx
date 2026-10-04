@@ -22,6 +22,7 @@ import { SampleDialog } from "./SampleDialog";
 import { ArDialog } from "./ArDialog";
 import { arPath } from "@/lib/ar/device";
 import { track } from "@/lib/track";
+import { fabricsForModel, seriesOf, startFabric } from "@/lib/fabric/allowed";
 import { reupholsterService } from "@/lib/ai/reupholster";
 import { ShareDialog } from "./ShareDialog";
 import { PrintSheet, type PrintData } from "./PrintSheet";
@@ -149,14 +150,21 @@ export function Configurator({
     [compare, commit, items, selectedItem.id, selectedItem.modelSlug, firm],
   );
 
-  const applyToAll = () => commit(items.map((p) => ({ ...p, fabricCode: selected.code })));
+  // fabrics offered on the selected piece's model (a model can be limited to some series)
+  const modelFabrics = useMemo(() => fabricsForModel(fabrics, selectedModel), [fabrics, selectedModel]);
+  const allowedOn = (slug: string) => {
+    const m = bySlug.get(slug);
+    return m ? fabricsForModel(fabrics, m) : fabrics;
+  };
+  // only pieces whose model offers this fabric take it
+  const applyToAll = () => commit(items.map((p) => (allowedOn(p.modelSlug).some((f) => f.code === selected.code) ? { ...p, fabricCode: selected.code } : p)));
 
   // ---------------------------------------------------------------- piece actions
   const addPiece = (slug: string) => {
     const model = bySlug.get(slug);
     if (!model) return;
     const spot = findFreeSpot(model.dimensionsCm, room, items.map((p) => ({ p, dims: dimsOf(p.modelSlug) })));
-    const piece: Placement = { id: newId(), modelSlug: slug, fabricCode: selected.code, ...spot };
+    const piece: Placement = { id: newId(), modelSlug: slug, fabricCode: startFabric(fabricsForModel(fabrics, model), selected.code, model).code, ...spot };
     commit([...items, piece]);
     setSelectedId(piece.id);
   };
@@ -189,7 +197,7 @@ export function Configurator({
       return;
     }
     // start with a fabric from another series so the difference is obvious
-    const other = fabrics.find((f) => f.series !== selected.series) ?? fabrics.find((f) => f.code !== selected.code) ?? selected;
+    const other = modelFabrics.find((f) => f.series !== selected.series) ?? modelFabrics.find((f) => f.code !== selected.code) ?? selected;
     setCompare({ right: other, active: "sag" });
     setSplit(0.5);
     setTab("kumas");
@@ -517,7 +525,12 @@ export function Configurator({
               </ul>
             </section>
           )}
-          <FabricPicker fabrics={fabrics} selectedCode={shownFabric.code} onSelect={select} onIntent={intent} />
+          {modelFabrics.length < fabrics.length && (
+            <p className="mb-3 rounded-xl bg-cizgi/40 px-3 py-2 text-[13px] text-antrasit-70">
+              {selectedModel.name} bu serilerle sunuluyor: {seriesOf(modelFabrics).join(", ")}.
+            </p>
+          )}
+          <FabricPicker fabrics={modelFabrics} selectedCode={shownFabric.code} onSelect={select} onIntent={intent} />
           {/* Faz 3 placeholder (lib/ai/reupholster.ts is a mock; no AI service is called) */}
           {!reupholsterService.available && (
             <div className="mt-8 flex items-start gap-3 rounded-2xl border border-dashed border-cizgi-koyu p-4" aria-disabled="true">

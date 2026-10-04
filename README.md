@@ -30,7 +30,7 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 - **Toplu ekleme:** Şablonu indirin, Excel’de doldurun, fotoğraflarla birlikte yükleyin. Fotoğraf adları tablodaki adla eşleşir.
 - **Modeller, seçerek:** 3D modeli olmayan atölyeler için. Kanepe (ikili, üçlü, dörtlü), köşe / modüler takım (L, U, şezlonglu), berjer ya da puf seçin; kol, sırt, ayak ve ölçüleri girin. Model bir dakikada hazır, kumaş üstünde gerçek ölçüsünde.
 - **Modeller, dosyadan:** Mobilya modelini `.glb` dosyası olarak yükleyin, kumaş alacak parçaları işaretleyin, istediğiniz ORMEN kumaşıyla önizleyin. Deneme için kendi ürettiğimiz örnek bir puf var: `tests/fixtures/ornek-puf.glb`.
-- **Firmalar:** Firma adını, logosunu (PNG), rengini ve WhatsApp numarasını girin; sayfada hangi modellerin görüneceğini seçin ya da firmaya özel model yükleyin. Kaydedince bağlantı, QR kodu (SVG ve PNG) ve tezgâh üstü A6 kart hazır olur.
+- **Firmalar:** Firma adını, logosunu (PNG), rengini ve WhatsApp numarasını girin; sayfada hangi modellerin ve hangi ORMEN serilerinin görüneceğini seçin ya da firmaya özel model yükleyin. Bir modeli de belirli serilerle sınırlayabilirsiniz (model ayarlarında). Kaydedince bağlantı, QR kodu (SVG ve PNG) ve tezgâh üstü A6 kart hazır olur.
 - **Rapor:** Kaç ziyaret, hangi kumaşlar en çok deneniyor, hangi firma sayfası ne kadar kullanılıyor. Kişisel veri tutulmaz.
 - **Talepler:** Numune talepleri (hangi firmanın sayfasından geldiğiyle birlikte), telefon ve WhatsApp bağlantısıyla listelenir; Excel’e indirilebilir.
 
@@ -61,7 +61,7 @@ QR kodları sitenin adresini içerir. **Gerçek alan adı bağlanmadan QR bastı
 Panelde eklediğiniz kumaşların ve gelen taleplerin kalıcı olması için Supabase gerekir. Supabase olmadan site örnek veriyle çalışır ama panelde eklenenler sunucu yeniden başlayınca kaybolur.
 
 1. **Proje açın.** [supabase.com](https://supabase.com) → hesabınızla girin → **New project**. Ad: `ormen-atelier`. Bölge: **Central EU (Frankfurt)** (Türkiye’ye en yakın). Veritabanı şifresini güvenli bir yere not edin. Proje birkaç dakikada hazır olur.
-2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/` klasöründeki dosyaları **ad sırasıyla, tek tek** yapıştırıp **Run**’a basın: önce `20261004000000_init.sql`, sonra `20261005000000_parametric_models.sql`. Her birinde “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
+2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/` klasöründeki dosyaları **ad sırasıyla, tek tek** yapıştırıp **Run**’a basın: önce `20261004000000_init.sql`, sonra `20261005000000_parametric_models.sql`, en son `20261006000000_fabric_series_limits.sql`. Her birinde “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
 3. **Örnek kataloğu yükleyin.** Yine **SQL Editor** → **New query** → `supabase/seed.sql` dosyasının tamamını yapıştırın → **Run**. 23 yer tutucu kumaş, 3 örnek model (kanepe, berjer, köşe takımı) ve bir örnek firma (`/f/ornek-mobilya`) gelir. Gerçek kumaşlarınızı ekledikçe bunları panelden gizleyebilirsiniz.
 4. **Anahtarları alın.** **Project Settings** → **API** (yeni arayüzde **API Keys**) sayfasından üç değeri kopyalayın:
    - Project URL → `NEXT_PUBLIC_SUPABASE_URL`

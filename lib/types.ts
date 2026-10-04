@@ -79,6 +79,8 @@ export interface Firm {
   logoUrl?: string;
   accentColor: string;
   whatsapp?: string;
+  /** Fabric series shown on the firm's page; empty or missing = all. */
+  fabricSeries?: string[];
   isActive: boolean;
 }
 
@@ -99,6 +101,8 @@ export interface FurnitureModel {
   fabricMaterialNames: string[];
   dimensionsCm: { w: number; d: number; h: number };
   defaultFabricCode?: string;
+  /** Fabric series offered on this model; empty or missing = all. */
+  fabricSeries?: string[];
   coverUrl?: string;
   isActive: boolean;
   sortOrder: number;

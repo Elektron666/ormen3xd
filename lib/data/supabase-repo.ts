@@ -60,6 +60,7 @@ interface ModelRow {
   depth_cm: number;
   height_cm: number;
   default_fabric_code: string | null;
+  fabric_series: string[] | null;
   cover_path: string | null;
   is_active: boolean;
   sort_order: number;
@@ -129,6 +130,7 @@ function modelFromRow(r: ModelRow): FurnitureModel {
     fabricMaterialNames: r.fabric_material_names,
     dimensionsCm: { w: Number(r.width_cm), d: Number(r.depth_cm), h: Number(r.height_cm) },
     defaultFabricCode: und(r.default_fabric_code),
+    fabricSeries: r.fabric_series ?? [],
     coverUrl: publicFileUrl(r.cover_path),
     isActive: r.is_active,
     sortOrder: r.sort_order,
@@ -142,11 +144,21 @@ interface FirmRow {
   logo_path: string | null;
   accent_color: string;
   whatsapp: string | null;
+  fabric_series: string[] | null;
   is_active: boolean;
 }
 
 function firmFromRow(r: FirmRow): Firm {
-  return { id: r.id, name: r.name, slug: r.slug, logoUrl: publicFileUrl(r.logo_path), accentColor: r.accent_color, whatsapp: und(r.whatsapp), isActive: r.is_active };
+  return {
+    id: r.id,
+    name: r.name,
+    slug: r.slug,
+    logoUrl: publicFileUrl(r.logo_path),
+    accentColor: r.accent_color,
+    whatsapp: und(r.whatsapp),
+    fabricSeries: r.fabric_series ?? [],
+    isActive: r.is_active,
+  };
 }
 
 function check<T>(res: { data: T; error: { message: string; code?: string } | null }): T {
@@ -258,6 +270,7 @@ export class SupabaseRepository implements Repository {
       depth_cm: input.dimensionsCm.d,
       height_cm: input.dimensionsCm.h,
       default_fabric_code: input.defaultFabricCode ?? null,
+      fabric_series: input.fabricSeries ?? [],
       cover_path: toStored(input.coverUrl),
       is_active: input.isActive,
       sort_order: input.sortOrder,
@@ -289,6 +302,7 @@ export class SupabaseRepository implements Repository {
       logo_path: toStored(input.logoUrl),
       accent_color: input.accentColor,
       whatsapp: input.whatsapp ?? null,
+      fabric_series: input.fabricSeries ?? [],
       is_active: input.isActive,
     };
     const res = input.id

@@ -140,3 +140,13 @@ describe("parametric models migration", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("fabric series limits migration", () => {
+  it("adds empty-by-default series lists to firms and models", async () => {
+    await db.query("insert into firms (name, slug, fabric_series) values ('Seri Firma', 'seri-firma', '{SIENA,LUMA}')");
+    const r = await db.query<{ fabric_series: string[] }>("select fabric_series from firms where slug = 'seri-firma'");
+    expect(r.rows[0].fabric_series).toEqual(["SIENA", "LUMA"]);
+    const m = await db.query<{ fabric_series: string[] }>("select fabric_series from models limit 1");
+    expect(m.rows[0].fabric_series).toEqual([]);
+  });
+});

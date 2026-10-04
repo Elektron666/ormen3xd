@@ -42,7 +42,7 @@ test.describe("firma sayfaları", () => {
     await page.getByLabel("Bağlantı adı").fill(slug);
     await page.getByLabel("WhatsApp numarası").fill("0532 765 43 21");
     await page.getByLabel("Renk kodu").fill("#7A2E2E");
-    await page.getByRole("checkbox", { name: "Berjer" }).check();
+    await page.getByRole("checkbox", { name: /^Berjer ORMEN vitrini$/ }).check();
     await page.getByRole("button", { name: "Kaydet" }).click();
     await expect(page.getByRole("status")).toContainText(`${firmName} kaydedildi`);
     await expect(page.getByTestId("firma-baglantisi")).toHaveText(new RegExp(`/f/${slug}$`));
@@ -70,12 +70,12 @@ test.describe("firma sayfaları", () => {
     await page.goto(`/f/${slug}`);
     await page.getByRole("button", { name: "Mobilya ekle" }).click();
     await expect(page.getByRole("menuitem", { name: /Firma Pufu/ })).toBeVisible();
-    await expect(page.getByRole("menuitem", { name: /Berjer/ })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: /^Berjer 81×84/ })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: /Modüler Kanepe/ })).toHaveCount(0);
     expect((await request.get("/f/" + slug + "/puf")).status()).toBe(200);
     await page.goto("/");
     await page.getByRole("button", { name: "Mobilya ekle" }).click();
-    await expect(page.getByRole("menuitem", { name: /Berjer/ })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: /^Berjer 81×84/ })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: /Firma Pufu/ })).toHaveCount(0);
 
     // A6 card
@@ -96,5 +96,43 @@ test.describe("firma sayfaları", () => {
     await login(page);
     await page.goto("/panel/talepler");
     await expect(page.getByRole("listitem").filter({ hasText: name })).toContainText("Firma: Örnek Mobilya");
+  });
+
+  test("firma sayfası seçilen kumaş serileriyle, model kendi serileriyle sınırlanır", async ({ page }) => {
+    test.setTimeout(120_000);
+    const slug = `seri-${Date.now().toString(36).slice(-5)}`;
+    const modelSlug = `pietra-${Date.now().toString(36).slice(-4)}`;
+    await login(page);
+    // a showcase model offered only in PIETRA
+    await page.goto("/panel/modeller/yeni?tur=secerek");
+    await page.getByRole("radio", { name: "Berjer" }).click();
+    await page.getByLabel("Model adı").fill(`Pietra Berjer ${modelSlug.slice(-4)}`);
+    await page.getByLabel("Bağlantı adı").fill(modelSlug);
+    await page.locator("label").filter({ hasText: /^PIETRA$/ }).click();
+    await page.getByRole("button", { name: "Kaydet" }).click();
+    await expect(page.getByRole("status")).toContainText("kaydedildi", { timeout: 30_000 });
+
+    // a firm page showing SIENA and PIETRA only
+    await page.goto("/panel/firmalar/yeni");
+    await page.getByLabel("Firma adı").fill(`Seri Firma ${slug.slice(-5)}`);
+    await page.getByLabel("Bağlantı adı").fill(slug);
+    await page.getByRole("checkbox", { name: /^Berjer ORMEN vitrini$/ }).check();
+    for (const s of ["SIENA", "PIETRA"]) await page.locator("label").filter({ hasText: new RegExp(`^${s}$`) }).click();
+    await page.getByRole("button", { name: "Kaydet" }).click();
+    await expect(page.getByRole("status")).toContainText("kaydedildi");
+
+    await page.goto(`/f/${slug}`);
+    await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).not.toEqual([]);
+    const codes = await page.getByRole("radio").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label") ?? e.textContent ?? ""));
+    expect(codes.some((c) => /SIENA/.test(c))).toBe(true);
+    expect(codes.some((c) => /LUMA|VERSO/.test(c))).toBe(false);
+
+    // the PIETRA-only model on the ORMEN page: only PIETRA offered
+    await page.goto(`/?y=${modelSlug}.PIETRA-01.0.51.0`);
+    await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).toEqual(["PIETRA-01"]);
+    await expect(page.getByText(/bu serilerle sunuluyor: PIETRA\./)).toBeVisible();
+    const modelCodes = await page.getByRole("radio").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label") ?? e.textContent ?? ""));
+    expect(modelCodes.length).toBeGreaterThan(0);
+    expect(modelCodes.every((c) => /PIETRA/.test(c))).toBe(true);
   });
 });

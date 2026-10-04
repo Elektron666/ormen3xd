@@ -7,6 +7,7 @@ import { isDuplicateCode, isDuplicateSlug } from "@/lib/data/repository";
 import { validateFirm, type FirmErrors, type FirmFields } from "@/lib/firm";
 import { normaliseParams, paramDimensions, validateParams, type ParamErrors, type ParametricParams } from "@/lib/parametric/spec";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
+import { cleanSeries, seriesOf } from "@/lib/fabric/allowed";
 import { getPanelUser, signIn, signOut } from "@/lib/auth/panel";
 import { validateFabricFields, type FabricFieldErrors, type FabricFields } from "@/lib/panel/fabric-form";
 import { STORAGE_BUCKET, SUPABASE_URL } from "@/lib/supabase/config";
@@ -33,6 +34,11 @@ async function guard() {
 function ownUrl(u: string | undefined): boolean {
   if (!u) return false;
   return u.startsWith("/api/dosya/") || u.startsWith("/seed/") || (!!SUPABASE_URL && u.startsWith(`${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/`));
+}
+
+/** Series names that exist in the catalogue (hidden fabrics included). */
+async function knownSeries(): Promise<string[]> {
+  return seriesOf(await getRepository().listFabrics({ includeInactive: true }));
 }
 
 function refresh() {
@@ -130,6 +136,8 @@ export interface SaveModelPayload {
   isActive: boolean;
   /** Owner firm for a new model (null/undefined = ORMEN showcase). Ignored when editing. */
   firmId?: string | null;
+  /** Fabric series offered on the model; empty = all. */
+  fabricSeries?: string[];
 }
 
 export async function saveModelAction(p: SaveModelPayload): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
@@ -157,6 +165,7 @@ export async function saveModelAction(p: SaveModelPayload): Promise<{ ok: true; 
     fabricMaterialNames: p.fabricMaterialNames,
     dimensionsCm: { w: Math.round(d.w), d: Math.round(d.d), h: Math.round(d.h) },
     defaultFabricCode: p.defaultFabricCode || undefined,
+    fabricSeries: cleanSeries(p.fabricSeries, await knownSeries()),
     isActive: p.isActive,
     sortOrder: existing?.sortOrder ?? all.length,
   };
@@ -188,6 +197,8 @@ export interface SaveFirmPayload {
   isActive: boolean;
   /** ORMEN showcase models shown on the firm page, in order. */
   showcaseIds: string[];
+  /** Fabric series shown on the firm page; empty = all. */
+  fabricSeries?: string[];
 }
 
 export async function saveFirmAction(p: SaveFirmPayload): Promise<{ ok: true; id: string } | { ok: false; errors?: FirmErrors; error?: string }> {
@@ -199,7 +210,7 @@ export async function saveFirmAction(p: SaveFirmPayload): Promise<{ ok: true; id
   if (p.id && !(await repo.getFirmById(p.id))) return { ok: false, error: "Firma bulunamadı." };
   const showcase = new Set((await repo.listAllModels()).filter((m) => m.firmId === null).map((m) => m.id));
   try {
-    const firm = await repo.saveFirm({ id: p.id, ...v.value, logoUrl: p.logoUrl || undefined, isActive: p.isActive });
+    const firm = await repo.saveFirm({ id: p.id, ...v.value, logoUrl: p.logoUrl || undefined, fabricSeries: cleanSeries(p.fabricSeries, await knownSeries()), isActive: p.isActive });
     await repo.setFirmShowcaseIds(
       firm.id,
       p.showcaseIds.filter((id) => showcase.has(id)),
@@ -232,6 +243,7 @@ export interface SaveParametricPayload {
   defaultFabricCode?: string;
   isActive: boolean;
   firmId?: string | null;
+  fabricSeries?: string[];
 }
 
 export async function saveParametricModelAction(p: SaveParametricPayload): Promise<{ ok: true; id: string } | { ok: false; error: string; errors?: ParamErrors }> {
@@ -261,6 +273,7 @@ export async function saveParametricModelAction(p: SaveParametricPayload): Promi
     fabricMaterialNames: [FABRIC_MATERIAL],
     dimensionsCm: paramDimensions(params),
     defaultFabricCode: p.defaultFabricCode || undefined,
+    fabricSeries: cleanSeries(p.fabricSeries, await knownSeries()),
     isActive: p.isActive,
     sortOrder: existing?.sortOrder ?? all.length,
   });

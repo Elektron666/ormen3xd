@@ -8,6 +8,8 @@ import { slugify, stamp, uploadFile } from "@/lib/panel/upload";
 import { saveModelAction } from "@/app/panel/actions";
 import { buttonClass, Field, inputClass } from "./ui";
 import { FabricPreview } from "./FabricPreview";
+import { SeriesPicker } from "./SeriesPicker";
+import { seriesOf } from "@/lib/fabric/allowed";
 
 // Adding a furniture model: drop a .glb, tick the materials that take the
 // fabric, check it in the live preview with an ORMEN fabric, save.
@@ -28,6 +30,7 @@ export function ModelEditor({ model, fabrics, firmId = null }: { model?: Furnitu
   const [picked, setPicked] = useState<string[]>(model?.fabricMaterialNames ?? []);
   const [defaultFabric, setDefaultFabric] = useState(model?.defaultFabricCode ?? fabrics[0]?.code ?? "");
   const [isActive, setIsActive] = useState(model?.isActive ?? true);
+  const [series, setSeries] = useState<string[]>(model?.fabricSeries ?? []);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -131,6 +134,7 @@ export function ModelEditor({ model, fabrics, firmId = null }: { model?: Furnitu
         defaultFabricCode: defaultFabric || undefined,
         isActive,
         firmId,
+        fabricSeries: series,
       });
       if (!res.ok) return setError(res.error);
       const owner = model ? model.firmId : firmId;
@@ -260,6 +264,9 @@ export function ModelEditor({ model, fabrics, firmId = null }: { model?: Furnitu
                 ))}
               </select>
             </Field>
+            <div className="col-span-2">
+              <SeriesPicker all={seriesOf(fabrics)} value={series} onChange={setSeries} label="Bu modelde sunulan kumaş serileri" emptyHint="Hiçbiri seçilmezse bütün seriler sunulur." />
+            </div>
             <label className="col-span-2 flex items-center gap-2 text-[14px]">
               <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[#2a2a28]" />
               Konfigüratörde göster

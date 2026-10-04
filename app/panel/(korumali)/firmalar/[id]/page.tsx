@@ -4,13 +4,19 @@ import { FirmEditor } from "@/components/panel/FirmEditor";
 import { FirmShare } from "@/components/panel/FirmShare";
 import { Badge, PageHeader } from "@/components/panel/ui";
 import { siteUrl, siteUrlIsFinal } from "@/lib/site";
+import { seriesOf } from "@/lib/fabric/allowed";
 
 export default async function EditFirmPage({ params, searchParams }: PageProps<"/panel/firmalar/[id]">) {
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const repo = getRepository();
   const firm = await repo.getFirmById(decodeURIComponent(id));
   if (!firm) notFound();
-  const [all, showcaseIds, cat] = await Promise.all([repo.listAllModels(), repo.getFirmShowcaseIds(firm.id), firm.isActive ? loadCatalogue(firm.slug) : null]);
+  const [all, showcaseIds, cat, fabrics] = await Promise.all([
+    repo.listAllModels(),
+    repo.getFirmShowcaseIds(firm.id),
+    firm.isActive ? loadCatalogue(firm.slug) : null,
+    repo.listFabrics(),
+  ]);
   const showcase = all.filter((m) => m.firmId === null && m.isActive);
   const own = all.filter((m) => m.firmId === firm.id);
   return (
@@ -28,7 +34,7 @@ export default async function EditFirmPage({ params, searchParams }: PageProps<"
       ) : (
         <p className="mb-8 rounded-xl bg-cizgi/40 px-4 py-3 text-[14px] text-antrasit-70">Firma sayfası yayında değil; bağlantı ve QR, yayına alınınca burada görünür.</p>
       )}
-      <FirmEditor key={firm.id} firm={firm} showcaseIds={showcaseIds} showcase={showcase} ownModels={own} />
+      <FirmEditor key={firm.id} allSeries={seriesOf(fabrics)} firm={firm} showcaseIds={showcaseIds} showcase={showcase} ownModels={own} />
     </>
   );
 }
