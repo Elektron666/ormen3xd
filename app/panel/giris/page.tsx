@@ -25,7 +25,7 @@ export default async function LoginPage() {
         ) : (
           <p className="text-[14px] leading-relaxed text-antrasit-70">
             Panel girişi henüz ayarlanmadı. Supabase anahtarlarını ya da <code>PANEL_DEMO_EMAIL</code> ve <code>PANEL_DEMO_PASSWORD</code> değişkenlerini
-            girin (README, “Panel” bölümü).
+            girin (README, “Supabase kurulumu”).
           </p>
         )}
       </div>

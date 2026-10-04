@@ -3,6 +3,11 @@ import { expect, type Page } from "@playwright/test";
 export async function login(page: Page) {
   await page.goto("/panel");
   await expect(page).toHaveURL(/\/panel\/giris/);
+  if (await page.getByText("Panel girişi henüz ayarlanmadı").isVisible()) {
+    throw new Error(
+      "Sunucuda panel kullanıcısı yok. 3100 portunda elle açılmış bir sunucu varsa kapatın (Playwright kendi sunucusunu demo kullanıcıyla açar) ya da PANEL_DEMO_EMAIL/PANEL_DEMO_PASSWORD ile başlatın.",
+    );
+  }
   await page.getByLabel("E-posta").fill("demo@ormen.local");
   await page.getByLabel("Şifre").fill("ormen-demo");
   await page.getByRole("button", { name: "Giriş yap" }).click();
