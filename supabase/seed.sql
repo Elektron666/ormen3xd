@@ -60,12 +60,13 @@ from (values
 join public.fabrics f on f.code = v.code
 on conflict (fabric_id) do nothing;
 
-insert into public.models (firm_id, slug, name, procedural_key, fabric_material_names, width_cm, depth_cm, height_cm, default_fabric_code, is_active, sort_order)
-select null, v.slug, v.name, v.procedural_key, string_to_array(v.materials, ','), v.w, v.d, v.h, v.fabric, v.active, v.sort_order
+insert into public.models (firm_id, slug, name, procedural_key, params, fabric_material_names, width_cm, depth_cm, height_cm, default_fabric_code, is_active, sort_order)
+select null, v.slug, v.name, v.procedural_key, v.params::jsonb, string_to_array(v.materials, ','), v.w, v.d, v.h, v.fabric, v.active, v.sort_order
 from (values
-  ('moduler-kanepe', 'Modüler Kanepe', 'modular-sofa', 'kumas', 238, 96, 85, 'LUMA-02', true, 0),
-  ('berjer', 'Berjer', 'armchair', 'kumas', 81, 84, 94, 'SIENA-04', true, 1)
-) as v (slug, name, procedural_key, materials, w, d, h, fabric, active, sort_order)
+  ('moduler-kanepe', 'Modüler Kanepe', 'modular-sofa', null, 'kumas', 238, 96, 85, 'LUMA-02', true, 0),
+  ('berjer', 'Berjer', 'armchair', null, 'kumas', 81, 84, 94, 'SIENA-04', true, 1),
+  ('kose-takimi', 'Köşe Takımı', 'parametric', '{"tip":"kose","kol":"kalin","sirt":"orta","ayak":"gizli","genislikCm":290,"derinlikCm":95,"koseYonu":"sag","koseBoyCm":220}', 'kumas', 290, 220, 82, 'LUMA-03', true, 2)
+) as v (slug, name, procedural_key, params, materials, w, d, h, fabric, active, sort_order)
 where not exists (select 1 from public.models m where m.firm_id is null and m.slug = v.slug);
 
 -- a sample firm page (/f/ornek-mobilya) with a placeholder logo

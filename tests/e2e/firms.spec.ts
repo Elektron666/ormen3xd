@@ -57,6 +57,7 @@ test.describe("firma sayfaları", () => {
 
     // firm-only model
     await page.getByRole("link", { name: "Bu firmaya özel model ekle" }).click();
+    await page.getByRole("link", { name: /3D dosya \(\.glb\) yükle/ }).click();
     await page.getByLabel("Model dosyası").setInputFiles(GLB);
     await expect(page.getByRole("checkbox", { name: /kumas/ })).toBeChecked({ timeout: 30_000 });
     await page.getByLabel("Model adı").fill("Firma Pufu");

@@ -110,7 +110,7 @@ describe("seed.sql", () => {
     const count = async (t: string) => (await fresh.query<{ n: number }>(`select count(*)::int as n from ${t}`)).rows[0].n;
     expect(await count("fabrics")).toBe(23);
     expect(await count("fabric_textures")).toBe(23);
-    expect(await count("models")).toBe(2);
+    expect(await count("models")).toBe(3);
     expect(await count("firms")).toBe(1);
     const m = await fresh.query<{ fabric_material_names: string[]; default_fabric_code: string }>("select fabric_material_names, default_fabric_code from models where slug = 'berjer'");
     expect(m.rows[0]).toEqual({ fabric_material_names: ["kumas"], default_fabric_code: "SIENA-04" });
@@ -124,4 +124,19 @@ describe("seed.sql", () => {
     expect(await count("profiles")).toBe(1);
     await fresh.close();
   }, 60_000);
+});
+
+describe("parametric models migration", () => {
+  it("stores a parametric model and rejects one without its description", async () => {
+    await db.query(
+      `insert into models (slug, name, procedural_key, params, fabric_material_names, width_cm, depth_cm, height_cm)
+       values ('kose-1', 'Köşe', 'parametric', '{"tip":"kose"}', '{kumas}', 290, 220, 82)`,
+    );
+    await expect(
+      db.query(`insert into models (slug, name, procedural_key, fabric_material_names, width_cm, depth_cm, height_cm) values ('kose-2', 'Köşe', 'parametric', '{kumas}', 290, 220, 82)`),
+    ).rejects.toThrow();
+    await expect(
+      db.query(`insert into models (slug, name, procedural_key, params, fabric_material_names, width_cm, depth_cm, height_cm) values ('kose-3', 'X', 'armchair', '{}', '{kumas}', 80, 80, 90)`),
+    ).rejects.toThrow();
+  });
 });

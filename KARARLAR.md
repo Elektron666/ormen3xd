@@ -4,6 +4,21 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Faz 2, iş 1: Seçerek model oluşturma (parametrik koltuk ve köşe takımı) (4 Ekim 2026)
+
+- **Varsayım:** REKABET-PLANI'nda "Faz 2'nin ilk işi parametrik koltuk ve köşe takımı olsun mu? Önerim: evet" diye sormuştum; Fatih Bey "Devam" dedi. Bunu bu öneriye onay sayıp başladım. Pilot firma seçimi hâlâ Fatih Bey'de.
+- **Ne yapılıyor:** Panelde "Yeni model" artık iki yol sunuyor: "Seçerek oluştur" ve "3D dosya yükle". Seçerek: tip (ikili, üçlü, dörtlü kanepe, köşe takımı, berjer, puf), kol (ince, kalın, yuvarlak, kolsuz), sırt (alçak, orta, yüksek), ayak (ahşap konik, ince metal, gizli kaide), ölçüler; köşe takımında köşenin yönü ve yan duvar boyu. Sağda seçili ORMEN kumaşıyla canlı önizleme.
+- **Nasıl çiziliyor:** Mevcut örnek kanepenin minder parçasıyla (UV'leri metre cinsinden). Köşe takımı üç modül: arka duvar boyunca düz bölüm, iki duvarı da sırtlı köşe karesi, yan duvar boyunca 90° döndürülmüş düz bölüm. Kumaş her parçada gerçek ölçüsünde; birim testi her tip için ölçüleri ve kumaş yoğunluğunu kontrol ediyor (minder kabarıklığı yüzeyi yaklaşık %1,6 uzatıyor, örnek kanepede de böyle).
+- **Ölçü aralıkları** tipe göre sınırlı (ör. üçlü 180–270 cm, köşe takımı arka duvar 200–380 cm, yan duvar 150–320 cm). Oturma yüksekliği her tipte 44 cm, sırt yüksekliği 72/82/95 cm. Bu değerler gerçek ürün verisi değil, yaygın ölçülere göre benim seçimim; pilot firmalarla düzeltilmeli.
+- **Panelde açık not:** "Bu model sizin seçimlerinizle kodla çizilir; gerçek ürünün birebir kopyası değil, kumaşı doğru ölçüde gösteren bir benzeridir." Müşteriye birebir ürün gibi sunulmasın diye.
+- **Veritabanı:** İkinci migration (`20261005000000_parametric_models.sql`): `models.params` (jsonb) ve `procedural_key = 'parametric'`. Tarifi olmayan parametrik modeli kurallar reddediyor (PGlite'ta test edildi). Kayıtta tarif sunucuda yeniden doğrulanıyor.
+- **Vitrine örnek köşe takımı** eklendi (`/?y=kose-takimi…`, seed.sql'de de var).
+- **AR** parametrik modellerde de çalışıyor (aynı kod yolu).
+- **Bilinen sınır:** Yerleşimde ve teklif föyündeki planda köşe takımı dış dikdörtgeniyle hesaplanıyor; L'nin iç boşluğu da dolu sayılıyor (oraya sehpa konunca "çakışma" uyarısı çıkar). Ekrandaki 2D plan görünümü gerçek L şeklini gösteriyor.
+- **Sırada (Faz 2, iş 2):** Modüler dizilim (sol kol, orta, köşe, şezlong modüllerini ekleyerek kurma). Şezlonglu köşe ve U koltuk bugün yok.
+
+---
+
 ## Son kalite turu (4 Ekim 2026)
 
 - **Erişilebilirlik:** Bütün sayfa türleri axe-core ile WCAG 2 A/AA'ya göre tarandı. Tek ciddi sorun soluk gri yazı rengiydi (#7D7B75, kontrast 4,0:1). Renk #6B6963'e koyulaştırıldı; açık zeminlerin hepsinde 4,5:1'in üstünde. 3B sahne "görsel" olarak işaretliydi; içindeki mobilya araç çubuğunu ekran okuyuculardan gizliyordu, "grup" yapıldı. Tarama artık uçtan uca testin parçası (`tests/e2e/a11y.spec.ts`; yeni geliştirme paketi `axe-core`, gerekçe bu).

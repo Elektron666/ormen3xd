@@ -1,5 +1,5 @@
 // Writes supabase/seed.sql: the demo catalogue (placeholder fabrics, the
-// two code-generated models and a sample firm) as plain SQL, so it can be pasted into the
+// code-generated models incl. a parametric corner sofa, and a sample firm) as plain SQL, so it can be pasted into the
 // Supabase SQL editor without installing anything. Safe to run twice.
 //
 //   npm run seed:sql
@@ -50,14 +50,15 @@ ${fabrics
 join public.fabrics f on f.code = v.code
 on conflict (fabric_id) do nothing;
 
-insert into public.models (firm_id, slug, name, procedural_key, fabric_material_names, width_cm, depth_cm, height_cm, default_fabric_code, is_active, sort_order)
-select null, v.slug, v.name, v.procedural_key, string_to_array(v.materials, ','), v.w, v.d, v.h, v.fabric, v.active, v.sort_order
+insert into public.models (firm_id, slug, name, procedural_key, params, fabric_material_names, width_cm, depth_cm, height_cm, default_fabric_code, is_active, sort_order)
+select null, v.slug, v.name, v.procedural_key, v.params::jsonb, string_to_array(v.materials, ','), v.w, v.d, v.h, v.fabric, v.active, v.sort_order
 from (values
 ${SEED_MODELS.map((m) =>
   row([
     m.slug,
     m.name,
-    m.source.kind === "procedural" ? m.source.generator : null,
+    m.source.kind === "procedural" ? m.source.generator : m.source.kind === "parametric" ? "parametric" : null,
+    m.source.kind === "parametric" ? JSON.stringify(m.source.params) : null,
     m.fabricMaterialNames.join(","),
     m.dimensionsCm.w,
     m.dimensionsCm.d,
@@ -67,7 +68,7 @@ ${SEED_MODELS.map((m) =>
     m.sortOrder,
   ]),
 ).join(",\n")}
-) as v (slug, name, procedural_key, materials, w, d, h, fabric, active, sort_order)
+) as v (slug, name, procedural_key, params, materials, w, d, h, fabric, active, sort_order)
 where not exists (select 1 from public.models m where m.firm_id is null and m.slug = v.slug);
 
 -- a sample firm page (/f/ornek-mobilya) with a placeholder logo

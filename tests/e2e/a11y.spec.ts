@@ -40,7 +40,7 @@ test.describe("erişilebilirlik", () => {
     await page.goto("/panel/giris");
     expect(await violations(page)).toEqual([]);
     await login(page);
-    for (const path of ["/panel", "/panel/kumaslar", "/panel/kumaslar/yeni", "/panel/kumaslar/toplu", "/panel/modeller/yeni", "/panel/firmalar/seed-firm-ornek", "/panel/rapor", "/panel/talepler"]) {
+    for (const path of ["/panel", "/panel/kumaslar", "/panel/kumaslar/yeni", "/panel/kumaslar/toplu", "/panel/modeller/yeni", "/panel/modeller/yeni?tur=secerek", "/panel/modeller/yeni?tur=dosya", "/panel/firmalar/seed-firm-ornek", "/panel/rapor", "/panel/talepler"]) {
       await page.goto(path);
       expect(await violations(page), path).toEqual([]);
     }

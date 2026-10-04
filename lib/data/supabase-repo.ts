@@ -1,6 +1,7 @@
 import "server-only";
 import { codeUpper } from "@/lib/i18n/tr";
-import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel } from "@/lib/types";
+import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel, ModelSource } from "@/lib/types";
+import { normaliseParams } from "@/lib/parametric/spec";
 import type { SampleRequestInput } from "@/lib/samples";
 import type { Device, EventType, StoredEvent, UsageEvent } from "@/lib/events";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
@@ -52,7 +53,8 @@ interface ModelRow {
   slug: string;
   name: string;
   glb_path: string | null;
-  procedural_key: "modular-sofa" | "armchair" | null;
+  procedural_key: "modular-sofa" | "armchair" | "parametric" | null;
+  params: unknown;
   fabric_material_names: string[];
   width_cm: number;
   depth_cm: number;
@@ -108,13 +110,22 @@ function fabricFromRow(r: FabricRow): Fabric {
   };
 }
 
+function sourceFromRow(r: ModelRow): ModelSource {
+  if (r.glb_path) return { kind: "glb", url: publicFileUrl(r.glb_path)! };
+  if (r.procedural_key === "parametric") {
+    const params = normaliseParams(r.params);
+    if (params) return { kind: "parametric", params };
+  }
+  return { kind: "procedural", generator: r.procedural_key === "armchair" ? "armchair" : "modular-sofa" };
+}
+
 function modelFromRow(r: ModelRow): FurnitureModel {
   return {
     id: r.id,
     slug: r.slug,
     name: r.name,
     firmId: r.firm_id,
-    source: r.glb_path ? { kind: "glb", url: publicFileUrl(r.glb_path)! } : { kind: "procedural", generator: r.procedural_key ?? "modular-sofa" },
+    source: sourceFromRow(r),
     fabricMaterialNames: r.fabric_material_names,
     dimensionsCm: { w: Number(r.width_cm), d: Number(r.depth_cm), h: Number(r.height_cm) },
     defaultFabricCode: und(r.default_fabric_code),
@@ -240,7 +251,8 @@ export class SupabaseRepository implements Repository {
       slug: input.slug,
       name: input.name,
       glb_path: input.source.kind === "glb" ? toStored(input.source.url) : null,
-      procedural_key: input.source.kind === "procedural" ? input.source.generator : null,
+      procedural_key: input.source.kind === "procedural" ? input.source.generator : input.source.kind === "parametric" ? "parametric" : null,
+      params: input.source.kind === "parametric" ? input.source.params : null,
       fabric_material_names: input.fabricMaterialNames,
       width_cm: input.dimensionsCm.w,
       depth_cm: input.dimensionsCm.d,

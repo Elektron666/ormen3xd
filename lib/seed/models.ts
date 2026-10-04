@@ -1,5 +1,6 @@
 import type { Firm, FurnitureModel } from "@/lib/types";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
+import { DEFAULTS, paramDimensions } from "@/lib/parametric/spec";
 
 export const SEED_MODELS: FurnitureModel[] = [
   {
@@ -25,6 +26,19 @@ export const SEED_MODELS: FurnitureModel[] = [
     defaultFabricCode: "SIENA-04",
     isActive: true,
     sortOrder: 1,
+  },
+  {
+    // a parametric model, as a workshop would describe it in the panel
+    id: "seed-model-kose",
+    slug: "kose-takimi",
+    name: "Köşe Takımı",
+    firmId: null,
+    source: { kind: "parametric", params: DEFAULTS.kose },
+    fabricMaterialNames: [FABRIC_MATERIAL],
+    dimensionsCm: paramDimensions(DEFAULTS.kose),
+    defaultFabricCode: "LUMA-03",
+    isActive: true,
+    sortOrder: 2,
   },
 ];
 

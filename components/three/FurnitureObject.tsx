@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import type { Fabric, FurnitureModel, TextureSize } from "@/lib/types";
-import { PROCEDURAL_BUILDERS } from "@/lib/three/procedural/furniture";
+import type { Fabric, FurnitureModel, ModelSource, TextureSize } from "@/lib/types";
+import { buildCodeModel } from "@/lib/three/procedural";
 import { prepareModel, type PreparedModel } from "@/lib/three/prepare-model";
 import { FabricDresser } from "@/lib/three/fabric-dresser";
 import { setObjectLayer } from "@/lib/three/layers";
@@ -71,8 +71,11 @@ function Dressed({ source, model, fabric, textureSize, onPrepared, onFabricShown
   return <primitive object={prepared.root} />;
 }
 
-function ProceduralFurniture(props: FurnitureObjectProps & { generator: keyof typeof PROCEDURAL_BUILDERS }) {
-  const source = useMemo(() => PROCEDURAL_BUILDERS[props.generator](), [props.generator]);
+function CodeFurniture(props: FurnitureObjectProps & { src: Exclude<ModelSource, { kind: "glb" }> }) {
+  // rebuilt only when the description changes (params are compared by value)
+  const key = JSON.stringify(props.src);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const source = useMemo(() => buildCodeModel(props.src), [key]);
   return <Dressed {...props} source={source} />;
 }
 
@@ -86,6 +89,6 @@ function GlbFurniture(props: FurnitureObjectProps & { url: string }) {
 
 export function FurnitureObject(props: FurnitureObjectProps) {
   const src = props.model.source;
-  if (src.kind === "procedural") return <ProceduralFurniture {...props} generator={src.generator} />;
+  if (src.kind !== "glb") return <CodeFurniture {...props} src={src} />;
   return <GlbFurniture {...props} url={src.url} />;
 }

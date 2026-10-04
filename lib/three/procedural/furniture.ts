@@ -7,13 +7,13 @@ import { createCushionGeometry, type CushionOptions } from "./cushion";
 
 import { FABRIC_MATERIAL, WOOD_MATERIAL } from "../constants";
 
-interface Part extends CushionOptions {
+export interface Part extends CushionOptions {
   name: string;
   at: [number, number, number];
   rotX?: number;
 }
 
-function buildParts(parts: Part[], fabric: THREE.Material): THREE.Group {
+export function buildParts(parts: Part[], fabric: THREE.Material): THREE.Group {
   const group = new THREE.Group();
   for (const part of parts) {
     const mesh = new THREE.Mesh(createCushionGeometry(part), fabric);
@@ -25,7 +25,7 @@ function buildParts(parts: Part[], fabric: THREE.Material): THREE.Group {
   return group;
 }
 
-function taperedLeg(height: number, rTop: number, rBottom: number, wood: THREE.Material, splay = 0): THREE.Mesh {
+export function taperedLeg(height: number, rTop: number, rBottom: number, wood: THREE.Material, splay = 0): THREE.Mesh {
   const g = new THREE.CylinderGeometry(rTop, rBottom, height, 24, 1);
   g.translate(0, -height / 2, 0);
   const m = new THREE.Mesh(g, wood);
@@ -34,7 +34,7 @@ function taperedLeg(height: number, rTop: number, rBottom: number, wood: THREE.M
   return m;
 }
 
-function materials() {
+export function materials() {
   const fabric = new THREE.MeshPhysicalMaterial({ name: FABRIC_MATERIAL, color: "#cccccc", roughness: 1 });
   const wood = new THREE.MeshPhysicalMaterial({
     name: WOOD_MATERIAL,

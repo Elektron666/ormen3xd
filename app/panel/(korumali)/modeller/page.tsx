@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getRepository } from "@/lib/data";
+import { describeParams } from "@/lib/parametric/spec";
 import { ActiveToggle } from "@/components/panel/ActiveToggle";
 import { Badge, PageHeader, buttonClass } from "@/components/panel/ui";
 
@@ -29,7 +30,7 @@ export default async function ModelsPage({ searchParams }: PageProps<"/panel/mod
         {models.map((m) => (
           <li key={m.id} className="flex items-center gap-4 px-4 py-3">
             <div className="min-w-0 flex-1">
-              {m.source.kind === "glb" ? (
+              {m.source.kind !== "procedural" ? (
                 <Link href={`/panel/modeller/${m.id}`} className="block font-medium hover:underline">
                   {m.name}
                 </Link>
@@ -37,10 +38,13 @@ export default async function ModelsPage({ searchParams }: PageProps<"/panel/mod
                 <span className="block font-medium">{m.name}</span>
               )}
               <span className="block text-[13px] text-antrasit-50">
-                {m.dimensionsCm.w} × {m.dimensionsCm.d} × {m.dimensionsCm.h} cm · kumaş: {m.fabricMaterialNames.join(", ")}
+                {m.source.kind === "parametric"
+                  ? `${describeParams(m.source.params)} · ${m.dimensionsCm.h} cm yükseklik`
+                  : `${m.dimensionsCm.w} × ${m.dimensionsCm.d} × ${m.dimensionsCm.h} cm · kumaş: ${m.fabricMaterialNames.join(", ")}`}
               </span>
             </div>
             {m.source.kind === "procedural" && <Badge>kodla üretilen örnek</Badge>}
+            {m.source.kind === "parametric" && <Badge>seçerek oluşturuldu</Badge>}
             {!m.isActive && <Badge tone="off">gizli</Badge>}
             <ActiveToggle id={m.id} active={m.isActive} label={m.name} kind="model" />
           </li>

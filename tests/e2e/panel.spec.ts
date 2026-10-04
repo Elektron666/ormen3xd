@@ -79,7 +79,7 @@ test.describe("panel", () => {
     page.on("pageerror", (e) => errors.push(e.message));
     const slug = `puf-${Date.now().toString(36).slice(-4)}`;
     await login(page);
-    await page.goto("/panel/modeller/yeni");
+    await page.goto("/panel/modeller/yeni?tur=dosya");
     await page.getByLabel("Model dosyası").setInputFiles(GLB);
     await expect(page.getByText("54 cm").first()).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole("checkbox", { name: /kumas/ })).toBeChecked();
@@ -98,5 +98,27 @@ test.describe("panel", () => {
       )
       .toEqual(["SIENA-03"]);
     expect(errors).toEqual([]);
+  });
+
+  test("seçerek model oluşturulur ve konfigüratörde açılır", async ({ page }) => {
+    test.setTimeout(120_000);
+    const slug = `uclu-${Date.now().toString(36).slice(-4)}`;
+    await login(page);
+    await page.goto("/panel/modeller/yeni");
+    await page.getByRole("link", { name: /Seçerek oluştur/ }).click();
+    await page.getByRole("radio", { name: "Üçlü kanepe" }).click();
+    await page.getByRole("radio", { name: "Kolsuz" }).click();
+    // out of range is caught before saving
+    await page.getByRole("spinbutton").first().fill("400");
+    await expect(page.getByText("Genişlik 180–270 cm arasında olmalı.")).toBeVisible();
+    await page.getByRole("spinbutton").first().fill("240");
+    await expect(page.getByText("Dış ölçü:")).toContainText("240 × 95 × 82 cm");
+    await page.getByLabel("Bağlantı adı").fill(slug);
+    await page.getByRole("button", { name: "Kaydet" }).click();
+    await expect(page.getByRole("status")).toContainText("kaydedildi", { timeout: 30_000 });
+    await expect(page.getByRole("listitem").filter({ hasText: "Üçlü kanepe · 240 × 95 cm · kolsuz" }).first()).toBeVisible();
+
+    await page.goto(`/?y=${slug}.SIENA-05.0.51.0`);
+    await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).toEqual(["SIENA-05"]);
   });
 });

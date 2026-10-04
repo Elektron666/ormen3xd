@@ -31,7 +31,7 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 
 ## Faz 2: önerilen sıra
 
-1. **Parametrik koltuk ve köşe takımı.** 2'li, 3'lü, köşe, berjer, puf; kol, sırt, ayak tipi ve ölçü seçerek GLB'siz model. Pilot firmaların çoğunda 3D model yok; en büyük engeli bu kaldırır.
+1. ✅ **Parametrik koltuk ve köşe takımı.** 2'li, 3'lü, 4'lü, köşe, berjer, puf; kol, sırt, ayak tipi ve ölçü seçerek GLB'siz model (panelde "Seçerek oluştur"). Ölçü aralıkları pilot firmalarla düzeltilecek.
 2. **Modüler dizilim:** sol kol, orta modül, köşe, şezlong ekleme düğmeleri.
 3. **Model başına kumaş listesi** (ör. bir firma yalnızca belirli serileri göstersin). Veritabanında `model_fabrics` tablosu hazır.
 4. **Showroom kiosk modu:** tam ekran, dokunmatik, bir süre dokunulmazsa başa dönen sayfa.

@@ -86,12 +86,12 @@ export async function exportGlb(root: THREE.Object3D): Promise<Blob> {
   return new Blob([out as ArrayBuffer], { type: "model/gltf-binary" });
 }
 
-/** Loads the raw model (procedural or .glb) in the browser. */
+/** Loads the raw model (built from code or a .glb) in the browser. */
 async function loadSource(model: FurnitureModel): Promise<THREE.Object3D> {
   const src = model.source;
-  if (src.kind === "procedural") {
-    const { PROCEDURAL_BUILDERS } = await import("@/lib/three/procedural/furniture");
-    return PROCEDURAL_BUILDERS[src.generator]();
+  if (src.kind !== "glb") {
+    const { buildCodeModel } = await import("@/lib/three/procedural");
+    return buildCodeModel(src);
   }
   const [{ GLTFLoader }, { DRACOLoader }] = await Promise.all([import("three/examples/jsm/loaders/GLTFLoader.js"), import("three/examples/jsm/loaders/DRACOLoader.js")]);
   const draco = new DRACOLoader().setDecoderPath("/draco/");

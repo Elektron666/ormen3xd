@@ -1,3 +1,4 @@
+import type { ParametricParams } from "@/lib/parametric/spec";
 // Domain types shared by the data layer, server components and the configurator.
 
 export const FABRIC_TYPES = [
@@ -83,6 +84,8 @@ export interface Firm {
 
 export type ModelSource =
   | { kind: "procedural"; generator: "modular-sofa" | "armchair" }
+  /** Described in the panel with a few choices, built from code (lib/parametric). */
+  | { kind: "parametric"; params: ParametricParams }
   | { kind: "glb"; url: string };
 
 export interface FurnitureModel {

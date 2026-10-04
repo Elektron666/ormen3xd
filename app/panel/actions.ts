@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { getRepository } from "@/lib/data";
 import { isDuplicateCode, isDuplicateSlug } from "@/lib/data/repository";
 import { validateFirm, type FirmErrors, type FirmFields } from "@/lib/firm";
+import { normaliseParams, paramDimensions, validateParams, type ParamErrors, type ParametricParams } from "@/lib/parametric/spec";
+import { FABRIC_MATERIAL } from "@/lib/three/constants";
 import { getPanelUser, signIn, signOut } from "@/lib/auth/panel";
 import { validateFabricFields, type FabricFieldErrors, type FabricFields } from "@/lib/panel/fabric-form";
 import { STORAGE_BUCKET, SUPABASE_URL } from "@/lib/supabase/config";
@@ -218,4 +220,50 @@ export async function setFirmActiveAction(id: string, active: boolean): Promise<
   await repo.saveFirm({ ...firm, isActive: active });
   refresh();
   return { ok: true };
+}
+
+// ------------------------------------------------------------------ parametric models
+
+export interface SaveParametricPayload {
+  id?: string;
+  name: string;
+  slug: string;
+  params: ParametricParams;
+  defaultFabricCode?: string;
+  isActive: boolean;
+  firmId?: string | null;
+}
+
+export async function saveParametricModelAction(p: SaveParametricPayload): Promise<{ ok: true; id: string } | { ok: false; error: string; errors?: ParamErrors }> {
+  await guard();
+  if (!p.name.trim() || p.name.trim().length > 80) return { ok: false, error: "Model adını yazın." };
+  if (!/^[a-z0-9-]{2,60}$/.test(p.slug)) return { ok: false, error: "Bağlantı adı geçersiz." };
+  const params = normaliseParams(p.params);
+  if (!params) return { ok: false, error: "Model tarifi geçersiz." };
+  const errors = validateParams(params);
+  if (Object.keys(errors).length) return { ok: false, error: "Ölçüler aralık dışında.", errors };
+
+  const repo = getRepository();
+  const all = await repo.listAllModels();
+  const existing = p.id ? all.find((m) => m.id === p.id) : undefined;
+  if (p.id && (!existing || existing.source.kind !== "parametric")) return { ok: false, error: "Model bulunamadı." };
+  const owner = existing ? existing.firmId : (p.firmId ?? null);
+  if (owner && !(await repo.getFirmById(owner))) return { ok: false, error: "Firma bulunamadı." };
+  if (all.some((m) => m.slug === p.slug && m.firmId === owner && m.id !== p.id)) return { ok: false, error: "Bu bağlantı adı kullanılıyor." };
+  if (p.defaultFabricCode && !(await repo.getFabricByCode(p.defaultFabricCode))) return { ok: false, error: "Kumaş bulunamadı." };
+
+  const saved = await repo.saveModel({
+    id: p.id,
+    slug: p.slug,
+    name: p.name.trim(),
+    firmId: owner,
+    source: { kind: "parametric", params },
+    fabricMaterialNames: [FABRIC_MATERIAL],
+    dimensionsCm: paramDimensions(params),
+    defaultFabricCode: p.defaultFabricCode || undefined,
+    isActive: p.isActive,
+    sortOrder: existing?.sortOrder ?? all.length,
+  });
+  refresh();
+  return { ok: true, id: saved.id };
 }

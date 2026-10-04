@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getRepository } from "@/lib/data";
 import { ModelEditor } from "@/components/panel/ModelEditor";
+import { ParametricEditor } from "@/components/panel/ParametricEditor";
 import { PageHeader } from "@/components/panel/ui";
 
 export default async function EditModelPage({ params }: PageProps<"/panel/modeller/[id]">) {
@@ -8,11 +9,16 @@ export default async function EditModelPage({ params }: PageProps<"/panel/modell
   const repo = getRepository();
   const [models, fabrics] = await Promise.all([repo.listAllModels(), repo.listFabrics()]);
   const model = models.find((m) => m.id === decodeURIComponent(id));
-  if (!model || model.source.kind !== "glb") notFound();
+  // the two built-in samples are code, not editable
+  if (!model || model.source.kind === "procedural") notFound();
   return (
     <>
       <PageHeader title={model.name} eyebrow="Modeli düzenle" />
-      <ModelEditor key={model.id} model={model} fabrics={fabrics} />
+      {model.source.kind === "parametric" ? (
+        <ParametricEditor key={model.id} model={model} fabrics={fabrics} />
+      ) : (
+        <ModelEditor key={model.id} model={model} fabrics={fabrics} />
+      )}
     </>
   );
 }
