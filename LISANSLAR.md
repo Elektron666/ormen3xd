@@ -13,5 +13,6 @@ Projede kullanılan görsel ve yazı tipi kaynakları ile lisansları. İnternet
 | ORMEN kelime logosu | Fraunces ile yazılmış yer tutucu | Gerçek logo dosyası gelince değiştirilecek |
 | Örnek puf modeli (`tests/fixtures/ornek-puf.glb`) | `scripts/generate-sample-glb.ts` ile kodla üretildi | Projeye ait; dış kaynak yok |
 | Örnek firma logosu (`public/seed/firms/ornek-mobilya.svg`) | Bu proje için çizilmiş yer tutucu | Projeye ait |
+| AR görüntüleyici | `@google/model-viewer` (npm paketi) | Apache License 2.0 |
 | Draco çözücüsü (`public/draco/`) | Google Draco, `three` paketiyle gelen derleme | Apache License 2.0 |
 | Arayüz ikonları (`components/ui/icons.tsx`) | Bu proje için çizildi | Projeye ait |

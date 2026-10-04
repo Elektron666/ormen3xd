@@ -4,6 +4,18 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Dilim 6: AR, "Odamda gör" (4 Ekim 2026)
+
+- **Akış:** Üst çubukta "Odamda gör". Telefonda seçili parça, seçili kumaşıyla bir pencerede açılıyor; "Odamda gör"e dokununca telefonun AR'ı açılıyor (iPhone: Quick Look, Android: Chrome'un WebXR'ı, olmazsa Scene Viewer). Bilgisayarda QR çıkıyor; QR telefonda `/ar/…` sayfasını, aynı parça ve kumaşla açıyor. Firma sayfasından gelindiyse logo ve renk de taşınıyor.
+- **Plandan sapma: AR dosyası sunucuda değil tarayıcıda üretiliyor.** Planda sunucuda `@gltf-transform` ile kumaşlı GLB derlemek vardı. Bunun yerine telefonda, ekrandaki modelin aynısı three.js ile GLB'ye çevriliyor. Gerekçe: sunucu tarafı ek paket, dosya önbelleği ve WebP→JPEG dönüştürme gerektiriyordu; tarayıcıda üretilen dosya ekranda görülenle birebir aynı ve sunucuya yük yok. Bedeli aşağıdaki Scene Viewer sınırı.
+- **Kumaşın gerçek ölçüsü dosyanın içine "pişiriliyor":** Doku tekrarı, AR uygulamalarının farklı yorumlayabileceği doku dönüşümüyle değil, doğrudan UV koordinatlarına yazılıyor. iPhone'un USDZ'ye çevirmesi dahil her yolda aynı kalıyor. Birim testi ve uçtan uca testte dosyada doku dönüşümü olmadığı kontrol ediliyor.
+- **Dosya boyutu:** Berjer yaklaşık 1,2 MB, kanepe 2,2 MB (1024 px JPEG dokular, indeksli geometri). İlk denemede 6,8 MB çıkmıştı; geometri gereksiz yere açılıyordu, düzeltildi. Aynı model+kumaş ziyaret boyunca bir kez üretiliyor.
+- **Yeni paket: `@google/model-viewer` 4.3.1** (Apache-2.0). Quick Look, WebXR ve Scene Viewer'ı tek bileşende topluyor, iPhone için USDZ'yi kendisi üretiyor. Yalnızca "Odamda gör" açılınca yükleniyor. Paket three 0.183 istiyor, projede 0.186 var; `package.json`'daki `overrides` ile projenin three'sini kullanması sağlandı (tek three kopyası). Uçtan uca testte model-viewer bu sürümle modeli sorunsuz yüklüyor.
+- **Bilinen sınır (Scene Viewer):** Google'ın Scene Viewer uygulaması dosyanın internette bir adresi olmasını istiyor; tarayıcıda üretilen dosyayı açamıyor. Android'de Chrome + ARCore varsa WebXR kullanılıyor ve sorun yok. WebXR olmayan tarayıcılarda (ör. Samsung Internet) AR açılmayabilir; o durumda ekranda açıklama çıkıyor ve model 3B olarak inceleniyor. Gerçek cihaz testinde sık görülürse sunucuda GLB üretimi eklenir.
+- **Test edilemeyenler:** Bu ortamda gerçek iPhone ya da Android yok. Doğrulanan: doğru cihazda doğru yol, geçerli GLB, kumaş malzemesi, JPEG dokular, dosya boyutu, model-viewer'ın dosyayı yüklemesi. Doğrulanmayan: AR'ın gerçekten açılması, yere oturma, ölçünün gerçek boyuta uyması, iPhone'daki USDZ dönüşümü. README'de 5 dakikalık deneme listesi var.
+
+---
+
 ## Dilim 5: Firma sayfaları, QR ve A6 kart (4 Ekim 2026)
 
 - **Adresler:** `/f/<firma>` firmanın bütün modelleri, `/f/<firma>/<model>` tek model (ör. showroomdaki koltuğun üstüne konan QR için). Bilinmeyen ya da yayında olmayan firma 404.

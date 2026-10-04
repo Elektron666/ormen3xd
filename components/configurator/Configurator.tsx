@@ -11,7 +11,7 @@ import { BrandMark } from "./BrandMark";
 import { RoomPanel } from "./RoomPanel";
 import { CompareDivider, SceneTools } from "./SceneTools";
 import { useFavorites } from "@/lib/favorites";
-import { IconClose, IconHeart } from "@/components/ui/icons";
+import { IconAr, IconClose, IconHeart } from "@/components/ui/icons";
 import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomSpec } from "@/lib/room/spec";
 import { constrain, encodeLayout, findFreeSpot, newId, overlapping, type Placement } from "@/lib/room/layout";
 import type { StageApi } from "@/components/three/Stage";
@@ -19,6 +19,8 @@ import { encodeShare } from "@/lib/share";
 import { inkFor } from "@/lib/firm";
 import { composeShareImage, groupByFabric } from "@/lib/share-image";
 import { SampleDialog } from "./SampleDialog";
+import { ArDialog } from "./ArDialog";
+import { arPath } from "@/lib/ar/device";
 import { ShareDialog } from "./ShareDialog";
 import { PrintSheet, type PrintData } from "./PrintSheet";
 
@@ -202,10 +204,16 @@ export function Configurator({
   const [share, setShare] = useState<{ image: Blob | null; snapshot: string; url: string } | null>(null);
   const [printing, setPrinting] = useState<PrintData | null>(null);
 
-  const shareUrl = useCallback(() => {
-    const id = encodeShare({ y: encodeLayout(items), oda: matchingPreset(room)?.id ?? encodeRoom(room), g: plan ? "plan" : undefined, f: firm?.slug });
-    return `${window.location.origin}/p/${id}`;
-  }, [items, room, plan, firm]);
+  const shareId = useCallback(
+    () => encodeShare({ y: encodeLayout(items), oda: matchingPreset(room)?.id ?? encodeRoom(room), g: plan ? "plan" : undefined, f: firm?.slug }),
+    [items, room, plan, firm],
+  );
+  const shareUrl = useCallback(() => `${window.location.origin}/p/${shareId()}`, [shareId]);
+
+  // AR: the selected piece in its fabric
+  const [arOpen, setArOpen] = useState(false);
+  const selectedIndex = Math.max(0, items.findIndex((p) => p.id === selectedItem.id));
+  const arUrl = useCallback(() => `${window.location.origin}${arPath(shareId(), selectedIndex)}`, [shareId, selectedIndex]);
 
   const piecesForShare = () =>
     items.flatMap((p) => {
@@ -282,6 +290,14 @@ export function Configurator({
           </div>
           {ready && (
             <div className="pointer-events-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setArOpen(true)}
+                className="flex h-10 items-center gap-1.5 rounded-full border border-cizgi bg-kagit/90 px-4 text-[13px] text-antrasit backdrop-blur-[2px] transition-colors hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit"
+              >
+                <IconAr width={17} height={17} />
+                Odamda gör
+              </button>
               <button
                 type="button"
                 onClick={openShare}
@@ -523,6 +539,7 @@ export function Configurator({
         />
       )}
       {printing && <PrintSheet data={printing} onDone={() => setPrinting(null)} />}
+      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} phoneUrl={arUrl} />}
     </div>
   );
 }

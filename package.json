@@ -14,6 +14,7 @@
     "seed:sql": "tsx scripts/build-seed-sql.ts"
   },
   "dependencies": {
+    "@google/model-viewer": "^4.3.1",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
     "@supabase/ssr": "^0.12.7",
@@ -41,5 +42,10 @@
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.3"
+  },
+  "overrides": {
+    "@google/model-viewer": {
+      "three": "$three"
+    }
   }
 }

@@ -2,7 +2,7 @@
 
 ORMEN TEKSTİL'in B2B müşterilerine (mobilya firmaları) sunduğu 3B kumaş konfigüratörü. Koltuk ekranda döner, kumaş tek dokunuşla değişir. İçindeki bütün kumaşlar ORMEN kumaşıdır.
 
-> Durum: Faz 1'de konfigüratör, oda, plan, yerleşim, paylaşım, numune talebi, teklif föyü, yönetim paneli (kumaş, model, firma, talepler), firma sayfaları ve QR tamam. Sırada AR ve raporlar var. Plan: [`PLAN.md`](PLAN.md). Kararlar ve sınırlar: [`KARARLAR.md`](KARARLAR.md).
+> Durum: Faz 1'de konfigüratör, oda, plan, yerleşim, paylaşım, numune talebi, teklif föyü, yönetim paneli (kumaş, model, firma, talepler), firma sayfaları, QR ve AR (“Odamda gör”) tamam. Sırada kullanım raporları var. Plan: [`PLAN.md`](PLAN.md). Kararlar ve sınırlar: [`KARARLAR.md`](KARARLAR.md).
 
 ## Site ve panel adresleri
 
@@ -23,6 +23,18 @@ ORMEN TEKSTİL'in B2B müşterilerine (mobilya firmaları) sunduğu 3B kumaş ko
 - **Talepler:** Numune talepleri (hangi firmanın sayfasından geldiğiyle birlikte), telefon ve WhatsApp bağlantısıyla listelenir; Excel’e indirilebilir.
 
 Kumaş ya da model silinmez, **gizlenir** (listedeki anahtar). Gizlenen konfigüratörden kalkar; anahtarı tekrar açınca bilgileriyle geri gelir.
+
+## Telefonda AR denemesi (5 dakika)
+
+Bu denemeler gerçek telefon gerektirdiği için geliştirme ortamında yapılamadı. Kurulumdan sonra bir iPhone ve bir Android telefonla:
+
+1. Bilgisayarda siteyi açın, bir kanepe ve kumaş seçin → **Odamda gör** → çıkan QR’ı telefonla okutun.
+2. Açılan sayfada koltuğun seçtiğiniz kumaşla göründüğünü kontrol edin → **Odamda gör**.
+3. Telefonu yere tutun: koltuk zemine oturmalı ve **gerçek boyutunda** olmalı (bir metreyle kabaca ölçün; kanepe 238 cm).
+4. Kumaş deseninin büyüklüğü masaüstündekiyle aynı mı (bukle ilmekleri iri değil, küçük değil)?
+5. Telefonda doğrudan siteyi açıp aynı düğmeyle deneyin.
+
+Gördüğünüz sorunu telefon modeli ve tarayıcısıyla birlikte not edin (ör. “Samsung A54, Samsung Internet, AR açılmadı”).
 
 ## Alan adı ve QR kodları
 

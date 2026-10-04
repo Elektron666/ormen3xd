@@ -43,3 +43,6 @@ export const IconPlan = (p: P) => (
 export const IconCube = (p: P) => (
   <svg {...base} {...p} aria-hidden="true"><path d="M10 2.5l6.5 3.75v7.5L10 17.5l-6.5-3.75v-7.5z" /><path d="M3.5 6.25L10 10l6.5-3.75M10 10v7.5" /></svg>
 );
+export const IconAr = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><path d="M10 2.8l6 3.4v7.6l-6 3.4-6-3.4V6.2z" /><path d="M4 6.2l6 3.4 6-3.4M10 9.6v7.6" /></svg>
+);
