@@ -52,8 +52,8 @@ describe("room geometry", () => {
   });
 
   it("checks whether furniture fits against the back wall", () => {
-    expect(furnitureFits(rect, { w: 236, d: 95 })).toBe(true);
-    expect(furnitureFits({ ...rect, widthCm: 240 }, { w: 236, d: 95 })).toBe(false);
+    expect(furnitureFits(rect, { w: 238, d: 96 })).toBe(true);
+    expect(furnitureFits({ ...rect, widthCm: 240 }, { w: 238, d: 96 })).toBe(false);
     expect(furnitureFits({ ...rect, shape: "yok", widthCm: 200 }, { w: 236, d: 95 })).toBe(true);
   });
 

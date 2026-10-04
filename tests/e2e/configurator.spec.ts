@@ -54,3 +54,29 @@ test("arama Türkçe karakterlere duyarsız çalışır", async ({ page }) => {
   await expect(page.getByRole("radio")).toHaveCount(1);
   await expect(page.getByRole("radio")).toHaveAccessibleName(/SIENA-06/);
 });
+
+test("oda bağlantısı aynı odayı açar, araçlar çalışır", async ({ page, isMobile }) => {
+  test.skip(isMobile, "oda paneli masaüstü öncelikli");
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/?oda=koyu-salon&k=SIENA-01");
+  await expect.poll(() => fabricOnModel(page)).toEqual(["SIENA-01"]);
+  await page.getByRole("tab", { name: "Oda" }).click();
+  await expect(page.getByRole("button", { name: /Koyu ve sıcak salon/ })).toHaveAttribute("aria-pressed", "true");
+
+  await page.getByRole("radio", { name: /Köşe/ }).click();
+  await expect(page).toHaveURL(/oda=kose\.480x420x270\.tutun\.ceviz/);
+
+  await page.getByRole("button", { name: "Ölçüler" }).click();
+  await expect(page.getByText("Genişlik 238 cm")).toBeVisible();
+
+  await page.getByRole("button", { name: "Karşılaştır" }).click();
+  await expect(page.getByRole("slider", { name: "Karşılaştırma çizgisi" })).toBeVisible();
+  await page.getByRole("tab", { name: "Kumaş" }).click();
+  await page.getByRole("radio", { name: /PIETRA-02/ }).click();
+  await expect(page.getByRole("slider", { name: "Karşılaştırma çizgisi" })).toHaveAttribute("aria-valuetext", /sağda PIETRA-02/);
+  // the left (primary) fabric is unchanged
+  await expect.poll(() => fabricOnModel(page)).toContain("SIENA-01");
+
+  expect(errors).toEqual([]);
+});

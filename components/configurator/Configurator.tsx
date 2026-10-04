@@ -9,6 +9,9 @@ import { CopyCodeButton, FabricHeadline, FabricSpecs } from "./FabricInfo";
 import { FabricPicker } from "./FabricPicker";
 import { BrandMark } from "./BrandMark";
 import { RoomPanel } from "./RoomPanel";
+import { CompareDivider, SceneTools } from "./SceneTools";
+import { useFavorites } from "@/lib/favorites";
+import { IconClose, IconHeart } from "@/components/ui/icons";
 import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomSpec } from "@/lib/room/spec";
 
 const Stage = dynamic(() => import("@/components/three/Stage").then((m) => m.Stage), {
@@ -26,6 +29,11 @@ export interface ConfiguratorProps {
 }
 
 type Tab = "kumas" | "oda";
+type Slot = "sol" | "sag";
+interface CompareState {
+  right: Fabric;
+  active: Slot;
+}
 
 function setQuery(params: Record<string, string>) {
   const url = new URL(window.location.href);
@@ -56,10 +64,37 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
     setQuery({ oda: matchingPreset(spec)?.id ?? encodeRoom(spec) });
   }, []);
 
-  const select = useCallback((f: Fabric) => {
-    setSelected(f);
-    setQuery({ k: f.code });
-  }, []);
+  const [closeUp, setCloseUp] = useState(false);
+  const [showDims, setShowDims] = useState(false);
+  const [compare, setCompare] = useState<CompareState | null>(null);
+  const [split, setSplit] = useState(0.5);
+  const favorites = useFavorites();
+
+  const select = useCallback(
+    (f: Fabric) => {
+      if (compare?.active === "sag") {
+        setCompare({ ...compare, right: f });
+        return;
+      }
+      setSelected(f);
+      setQuery({ k: f.code });
+    },
+    [compare],
+  );
+
+  const toggleCompare = () => {
+    if (compare) {
+      setCompare(null);
+      return;
+    }
+    // start with a fabric from another series so the difference is obvious
+    const other = fabrics.find((f) => f.series !== selected.series) ?? fabrics.find((f) => f.code !== selected.code) ?? selected;
+    setCompare({ right: other, active: "sag" });
+    setSplit(0.5);
+    setTab("kumas");
+  };
+
+  const shownFabric = compare?.active === "sag" ? compare.right : selected;
 
   const intent = useCallback((f: Fabric) => prefetchFabric(f, preferredTextureSize()), []);
 
@@ -88,6 +123,10 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
             fabric={selected}
             room={room}
             ambient={ambient}
+            compareFabric={compare?.right ?? null}
+            split={split}
+            closeUp={closeUp}
+            showDimensions={showDims}
             onFabricShown={onFabricShown}
             onError={() => setFailed(true)}
           />
@@ -117,6 +156,25 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
             </nav>
           )}
         </header>
+
+        {compare && ready && (
+          <CompareDivider split={split} onSplit={setSplit} leftCode={selected.code} rightCode={compare.right.code} />
+        )}
+
+        {ready && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+2.75rem)] flex justify-center px-4 md:bottom-12">
+            <div className="pointer-events-auto">
+              <SceneTools
+                closeUp={closeUp}
+                onCloseUp={() => setCloseUp((v) => !v)}
+                dimensions={showDims}
+                onDimensions={() => setShowDims((v) => !v)}
+                comparing={Boolean(compare)}
+                onCompare={toggleCompare}
+              />
+            </div>
+          </div>
+        )}
 
         {/* first paint: a quiet placeholder, never a grey sofa */}
         <div
@@ -151,8 +209,21 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
         header={
           <>
             <div className="flex items-start justify-between gap-3">
-              <FabricHeadline fabric={selected} loading={loading && ready} />
-              <CopyCodeButton code={selected.code} className="-mr-2 mt-3 shrink-0" />
+              <FabricHeadline fabric={shownFabric} loading={loading && ready && shownFabric === selected} />
+              <div className="-mr-2 mt-3 flex shrink-0 items-center">
+                <button
+                  type="button"
+                  onClick={() => favorites.toggle(shownFabric.code)}
+                  aria-pressed={favorites.has(shownFabric.code)}
+                  aria-label={favorites.has(shownFabric.code) ? `${shownFabric.code} beğendiklerimden çıkar` : `${shownFabric.code} beğendiklerime ekle`}
+                  className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-cizgi/60 focus-visible:outline-2 focus-visible:outline-antrasit ${
+                    favorites.has(shownFabric.code) ? "text-accent" : "text-antrasit-70"
+                  }`}
+                >
+                  <IconHeart width={19} height={19} filled={favorites.has(shownFabric.code)} />
+                </button>
+                <CopyCodeButton code={shownFabric.code} />
+              </div>
             </div>
             <div role="tablist" aria-label="Panel" className="mt-4 grid grid-cols-2 border-b border-cizgi">
               {(
@@ -181,11 +252,79 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
         }
       >
         <div id="bolum-kumas" role="tabpanel" aria-labelledby="sekme-kumas" hidden={tab !== "kumas"}>
+          {compare && (
+            <div className="mb-6 rounded-xl border border-cizgi p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="eyebrow">Karşılaştırma</span>
+                <button
+                  type="button"
+                  onClick={() => setCompare(null)}
+                  className="-mr-1 flex h-9 items-center gap-1 rounded-full px-2 text-[12px] text-antrasit-70 hover:text-antrasit focus-visible:outline-2 focus-visible:outline-antrasit"
+                >
+                  <IconClose width={14} height={14} /> Kapat
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Kumaş seçilecek taraf">
+                {(
+                  [
+                    ["sol", "Sol", selected],
+                    ["sag", "Sağ", compare.right],
+                  ] as const
+                ).map(([slot, label, f]) => (
+                  <button
+                    key={slot}
+                    type="button"
+                    role="radio"
+                    aria-checked={compare.active === slot}
+                    onClick={() => setCompare({ ...compare, active: slot })}
+                    className={`flex items-center gap-2.5 rounded-lg border p-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-antrasit ${
+                      compare.active === slot ? "border-antrasit bg-white" : "border-cizgi hover:border-cizgi-koyu"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={f.texture.thumbUrl} alt="" className="h-9 w-9 shrink-0 rounded-full" />
+                    <span className="min-w-0">
+                      <span className="block text-[11px] text-antrasit-50">{label}</span>
+                      <span className="block truncate font-display text-[15px] text-antrasit" translate="no">{f.code}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-[12px] leading-snug text-antrasit-50">Seçili tarafa kumaş atamak için aşağıdan bir kumaşa dokunun.</p>
+            </div>
+          )}
           <div className="mb-6">
-            <FabricSpecs fabric={selected} />
-            {selected.description && <p className="mt-3 text-sm leading-relaxed text-antrasit-70">{selected.description}</p>}
+            <FabricSpecs fabric={shownFabric} />
+            {shownFabric.description && <p className="mt-3 text-sm leading-relaxed text-antrasit-70">{shownFabric.description}</p>}
           </div>
-          <FabricPicker fabrics={fabrics} selectedCode={selected.code} onSelect={select} onIntent={intent} />
+          {favorites.codes.length > 0 && (
+            <section aria-labelledby="begendiklerim" className="mb-6">
+              <h3 id="begendiklerim" className="eyebrow mb-2.5">
+                Beğendiklerim · {favorites.codes.length}
+              </h3>
+              <ul className="flex flex-wrap gap-2">
+                {favorites.codes.map((code) => {
+                  const f = byCode.get(code);
+                  if (!f) return null;
+                  return (
+                    <li key={code}>
+                      <button
+                        type="button"
+                        onClick={() => select(f)}
+                        title={`${f.code} · ${f.colorName}`}
+                        className="flex items-center gap-2 rounded-full border border-cizgi py-1 pl-1 pr-3 text-[12px] text-antrasit hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={f.texture.thumbUrl} alt="" className="h-7 w-7 rounded-full" />
+                        <span translate="no">{f.code}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+          <FabricPicker fabrics={fabrics} selectedCode={shownFabric.code} onSelect={select} onIntent={intent} />
         </div>
         <div id="bolum-oda" role="tabpanel" aria-labelledby="sekme-oda" hidden={tab !== "oda"}>
           <RoomPanel spec={room} onChange={changeRoom} furnitureCm={model.dimensionsCm} />

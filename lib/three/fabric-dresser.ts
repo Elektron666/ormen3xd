@@ -85,6 +85,7 @@ export class FabricDresser {
         const overlay = new THREE.Mesh(slot.mesh.geometry, fadeMat);
         overlay.name = "kumas-gecis";
         overlay.renderOrder = 1;
+        overlay.layers.mask = slot.mesh.layers.mask;
         slot.mesh.add(overlay);
         overlays.push({ slot, overlay, finalMat });
       }

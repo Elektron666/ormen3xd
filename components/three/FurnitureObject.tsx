@@ -8,6 +8,8 @@ import type { Fabric, FurnitureModel, TextureSize } from "@/lib/types";
 import { PROCEDURAL_BUILDERS } from "@/lib/three/procedural/furniture";
 import { prepareModel, type PreparedModel } from "@/lib/three/prepare-model";
 import { FabricDresser } from "@/lib/three/fabric-dresser";
+import { setObjectLayer } from "@/lib/three/layers";
+import { LAYER_PRIMARY } from "@/lib/three/constants";
 
 export interface FurnitureObjectProps {
   model: FurnitureModel;
@@ -17,11 +19,17 @@ export interface FurnitureObjectProps {
   /** Called once a fabric is actually visible on the model. */
   onFabricShown?: (code: string, first: boolean) => void;
   onError?: (err: unknown) => void;
+  /** Render layer (see LAYER_PRIMARY / LAYER_COMPARE). */
+  layer?: number;
 }
 
-function Dressed({ source, model, fabric, textureSize, onPrepared, onFabricShown, onError }: FurnitureObjectProps & { source: THREE.Object3D }) {
+function Dressed({ source, model, fabric, textureSize, onPrepared, onFabricShown, onError, layer = LAYER_PRIMARY }: FurnitureObjectProps & { source: THREE.Object3D }) {
   const invalidate = useThree((s) => s.invalidate);
-  const prepared = useMemo(() => prepareModel(source, model.fabricMaterialNames), [source, model.fabricMaterialNames]);
+  const prepared = useMemo(() => {
+    const p = prepareModel(source, model.fabricMaterialNames);
+    setObjectLayer(p.root, layer);
+    return p;
+  }, [source, model.fabricMaterialNames, layer]);
   const dresser = useMemo(() => new FabricDresser(prepared.root, prepared.slots), [prepared]);
   const shown = useRef(false);
   const callbacks = useRef({ onPrepared, onFabricShown, onError });

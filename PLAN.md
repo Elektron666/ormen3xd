@@ -241,7 +241,7 @@ Numune: form (ad, telefon, not, KVKK onayı) → /api/samples → sample_request
 ## 9. Dilim sırası (her dilim: çalıştır → ekran görüntüsü → eleştir → düzelt → commit)
 
 1. ✅ **İskelet + dönen koltuk + kumaş değiştirme** (sahte veri, prosedürel koltuk ve dokular, telefon/masaüstü yerleşim). → size ekran görüntüleriyle gösterilecek.
-2. **Oda** ✅ hazır sahneler + oda şekli/ölçü (4 Ekim kapsam değişikliği, bkz. KARARLAR.md) · ⏳ ölçü göstergesi, yakından bak, karşılaştır, beğendiklerim, renk tutarlılığı testi.
+2. ✅ **Oda** hazır sahneler + oda şekli/ölçü (4 Ekim kapsam değişikliği, bkz. KARARLAR.md), ölçü göstergesi, yakından bak, karşılaştır, beğendiklerim, renk doğruluğu testi.
 3. **Paylaşım + numune** (`/p/[id]`, OG görseli, form + KVKK, WhatsApp yönlendirme).
 4. **Panel** (giriş, kumaş tek ekran akışı + türetilmiş haritalar + ölçek kontrol, toplu CSV, GLB model yükleme, talepler).
 5. **Firma sayfaları + QR** (`/f/...`, firma oluşturma akışı, SVG/PNG/A6 PDF).

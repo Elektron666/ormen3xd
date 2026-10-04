@@ -19,3 +19,21 @@ export const IconClose = (p: P) => (
 export const IconRotate = (p: P) => (
   <svg {...base} {...p} aria-hidden="true"><path d="M3.5 10a6.5 6.5 0 0 1 11.3-4.4M16.5 10a6.5 6.5 0 0 1-11.3 4.4" /><path d="M15 2.5v3.3h-3.3M5 17.5v-3.3h3.3" /></svg>
 );
+export const IconHeart = ({ filled, ...p }: P & { filled?: boolean }) => (
+  <svg {...base} {...p} aria-hidden="true"><path d="M10 16.5s-6.5-3.9-6.5-8.4A3.6 3.6 0 0 1 10 5.9a3.6 3.6 0 0 1 6.5 2.2c0 4.5-6.5 8.4-6.5 8.4z" fill={filled ? "currentColor" : "none"} /></svg>
+);
+export const IconZoom = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><circle cx="9" cy="9" r="5.5" /><path d="M13 13l4 4M7 9h4M9 7v4" /></svg>
+);
+export const IconZoomOut = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><circle cx="9" cy="9" r="5.5" /><path d="M13 13l4 4M7 9h4" /></svg>
+);
+export const IconRuler = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><path d="M2.5 13.5l11-11 4 4-11 11z" /><path d="M6 10l1.5 1.5M8.5 7.5L10 9M11 5l1.5 1.5" /></svg>
+);
+export const IconCompare = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><rect x="2.5" y="4" width="15" height="12" rx="1.5" /><path d="M10 2.5v15" /></svg>
+);
+export const IconArrowsH = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><path d="M7 6l-4 4 4 4M13 6l4 4-4 4" /></svg>
+);

@@ -85,6 +85,7 @@ export class GroundShadowBaker {
     cam.position.set(0, -0.005, 0);
     cam.up.set(0, 0, -1);
     cam.lookAt(0, 1, 0);
+    cam.layers.enableAll(); // the furniture lives on its own layer
     this.height.uniforms.uFar.value = far;
 
     const scene = new THREE.Scene();

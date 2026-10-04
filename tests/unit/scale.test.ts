@@ -72,3 +72,17 @@ describe("procedural upholstery", () => {
     expect(a.root.children.length).toBe(1);
   });
 });
+
+describe("seed model dimensions", () => {
+  it("match the measured procedural geometry (±1 cm)", async () => {
+    const { SEED_MODELS } = await import("@/lib/seed/models");
+    const builders = { "modular-sofa": createModularSofa, armchair: createArmchair } as const;
+    for (const m of SEED_MODELS) {
+      if (m.source.kind !== "procedural") continue;
+      const s = new THREE.Box3().setFromObject(builders[m.source.generator]()).getSize(new THREE.Vector3()).multiplyScalar(100);
+      expect(Math.abs(s.x - m.dimensionsCm.w)).toBeLessThanOrEqual(1);
+      expect(Math.abs(s.z - m.dimensionsCm.d)).toBeLessThanOrEqual(1);
+      expect(Math.abs(s.y - m.dimensionsCm.h)).toBeLessThanOrEqual(1);
+    }
+  });
+});

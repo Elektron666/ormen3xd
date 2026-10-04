@@ -4,6 +4,26 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Dilim 2b: Ölçüler, yakından bak, karşılaştır, beğendiklerim, renk testi (4 Ekim 2026)
+
+- **Ölçü göstergesi:** Ölçüler modelin gerçek sınır kutusundan okunuyor; veritabanındaki elle girilmiş değerden değil. Böylece yüklenen her GLB'de ekranda görünen ölçü modelin kendisiyle tutarlı. Örnek kanepe ve berjerin kayıtlı ölçüleri de ölçülen geometriye göre düzeltildi (238×96×85 ve 81×84×94 cm). Bir test, ikisinin 1 cm'den fazla ayrışmamasını denetliyor.
+- **Yakından bak:** Kamera, koltuğun üstünden oturma yüzeyine bir ışın gönderip çarptığı noktaya 42 cm mesafeye yaklaşıyor. Hiçbir modele özel ayar gerektirmiyor. Bu modda yakınlaşma sınırı 18 cm ile 1,2 m arasında. "Uzaklaş" kullanıcının seçtiği açıyı koruyarak genel görünüme dönüyor.
+- **Karşılaştır:** İkinci bir koltuk kopyası ayrı bir çizim katmanında duruyor. Ekran sürgünün solunda birinci, sağında ikinci kumaşla iki kez çiziliyor. Oda, ışık ve gölge iki tarafta ortak, böylece karşılaştırma adil. Sürgü fareyle sürüklenebiliyor ve klavyede ok tuşlarıyla kaydırılabiliyor. Paneldeki "Sol" ve "Sağ" kutularından hangisi seçiliyse dokunulan kumaş o tarafa atanıyor. Karşılaştırma açıkken çizim iki katı iş yapıyor; telefonda bu modun akıcılığı ölçülmedi.
+- **Beğendiklerim:** Kalp düğmesiyle tutuluyor. Liste `sessionStorage`'da, yani sekme kapanınca siliniyor ("oturum boyunca"). En fazla 24 kumaş. Sunucuya hiçbir şey gönderilmiyor.
+- **Renk doğruluğu testi** (`tests/e2e/colour.spec.ts`): Kumaş nötr stüdyoda yakın planda çizdiriliyor. Ekranın ortasındaki ortalama renk, dokunun ortalama rengiyle CIEDE2000 (ΔE00) ölçüsüyle karşılaştırılıyor. Son ölçümler:
+
+  | Kumaş | Doku | Ekran | ΔE00 | Açıklık farkı | Ton ve doygunluk |
+  |---|---|---|---|---|---|
+  | LUMA-01 Kırık Beyaz | #E6DFD1 | #E9E2D4 | 0,67 | +1,06 | 0,01 |
+  | SIENA-03 Zeytin | #6B6A45 | #6D6C3D | 2,72 | +0,64 | 2,66 |
+  | SIENA-05 Kiremit | #A3583A | #AC562D | 3,39 | +0,73 | 3,32 |
+  | PIETRA-05 Bordo | #6B2B2F | #77282D | 3,07 | +1,56 | 2,83 |
+  | VERSO-05 Antrasit | #3A3937 | #2F2D2A | 3,91 | −5,43 | 0,87 |
+
+  Okuma: ΔE00 2'nin altı neredeyse fark edilmez, 2-5 arası yan yana konunca fark edilir. Doygun renklerde (zeytin, kiremit, bordo) hafif bir doygunluk artışı var. Bu artış ton eşleme ve sheen katmanından geliyor. Koyu antrasit ise biraz daha koyu çıkıyor. Test, ton ve doygunluk kaymasının 4'ü, toplam farkın 6'yı geçmemesini şart koşuyor. Ölçüm yazılımsal grafik çiziciyle (SwiftShader) yapıldı; gerçek ekranlar ayrıca kendi renk sapmalarını ekler. Ekrandaki "numune isteyin" uyarısı bu yüzden önemli.
+
+---
+
 ## Kapsam değişikliği: oda şekli ve ölçü (4 Ekim 2026)
 
 Fatih Bey, Saloni'nin oda planlayıcısının ekran görüntülerini paylaştıktan sonra iki karar verdi:
