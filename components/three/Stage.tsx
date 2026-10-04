@@ -10,10 +10,15 @@ import type { PreparedModel } from "@/lib/three/prepare-model";
 import { FurnitureObject } from "./FurnitureObject";
 import { GroundShadow } from "./GroundShadow";
 import { preferredTextureSize } from "@/lib/three/fabric-material";
+import { encodeRoom, type RoomSpec } from "@/lib/room/spec";
+import { Room } from "./Room";
 
 export interface StageProps {
   model: FurnitureModel;
   fabric: Fabric;
+  room: RoomSpec;
+  /** Environment light multiplier of the room preset (light stays neutral white). */
+  ambient?: number;
   onFabricShown?: (code: string, first: boolean) => void;
   onError?: (err: unknown) => void;
 }
@@ -32,7 +37,7 @@ interface Framing {
  * Camera distance that fits the model's bounding box in view from the final
  * intro angle, with a margin for the overlaid header and footer.
  */
-function frameFor(size: THREE.Vector3, aspect: number): Framing {
+function frameFor(size: THREE.Vector3, aspect: number, inRoom: boolean): Framing {
   const target = new THREE.Vector3(0, size.y * 0.45, 0);
   const tanV = Math.tan(THREE.MathUtils.degToRad(FOV) / 2) * 0.78;
   const tanH = Math.tan(THREE.MathUtils.degToRad(FOV) / 2) * aspect * (aspect < 1 ? 0.95 : 0.86);
@@ -50,13 +55,14 @@ function frameFor(size: THREE.Vector3, aspect: number): Framing {
       }
     }
   }
-  return { target, distance, radius: size.length() / 2 };
+  // in a room, step back a little so the walls and floor give context
+  return { target, distance: distance * (inRoom ? 1.5 : 1), radius: size.length() / 2 };
 }
 
-function configureControls(controls: OrbitControlsImpl, f: Framing) {
+function configureControls(controls: OrbitControlsImpl, f: Framing, roomExtent: number) {
   controls.target.copy(f.target);
   controls.minDistance = Math.max(f.radius * 1.05, 0.5);
-  controls.maxDistance = f.distance * 1.6;
+  controls.maxDistance = Math.max(f.distance * 1.6, roomExtent * 1.3);
 }
 
 function placeCamera(camera: THREE.Camera, f: Framing, theta: number, phi = POLAR) {
@@ -66,19 +72,20 @@ function placeCamera(camera: THREE.Camera, f: Framing, theta: number, phi = POLA
 }
 
 /** Frames the model and plays the half-turn intro until the user touches the scene. */
-function CameraRig({ prepared, started }: { prepared: PreparedModel | null; started: boolean }) {
+function CameraRig({ prepared, started, roomExtent }: { prepared: PreparedModel | null; started: boolean; roomExtent: number }) {
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const invalidate = useThree((s) => s.invalidate);
   const controls = useThree((s) => s.controls) as OrbitControlsImpl | null;
   const intro = useRef<{ t: number; active: boolean }>({ t: 0, active: false });
   const framing = useRef<Framing | null>(null);
+  const hasRoom = roomExtent > 0;
 
   useEffect(() => {
     if (!prepared || !controls) return;
-    const f = frameFor(prepared.size, size.width / Math.max(1, size.height));
+    const f = frameFor(prepared.size, size.width / Math.max(1, size.height), hasRoom);
     framing.current = f;
-    configureControls(controls, f);
+    configureControls(controls, f, roomExtent);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     placeCamera(camera, f, reduced ? INTRO.to : INTRO.from);
     controls.update();
@@ -86,7 +93,12 @@ function CameraRig({ prepared, started }: { prepared: PreparedModel | null; star
     invalidate();
     // re-frame only when the model changes, not on every resize
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prepared, controls, camera, invalidate]);
+  }, [prepared, controls, camera, invalidate, hasRoom]);
+
+  // room size changes only widen or narrow the zoom range, without moving the camera
+  useEffect(() => {
+    if (framing.current && controls) configureControls(controls, framing.current, roomExtent);
+  }, [roomExtent, controls]);
 
   useEffect(() => {
     if (!controls) return;
@@ -114,12 +126,12 @@ function CameraRig({ prepared, started }: { prepared: PreparedModel | null; star
   return null;
 }
 
-function StudioLights() {
+function StudioLights({ ambient }: { ambient: number }) {
   // Neutral white light only: scenes may change intensity and direction, never
   // colour temperature, so the fabric colour stays true.
   return (
     <>
-      <Environment resolution={256} frames={1}>
+      <Environment resolution={256} frames={1} environmentIntensity={ambient}>
         <Lightformer form="rect" intensity={1.4} color="#ffffff" scale={[10, 10, 1]} position={[0, 6, 0]} rotation={[Math.PI / 2, 0, 0]} />
         <Lightformer form="rect" intensity={2} color="#ffffff" scale={[5, 4, 1]} position={[-5, 2.5, 4]} target={[0, 0.5, 0]} />
         <Lightformer form="rect" intensity={0.75} color="#ffffff" scale={[6, 4, 1]} position={[6, 2, 2]} target={[0, 0.5, 0]} />
@@ -135,10 +147,10 @@ function StudioLights() {
         shadow-bias={-0.0004}
         shadow-normalBias={0.025}
         shadow-radius={6}
-        shadow-camera-left={-1.8}
-        shadow-camera-right={1.8}
-        shadow-camera-top={1.8}
-        shadow-camera-bottom={-1.8}
+        shadow-camera-left={-2.6}
+        shadow-camera-right={2.6}
+        shadow-camera-top={2.6}
+        shadow-camera-bottom={-2.6}
         shadow-camera-near={1}
         shadow-camera-far={12}
       />
@@ -164,12 +176,15 @@ function ShadowMapRefresh({ version }: { version: string }) {
   return null;
 }
 
-export function Stage({ model, fabric, onFabricShown, onError }: StageProps) {
+export function Stage({ model, fabric, room, ambient = 1, onFabricShown, onError }: StageProps) {
   const [textureSize] = useState<TextureSize>(preferredTextureSize);
   const [prepared, setPrepared] = useState<PreparedModel | null>(null);
   const [visible, setVisible] = useState(false);
 
   const [shownCode, setShownCode] = useState<string | null>(null);
+  const [roomExtent, setRoomExtent] = useState(0);
+  const onRoomBuilt = useCallback((s: THREE.Vector3) => setRoomExtent(Math.hypot(s.x, s.z)), []);
+  const inRoom = room.shape !== "yok";
 
   const handleShown = useCallback(
     (code: string, first: boolean) => {
@@ -207,7 +222,7 @@ export function Stage({ model, fabric, onFabricShown, onError }: StageProps) {
       aria-label={`${model.name}, 3B görünüm. Döndürmek için sürükleyin.`}
       role="img"
     >
-      <StudioLights />
+      <StudioLights ambient={ambient} />
       <Suspense fallback={null}>
         <FurnitureObject
           key={model.id}
@@ -229,7 +244,10 @@ export function Stage({ model, fabric, onFabricShown, onError }: StageProps) {
           blur={2.5}
         />
       )}
-      <ShadowMapRefresh version={`${model.id}:${shownCode}`} />
+      {visible && prepared && inRoom && (
+        <Room spec={room} backZ={-(prepared.size.z / 2 + 0.04)} onBuilt={onRoomBuilt} />
+      )}
+      <ShadowMapRefresh version={`${model.id}:${shownCode}:${encodeRoom(room)}:${prepared?.size.z ?? 0}`} />
       <OrbitControls
         makeDefault
         enablePan={false}
@@ -240,7 +258,7 @@ export function Stage({ model, fabric, onFabricShown, onError }: StageProps) {
         minPolarAngle={0.35}
         maxPolarAngle={Math.PI / 2 - 0.06}
       />
-      <CameraRig prepared={prepared} started={visible} />
+      <CameraRig prepared={prepared} started={visible} roomExtent={inRoom ? roomExtent : 0} />
     </Canvas>
   );
 }

@@ -8,6 +8,8 @@ import { t } from "@/lib/i18n/tr";
 import { CopyCodeButton, FabricHeadline, FabricSpecs } from "./FabricInfo";
 import { FabricPicker } from "./FabricPicker";
 import { BrandMark } from "./BrandMark";
+import { RoomPanel } from "./RoomPanel";
+import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomSpec } from "@/lib/room/spec";
 
 const Stage = dynamic(() => import("@/components/three/Stage").then((m) => m.Stage), {
   ssr: false,
@@ -19,8 +21,11 @@ export interface ConfiguratorProps {
   initialModelSlug: string;
   fabrics: Fabric[];
   initialFabricCode?: string;
+  initialRoom?: RoomSpec | null;
   firm?: Firm | null;
 }
+
+type Tab = "kumas" | "oda";
 
 function setQuery(params: Record<string, string>) {
   const url = new URL(window.location.href);
@@ -28,7 +33,7 @@ function setQuery(params: Record<string, string>) {
   window.history.replaceState(window.history.state, "", url);
 }
 
-export function Configurator({ models, initialModelSlug, fabrics, initialFabricCode, firm }: ConfiguratorProps) {
+export function Configurator({ models, initialModelSlug, fabrics, initialFabricCode, initialRoom, firm }: ConfiguratorProps) {
   const [modelSlug, setModelSlug] = useState(initialModelSlug);
   const model = models.find((m) => m.slug === modelSlug) ?? models[0];
   const byCode = useMemo(() => new Map(fabrics.map((f) => [f.code, f])), [fabrics]);
@@ -40,6 +45,16 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
   const [failed, setFailed] = useState(false);
 
   const loading = shownCode !== selected.code;
+
+  const [tab, setTab] = useState<Tab>("kumas");
+  const [room, setRoom] = useState<RoomSpec>(() => initialRoom ?? { ...DEFAULT_PRESET.spec });
+  const [ambient, setAmbient] = useState(() => (initialRoom ? matchingPreset(initialRoom) ?? DEFAULT_PRESET : DEFAULT_PRESET).ambient);
+
+  const changeRoom = useCallback((spec: RoomSpec, preset?: RoomPreset) => {
+    setRoom(spec);
+    if (preset) setAmbient(preset.ambient);
+    setQuery({ oda: matchingPreset(spec)?.id ?? encodeRoom(spec) });
+  }, []);
 
   const select = useCallback((f: Fabric) => {
     setSelected(f);
@@ -71,13 +86,17 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
           <Stage
             model={model}
             fabric={selected}
+            room={room}
+            ambient={ambient}
             onFabricShown={onFabricShown}
             onError={() => setFailed(true)}
           />
         </div>
 
         <header className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-4 p-4 pt-[max(1rem,env(safe-area-inset-top))] md:p-7">
-          <div className="pointer-events-auto">
+          <div
+            className={`pointer-events-auto rounded-xl transition-colors duration-300 ${room.shape !== "yok" ? "-m-2.5 bg-kagit/85 p-2.5 backdrop-blur-[2px]" : ""}`}
+          >
             <BrandMark firm={firm} />
           </div>
           {models.length > 1 && (
@@ -116,25 +135,61 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
           )}
         </div>
 
-        <p className="pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+0.75rem)] px-6 text-center text-[11px] leading-snug text-antrasit-50 md:bottom-4">
-          {t.colorDisclaimer}
+        <p className="pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+0.75rem)] flex justify-center px-6 md:bottom-4">
+          <span
+            className={`rounded-full text-center text-[11px] leading-snug transition-colors duration-300 ${
+              room.shape !== "yok" ? "bg-kagit/85 px-3 py-1 text-antrasit-70" : "text-antrasit-50"
+            }`}
+          >
+            {t.colorDisclaimer}
+          </span>
         </p>
       </section>
 
       {/* ---------------------------------------------------------------- panel */}
       <FabricSheet
         header={
-          <div className="flex items-start justify-between gap-3">
-            <FabricHeadline fabric={selected} loading={loading && ready} />
-            <CopyCodeButton code={selected.code} className="-mr-2 mt-3 shrink-0" />
-          </div>
+          <>
+            <div className="flex items-start justify-between gap-3">
+              <FabricHeadline fabric={selected} loading={loading && ready} />
+              <CopyCodeButton code={selected.code} className="-mr-2 mt-3 shrink-0" />
+            </div>
+            <div role="tablist" aria-label="Panel" className="mt-4 grid grid-cols-2 border-b border-cizgi">
+              {(
+                [
+                  ["kumas", "Kumaş"],
+                  ["oda", "Oda"],
+                ] as const
+              ).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={`sekme-${id}`}
+                  aria-selected={tab === id}
+                  aria-controls={`bolum-${id}`}
+                  onClick={() => setTab(id)}
+                  className={`-mb-px h-11 border-b-2 text-[14px] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-antrasit ${
+                    tab === id ? "border-antrasit text-antrasit" : "border-transparent text-antrasit-50 hover:text-antrasit"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </>
         }
       >
-        <div className="mb-6">
-          <FabricSpecs fabric={selected} />
-          {selected.description && <p className="mt-3 text-sm leading-relaxed text-antrasit-70">{selected.description}</p>}
+        <div id="bolum-kumas" role="tabpanel" aria-labelledby="sekme-kumas" hidden={tab !== "kumas"}>
+          <div className="mb-6">
+            <FabricSpecs fabric={selected} />
+            {selected.description && <p className="mt-3 text-sm leading-relaxed text-antrasit-70">{selected.description}</p>}
+          </div>
+          <FabricPicker fabrics={fabrics} selectedCode={selected.code} onSelect={select} onIntent={intent} />
         </div>
-        <FabricPicker fabrics={fabrics} selectedCode={selected.code} onSelect={select} onIntent={intent} />
+        <div id="bolum-oda" role="tabpanel" aria-labelledby="sekme-oda" hidden={tab !== "oda"}>
+          <RoomPanel spec={room} onChange={changeRoom} furnitureCm={model.dimensionsCm} />
+        </div>
         <p className="mt-10 border-t border-cizgi pt-4 text-center text-[11px] tracking-[0.12em] text-antrasit-50 uppercase">
           {firm ? t.signature : "ORMEN TEKSTİL · Ankara"}
         </p>
