@@ -4,6 +4,16 @@ ORMEN TEKSTİL'in B2B müşterilerine (mobilya firmaları) sunduğu 3B kumaş ko
 
 > Durum: Faz 1'de konfigüratör, oda, plan, yerleşim, paylaşım, numune talebi, teklif föyü, yönetim paneli (kumaş, model, firma, talepler), firma sayfaları, QR, AR (“Odamda gör”) ve kullanım raporu tamam. Yayın öncesi yapılacaklar ve sonraki fazlar: [`YOL-HARITASI.md`](YOL-HARITASI.md). Kumaş fotoğrafı çekimi: [`KUMAS-CEKIM-REHBERI.md`](KUMAS-CEKIM-REHBERI.md). Plan: [`PLAN.md`](PLAN.md). Kararlar ve sınırlar: [`KARARLAR.md`](KARARLAR.md).
 
+## Kurulum sırası (yaklaşık 30 dakika)
+
+Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
+
+1. **Vercel’e yükleyin** (daha önce yaptıysanız atlayın): [vercel.com](https://vercel.com) → GitHub hesabınızla girin → **Add New → Project** → `ormen3xd` deposunun yanında **Import** → ayarlara dokunmadan **Deploy**. Birkaç dakika sonra `…vercel.app` ile biten bir adres verir. **Settings → Git → Production Branch** kısmında `claude/ecstatic-curie-vymdi7` dalının seçili olduğundan emin olun.
+2. **Supabase’i kurun:** aşağıdaki “Supabase kurulumu” 1–7. adımlar. Anahtarları 1. adımdaki Vercel projesine girersiniz.
+3. **WhatsApp numarası:** Vercel → **Settings → Environment Variables** → `NEXT_PUBLIC_ORMEN_WHATSAPP` = ORMEN’in numarası (ör. `+90 532 123 45 67`) → **Redeploy**.
+4. **Alan adı:** aşağıdaki “Alan adı ve QR kodları”. DNS’in yayılması birkaç saat sürebilir; o sırada diğer adımlara devam edebilirsiniz.
+5. **Deneme:** `/panel`’e girin, bir kumaş fotoğrafı yükleyin, ana sayfada görün; bir numune talebi gönderip “Talepler”de görün; telefonla “Odamda gör”ü deneyin.
+
 ## Site ve panel adresleri
 
 | Adres | Ne var |
