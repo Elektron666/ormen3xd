@@ -4,6 +4,23 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Dilim 5: Firma sayfaları, QR ve A6 kart (4 Ekim 2026)
+
+- **Adresler:** `/f/<firma>` firmanın bütün modelleri, `/f/<firma>/<model>` tek model (ör. showroomdaki koltuğun üstüne konan QR için). Bilinmeyen ya da yayında olmayan firma 404.
+- **Firma sayfasında ne görünüyor:** Önce firmaya özel yüklenen modeller, sonra firmanın panelde seçtiği ORMEN vitrin modelleri. İkisi de yoksa bütün vitrin. Firmaya özel modeller ORMEN ana sayfasında görünmüyor. Kumaşlar her zaman ORMEN kataloğunun tamamı (model başına kumaş kısıtı Faz 2'ye bırakıldı; `model_fabrics` tablosu hazır).
+- **Marka:** Firma logosu sol üstte, firma rengi "Numune iste" düğmesinde ve vurgularda. Düğmedeki yazı rengi (beyaz ya da koyu) firma rengine göre kontrast hesabıyla seçiliyor. Panel, açık zeminde zor görünecek renklerde uyarıyor. "Kumaşlar: ORMEN TEKSTİL" imzası her firma sayfasında duruyor.
+- **Paylaşım firmayı taşıyor:** Firma sayfasında üretilen `/p/…` linki firmanın adını içeriyor (`f`), açılınca aynı logo ve modellerle geliyor. Firma sonradan kapatılırsa link ORMEN görünümüyle açılmaya devam ediyor.
+- **Numune talebi:** Firma sayfasından gelen talep panelde firma adıyla görünüyor; "WhatsApp'tan da gönder" firmanın numarasına gidiyor. Var olmayan firma adıyla gönderilen talep firmaya yazılmıyor.
+- **QR:** Panelde SVG (matbaa için, vektör) ve 1200 px PNG. Sunucuda `qrcode` paketiyle üretiliyor; yalnızca `/f/...` adreslerine izin var. Adres `NEXT_PUBLIC_SITE_URL`'den alınıyor; bu değişken boşken panel "geçici adres, bastırmayın" uyarısı gösteriyor. **Gerçek alan adı bağlanmadan QR bastırılmamalı.**
+- **A6 kart:** Logo, kısa çağrı, büyük QR, adres ve ORMEN imzası. Teklif föyü gibi tarayıcıdan "PDF olarak kaydet" ile tek sayfa A6 PDF çıkıyor (Chromium'da doğrulandı: 105 × 148 mm, 1 sayfa).
+- **Logo:** PNG, JPEG ya da WebP, en fazla 2 MB. SVG kabul edilmiyor (betik taşıyabilir). Örnek firmanın logosu bizim çizdiğimiz bir yer tutucu.
+- **Bağlantı adı değişirse** eski QR ve linkler çalışmaz; panel düzenlerken bunu uyarıyor. Yönlendirme (eski adı yeni adrese taşımak) yapılmadı.
+- **Hata düzeltmesi:** Teklif föyünün yazdırma kuralı sayfadaki her şeyi gizliyordu; A6 kart boş çıkıyordu. Kural yalnızca föy yazdırılırken geçerli olacak şekilde daraltıldı.
+- **Hata düzeltmesi:** Firma rengi düğmeye ulaşmıyordu (Tailwind renk değişkenleri sayfa kökünde çözülüyor). Değişkenler firma kapsayıcısında da tanımlanıyor; uçtan uca testte düğme rengi ölçülüyor.
+- Supabase'de firmanın vitrin model listesi "sil ve yeniden yaz" ile kaydediliyor (iki adım, tek işlem değil). Aynı anda iki kişinin aynı firmayı düzenlemesi beklenmediği için kabul edildi.
+
+---
+
 ## Dilim 4: Yönetim paneli (4 Ekim 2026)
 
 - **Veri katmanı:** Supabase anahtarları tanımlıysa her şey Supabase'de (Postgres + Storage), değilse bellekteki örnek veriyle çalışıyor. Sayfalar hangisinin çalıştığını bilmiyor (`lib/data/`). Bellek modunda panelin üstünde sarı uyarı var: eklenenler sunucu yeniden başlayınca kaybolur. **Vercel'de panelin gerçekten kullanılması için Supabase şart.**
@@ -28,7 +45,6 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 - Triplanar yedek malzeme (UV'si bozuk modeller için): şimdilik yalnızca uyarı var.
 - Panelde kumaş başına ΔE renk doğruluğu değeri: renk testi uçtan uca testte duruyor, panelde gösterilmiyor.
-- Firma ekleme, firma logosu, QR: firma sayfaları diliminde.
 - Supabase'e karşı canlı deneme yapılamadı (bu ortamda Supabase projesi yok). Şema ve örnek veri PGlite'ta, panel akışları bellek modunda uçtan uca test edildi. İlk kurulumda bir tur elle deneme gerekiyor.
 
 ---

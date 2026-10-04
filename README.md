@@ -2,7 +2,7 @@
 
 ORMEN TEKSTİL'in B2B müşterilerine (mobilya firmaları) sunduğu 3B kumaş konfigüratörü. Koltuk ekranda döner, kumaş tek dokunuşla değişir. İçindeki bütün kumaşlar ORMEN kumaşıdır.
 
-> Durum: Faz 1'de konfigüratör, oda, plan, yerleşim, paylaşım, numune talebi, teklif föyü ve yönetim paneli (kumaş, model, talepler) tamam. Sırada firma sayfaları ve QR, AR ve raporlar var. Plan: [`PLAN.md`](PLAN.md). Kararlar ve sınırlar: [`KARARLAR.md`](KARARLAR.md).
+> Durum: Faz 1'de konfigüratör, oda, plan, yerleşim, paylaşım, numune talebi, teklif föyü, yönetim paneli (kumaş, model, firma, talepler), firma sayfaları ve QR tamam. Sırada AR ve raporlar var. Plan: [`PLAN.md`](PLAN.md). Kararlar ve sınırlar: [`KARARLAR.md`](KARARLAR.md).
 
 ## Site ve panel adresleri
 
@@ -10,6 +10,8 @@ ORMEN TEKSTİL'in B2B müşterilerine (mobilya firmaları) sunduğu 3B kumaş ko
 |---|---|
 | `/` | Konfigüratör (herkese açık) |
 | `/p/...` | Paylaşılan kombinasyon |
+| `/f/firma-adi` | Bir mobilya firmasının kendi logolu sayfası |
+| `/f/firma-adi/model` | Firmanın tek bir modeli (showroom QR’ı için) |
 | `/panel` | ORMEN yönetim paneli (giriş gerekir) |
 
 ## Panel ne işe yarar
@@ -17,9 +19,18 @@ ORMEN TEKSTİL'in B2B müşterilerine (mobilya firmaları) sunduğu 3B kumaş ko
 - **Kumaşlar:** Fotoğraf yükleyin, cetvelle ölçtüğünüz alanın enini yazın, kodu ve rengi girin. Sistem dokuyu dikişsiz mi diye kontrol eder, kabartı ve parlaklık haritalarını kendisi üretir, sağda koltuğun üstünde canlı gösterir. “Ölçek kontrol” kutusu koltuğa 10 cm’lik kareler çizer; ilmekler gerçek boyutunda mı diye bakarsınız.
 - **Toplu ekleme:** Şablonu indirin, Excel’de doldurun, fotoğraflarla birlikte yükleyin. Fotoğraf adları tablodaki adla eşleşir.
 - **Modeller:** Mobilya modelini `.glb` dosyası olarak yükleyin, kumaş alacak parçaları işaretleyin, istediğiniz ORMEN kumaşıyla önizleyin. Deneme için kendi ürettiğimiz örnek bir puf var: `tests/fixtures/ornek-puf.glb`.
-- **Talepler:** Numune talepleri, telefon ve WhatsApp bağlantısıyla listelenir; Excel’e indirilebilir.
+- **Firmalar:** Firma adını, logosunu (PNG), rengini ve WhatsApp numarasını girin; sayfada hangi modellerin görüneceğini seçin ya da firmaya özel model yükleyin. Kaydedince bağlantı, QR kodu (SVG ve PNG) ve tezgâh üstü A6 kart hazır olur.
+- **Talepler:** Numune talepleri (hangi firmanın sayfasından geldiğiyle birlikte), telefon ve WhatsApp bağlantısıyla listelenir; Excel’e indirilebilir.
 
 Kumaş ya da model silinmez, **gizlenir** (listedeki anahtar). Gizlenen konfigüratörden kalkar; anahtarı tekrar açınca bilgileriyle geri gelir.
+
+## Alan adı ve QR kodları
+
+QR kodları sitenin adresini içerir. **Gerçek alan adı bağlanmadan QR bastırmayın**, yoksa geçici Vercel adresine gider.
+
+1. Vercel’de proje → **Settings → Domains** → `atelier.ormentekstil.com.tr` ekleyin. Vercel’in gösterdiği DNS kaydını (genellikle bir `CNAME`) alan adınızı yönettiğiniz yerde (ör. hosting firmanızın paneli) ekleyin.
+2. **Settings → Environment Variables** → `NEXT_PUBLIC_SITE_URL` = `https://atelier.ormentekstil.com.tr` → yeniden yayınlayın (**Redeploy**).
+3. Paneldeki sarı “geçici adres” uyarısı kalkınca QR’ları indirin.
 
 ## Supabase kurulumu (bir kerelik, yaklaşık 15 dakika)
 
@@ -27,7 +38,7 @@ Panelde eklediğiniz kumaşların ve gelen taleplerin kalıcı olması için Sup
 
 1. **Proje açın.** [supabase.com](https://supabase.com) → hesabınızla girin → **New project**. Ad: `ormen-atelier`. Bölge: **Central EU (Frankfurt)** (Türkiye’ye en yakın). Veritabanı şifresini güvenli bir yere not edin. Proje birkaç dakikada hazır olur.
 2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/20261004000000_init.sql` dosyasının tamamını kopyalayıp yapıştırın → **Run**. “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
-3. **Örnek kataloğu yükleyin.** Yine **SQL Editor** → **New query** → `supabase/seed.sql` dosyasının tamamını yapıştırın → **Run**. 23 yer tutucu kumaş ve 2 örnek model gelir. Gerçek kumaşlarınızı ekledikçe bunları panelden gizleyebilirsiniz.
+3. **Örnek kataloğu yükleyin.** Yine **SQL Editor** → **New query** → `supabase/seed.sql` dosyasının tamamını yapıştırın → **Run**. 23 yer tutucu kumaş, 2 örnek model ve bir örnek firma (`/f/ornek-mobilya`) gelir. Gerçek kumaşlarınızı ekledikçe bunları panelden gizleyebilirsiniz.
 4. **Anahtarları alın.** **Project Settings** → **API** (yeni arayüzde **API Keys**) sayfasından üç değeri kopyalayın:
    - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
    - `anon` / `publishable` anahtarı → `NEXT_PUBLIC_SUPABASE_ANON_KEY`

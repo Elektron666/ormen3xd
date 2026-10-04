@@ -111,6 +111,7 @@ describe("seed.sql", () => {
     expect(await count("fabrics")).toBe(23);
     expect(await count("fabric_textures")).toBe(23);
     expect(await count("models")).toBe(2);
+    expect(await count("firms")).toBe(1);
     const m = await fresh.query<{ fabric_material_names: string[]; default_fabric_code: string }>("select fabric_material_names, default_fabric_code from models where slug = 'berjer'");
     expect(m.rows[0]).toEqual({ fabric_material_names: ["kumas"], default_fabric_code: "SIENA-04" });
 

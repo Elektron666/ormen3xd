@@ -1,10 +1,10 @@
 import "server-only";
 import { codeUpper } from "@/lib/i18n/tr";
-import type { ColorFamily, Fabric, FabricType, FurnitureModel } from "@/lib/types";
+import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel } from "@/lib/types";
 import type { SampleRequestInput } from "@/lib/samples";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
-import { DuplicateCodeError, type FabricInput, type ModelInput, type Repository } from "./repository";
+import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
 
 // Supabase implementation. Runs on the server with the service role; callers
 // check the panel session before any write (see lib/auth/panel.ts). Public
@@ -121,6 +121,20 @@ function modelFromRow(r: ModelRow): FurnitureModel {
     isActive: r.is_active,
     sortOrder: r.sort_order,
   };
+}
+
+interface FirmRow {
+  id: string;
+  name: string;
+  slug: string;
+  logo_path: string | null;
+  accent_color: string;
+  whatsapp: string | null;
+  is_active: boolean;
+}
+
+function firmFromRow(r: FirmRow): Firm {
+  return { id: r.id, name: r.name, slug: r.slug, logoUrl: publicFileUrl(r.logo_path), accentColor: r.accent_color, whatsapp: und(r.whatsapp), isActive: r.is_active };
 }
 
 function check<T>(res: { data: T; error: { message: string; code?: string } | null }): T {
@@ -242,12 +256,44 @@ export class SupabaseRepository implements Repository {
   }
 
   async getFirmBySlug(slug: string) {
-    const r = check(await this.db.from("firms").select("*").eq("slug", slug).eq("is_active", true).maybeSingle()) as
-      | { id: string; name: string; slug: string; logo_path: string | null; accent_color: string; whatsapp: string | null; is_active: boolean }
-      | null;
-    return r
-      ? { id: r.id, name: r.name, slug: r.slug, logoUrl: publicFileUrl(r.logo_path), accentColor: r.accent_color, whatsapp: und(r.whatsapp), isActive: r.is_active }
-      : null;
+    const r = check(await this.db.from("firms").select("*").eq("slug", slug).eq("is_active", true).maybeSingle()) as FirmRow | null;
+    return r ? firmFromRow(r) : null;
+  }
+
+  async listFirms() {
+    return (check(await this.db.from("firms").select("*").order("name")) as FirmRow[]).map(firmFromRow);
+  }
+
+  async getFirmById(id: string) {
+    const r = check(await this.db.from("firms").select("*").eq("id", id).maybeSingle()) as FirmRow | null;
+    return r ? firmFromRow(r) : null;
+  }
+
+  async saveFirm(input: FirmInput) {
+    const row = {
+      name: input.name,
+      slug: input.slug,
+      logo_path: toStored(input.logoUrl),
+      accent_color: input.accentColor,
+      whatsapp: input.whatsapp ?? null,
+      is_active: input.isActive,
+    };
+    const res = input.id
+      ? await this.db.from("firms").update(row).eq("id", input.id).select("*").single()
+      : await this.db.from("firms").insert(row).select("*").single();
+    if (res.error?.code === "23505") throw new DuplicateSlugError(input.slug);
+    return firmFromRow(check(res) as FirmRow);
+  }
+
+  async getFirmShowcaseIds(firmId: string) {
+    const rows = check(await this.db.from("firm_models").select("model_id").eq("firm_id", firmId).order("sort_order")) as { model_id: string }[];
+    return rows.map((r) => r.model_id);
+  }
+
+  async setFirmShowcaseIds(firmId: string, modelIds: string[]) {
+    check(await this.db.from("firm_models").delete().eq("firm_id", firmId));
+    const ids = [...new Set(modelIds)];
+    if (ids.length) check(await this.db.from("firm_models").insert(ids.map((model_id, i) => ({ firm_id: firmId, model_id, sort_order: i }))));
   }
 
   async createSampleRequest(input: SampleRequestInput) {

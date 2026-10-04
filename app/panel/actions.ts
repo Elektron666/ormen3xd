@@ -3,7 +3,8 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getRepository } from "@/lib/data";
-import { isDuplicateCode } from "@/lib/data/repository";
+import { isDuplicateCode, isDuplicateSlug } from "@/lib/data/repository";
+import { validateFirm, type FirmErrors, type FirmFields } from "@/lib/firm";
 import { getPanelUser, signIn, signOut } from "@/lib/auth/panel";
 import { validateFabricFields, type FabricFieldErrors, type FabricFields } from "@/lib/panel/fabric-form";
 import { STORAGE_BUCKET, SUPABASE_URL } from "@/lib/supabase/config";
@@ -125,6 +126,8 @@ export interface SaveModelPayload {
   dimensionsCm: { w: number; d: number; h: number };
   defaultFabricCode?: string;
   isActive: boolean;
+  /** Owner firm for a new model (null/undefined = ORMEN showcase). Ignored when editing. */
+  firmId?: string | null;
 }
 
 export async function saveModelAction(p: SaveModelPayload): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
@@ -138,13 +141,16 @@ export async function saveModelAction(p: SaveModelPayload): Promise<{ ok: true; 
 
   const repo = getRepository();
   const all = await repo.listAllModels();
-  if (all.some((m) => m.slug === p.slug && m.firmId === null && m.id !== p.id)) return { ok: false, error: "Bu bağlantı adı kullanılıyor." };
   const existing = p.id ? all.find((m) => m.id === p.id) : undefined;
+  if (p.id && !existing) return { ok: false, error: "Model bulunamadı." };
+  const owner = existing ? existing.firmId : (p.firmId ?? null);
+  if (owner && !(await repo.getFirmById(owner))) return { ok: false, error: "Firma bulunamadı." };
+  if (all.some((m) => m.slug === p.slug && m.firmId === owner && m.id !== p.id)) return { ok: false, error: "Bu bağlantı adı kullanılıyor." };
   const model: Omit<FurnitureModel, "id"> & { id?: string } = {
     id: p.id,
     slug: p.slug,
     name: p.name.trim(),
-    firmId: existing?.firmId ?? null,
+    firmId: owner,
     source: { kind: "glb", url: p.glbUrl },
     fabricMaterialNames: p.fabricMaterialNames,
     dimensionsCm: { w: Math.round(d.w), d: Math.round(d.d), h: Math.round(d.h) },
@@ -167,6 +173,49 @@ export async function setModelActiveAction(id: string, active: boolean): Promise
   if (!active && model.firmId === null && !all.some((m) => m.id !== id && m.firmId === null && m.isActive))
     return { ok: false, error: "Vitrinde en az bir model açık kalmalı." };
   await repo.saveModel({ ...model, isActive: active });
+  refresh();
+  return { ok: true };
+}
+
+// ------------------------------------------------------------------ firms
+
+export interface SaveFirmPayload {
+  id?: string;
+  fields: FirmFields;
+  logoUrl?: string;
+  isActive: boolean;
+  /** ORMEN showcase models shown on the firm page, in order. */
+  showcaseIds: string[];
+}
+
+export async function saveFirmAction(p: SaveFirmPayload): Promise<{ ok: true; id: string } | { ok: false; errors?: FirmErrors; error?: string }> {
+  await guard();
+  const v = validateFirm(p.fields);
+  if (!v.ok) return { ok: false, errors: v.errors };
+  if (p.logoUrl && !ownUrl(p.logoUrl)) return { ok: false, errors: { logo: "Logo yüklenmedi." } };
+  const repo = getRepository();
+  if (p.id && !(await repo.getFirmById(p.id))) return { ok: false, error: "Firma bulunamadı." };
+  const showcase = new Set((await repo.listAllModels()).filter((m) => m.firmId === null).map((m) => m.id));
+  try {
+    const firm = await repo.saveFirm({ id: p.id, ...v.value, logoUrl: p.logoUrl || undefined, isActive: p.isActive });
+    await repo.setFirmShowcaseIds(
+      firm.id,
+      p.showcaseIds.filter((id) => showcase.has(id)),
+    );
+    refresh();
+    return { ok: true, id: firm.id };
+  } catch (e) {
+    if (isDuplicateSlug(e)) return { ok: false, errors: { slug: e.message } };
+    return { ok: false, error: e instanceof Error ? e.message : "Kaydedilemedi." };
+  }
+}
+
+export async function setFirmActiveAction(id: string, active: boolean): Promise<{ ok: boolean; error?: string }> {
+  await guard();
+  const repo = getRepository();
+  const firm = await repo.getFirmById(id);
+  if (!firm) return { ok: false, error: "Firma bulunamadı." };
+  await repo.saveFirm({ ...firm, isActive: active });
   refresh();
   return { ok: true };
 }

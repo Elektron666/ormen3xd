@@ -2,7 +2,7 @@ import { codeUpper } from "@/lib/i18n/tr";
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { buildSeedFabrics } from "@/lib/seed/fabrics";
 import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
-import { DuplicateCodeError, type FabricInput, type ModelInput, type Repository } from "./repository";
+import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
 import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
 
 /**
@@ -16,6 +16,7 @@ export class MemoryRepository implements Repository {
   private fabrics: Fabric[] = buildSeedFabrics();
   private models: FurnitureModel[] = structuredClone(SEED_MODELS);
   private firms: Firm[] = structuredClone(SEED_FIRMS);
+  private firmShowcase = new Map<string, string[]>();
   private samples: SampleRequest[] = [];
   readonly files = new Map<string, { data: ArrayBuffer; type: string }>();
 
@@ -79,6 +80,31 @@ export class MemoryRepository implements Repository {
 
   async getFirmBySlug(slug: string) {
     return this.firms.find((f) => f.slug === slug && f.isActive) ?? null;
+  }
+
+  async listFirms() {
+    return [...this.firms].sort((a, b) => a.name.localeCompare(b.name, "tr"));
+  }
+
+  async getFirmById(id: string) {
+    return this.firms.find((f) => f.id === id) ?? null;
+  }
+
+  async saveFirm(input: FirmInput) {
+    if (this.firms.some((f) => f.slug === input.slug && f.id !== input.id)) throw new DuplicateSlugError(input.slug);
+    const firm: Firm = { ...input, id: input.id ?? crypto.randomUUID() };
+    const i = this.firms.findIndex((f) => f.id === firm.id);
+    if (i >= 0) this.firms[i] = firm;
+    else this.firms.push(firm);
+    return firm;
+  }
+
+  async getFirmShowcaseIds(firmId: string) {
+    return [...(this.firmShowcase.get(firmId) ?? [])];
+  }
+
+  async setFirmShowcaseIds(firmId: string, modelIds: string[]) {
+    this.firmShowcase.set(firmId, [...new Set(modelIds)]);
   }
 
   async createSampleRequest(input: SampleRequestInput) {

@@ -67,3 +67,8 @@ from (values
   ('berjer', 'Berjer', 'armchair', 'kumas', 81, 84, 94, 'SIENA-04', true, 1)
 ) as v (slug, name, procedural_key, materials, w, d, h, fabric, active, sort_order)
 where not exists (select 1 from public.models m where m.firm_id is null and m.slug = v.slug);
+
+-- a sample firm page (/f/ornek-mobilya) with a placeholder logo
+insert into public.firms (name, slug, logo_path, accent_color, whatsapp, is_active) values
+  ('Örnek Mobilya', 'ornek-mobilya', '/seed/firms/ornek-mobilya.svg', '#1F4E4A', null, true)
+on conflict (slug) do nothing;

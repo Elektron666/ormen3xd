@@ -1,8 +1,9 @@
 // Share links: the whole combination (layout, room, view) is packed into the
 // link itself, so /p/<id> works without a database and never expires.
 // The id is base64url of a tiny query string, e.g. "y=…&oda=koyu-salon&g=plan".
+// "f" is the firm slug when the combination was made on a firm's page.
 
-const KEYS = ["y", "oda", "g"] as const;
+const KEYS = ["y", "oda", "g", "f"] as const;
 export type ShareState = Partial<Record<(typeof KEYS)[number], string>>;
 
 function toBase64Url(s: string): string {

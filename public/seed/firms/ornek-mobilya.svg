@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 80" width="196" height="80">
+  <title>Örnek Mobilya (yer tutucu logo)</title>
+  <rect x="4" y="12" width="56" height="56" rx="10" fill="#1F4E4A"/>
+  <path d="M18 50h28v-6a6 6 0 0 0-6-6H24a6 6 0 0 0-6 6zM14 42a4 4 0 0 1 8 0v12h-8zM42 42a4 4 0 0 1 8 0v12h-8z" fill="#F5F1EA"/>
+  <text x="76" y="40" font-family="Georgia, 'Times New Roman', serif" font-size="26" fill="#1F4E4A" letter-spacing="2">ÖRNEK</text>
+  <text x="77" y="62" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#4a5b58" letter-spacing="6">MOBİLYA</text>
+</svg>

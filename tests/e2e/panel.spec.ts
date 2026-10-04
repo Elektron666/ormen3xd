@@ -1,17 +1,9 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { login, sceneFabrics } from "./helpers";
 import path from "node:path";
 
 const GLB = path.join(__dirname, "../fixtures/ornek-puf.glb");
 const PHOTO = path.join(__dirname, "../../public/seed/fabrics/siena/siena-04-albedo-2k.webp");
-
-async function login(page: Page) {
-  await page.goto("/panel");
-  await expect(page).toHaveURL(/\/panel\/giris/);
-  await page.getByLabel("E-posta").fill("demo@ormen.local");
-  await page.getByLabel("Şifre").fill("ormen-demo");
-  await page.getByRole("button", { name: "Giriş yap" }).click();
-  await expect(page.getByRole("heading", { name: "Genel bakış" })).toBeVisible();
-}
 
 test.describe("panel", () => {
   test.skip(({ isMobile }) => isMobile, "panel masaüstü için");
@@ -46,14 +38,7 @@ test.describe("panel", () => {
     await page.goto(`/?y=moduler-kanepe.${code}.0.51.0`);
     await expect
       .poll(
-        () =>
-          page.evaluate(() => {
-            type O = { isMesh?: boolean; material?: { name?: string } };
-            const s = (window as unknown as { __ormenStage?: { get(): { scene: { traverse(cb: (o: O) => void): void } } } }).__ormenStage;
-            const names = new Set<string>();
-            s?.get().scene.traverse((o) => o.isMesh && o.material?.name?.startsWith("kumas:") && names.add(o.material.name.slice(6)));
-            return [...names];
-          }),
+        () => sceneFabrics(page),
         { timeout: 45_000 },
       )
       .toEqual([code]);
@@ -108,14 +93,7 @@ test.describe("panel", () => {
     await page.goto(`/?y=${slug}.SIENA-03.0.51.0`);
     await expect
       .poll(
-        () =>
-          page.evaluate(() => {
-            type O = { isMesh?: boolean; material?: { name?: string } };
-            const s = (window as unknown as { __ormenStage?: { get(): { scene: { traverse(cb: (o: O) => void): void } } } }).__ormenStage;
-            const names = new Set<string>();
-            s?.get().scene.traverse((o) => o.isMesh && o.material?.name?.startsWith("kumas:") && names.add(o.material.name.slice(6)));
-            return [...names];
-          }),
+        () => sceneFabrics(page),
         { timeout: 45_000 },
       )
       .toEqual(["SIENA-03"]);

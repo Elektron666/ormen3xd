@@ -1,10 +1,10 @@
 "use client";
 
 import { useOptimistic, useState, useTransition } from "react";
-import { setFabricActiveAction, setModelActiveAction } from "@/app/panel/actions";
+import { setFabricActiveAction, setFirmActiveAction, setModelActiveAction } from "@/app/panel/actions";
 
-/** Switch for showing / hiding a fabric or model in the configurator. */
-export function ActiveToggle({ id, active, label, kind = "fabric" }: { id: string; active: boolean; label: string; kind?: "fabric" | "model" }) {
+/** Switch for publishing / hiding a fabric, model or firm page. */
+export function ActiveToggle({ id, active, label, kind = "fabric" }: { id: string; active: boolean; label: string; kind?: "fabric" | "model" | "firm" }) {
   const [shown, setShown] = useOptimistic(active);
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +27,7 @@ export function ActiveToggle({ id, active, label, kind = "fabric" }: { id: strin
             setError(null);
             if (kind === "fabric") await setFabricActiveAction(id, !shown);
             else {
-              const res = await setModelActiveAction(id, !shown);
+              const res = await (kind === "model" ? setModelActiveAction : setFirmActiveAction)(id, !shown);
               if (!res.ok) setError(res.error ?? "Değiştirilemedi.");
             }
           })

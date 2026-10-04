@@ -8,7 +8,8 @@ const when = (iso: string) => new Date(iso).toLocaleString("tr-TR", { timeZone: 
 
 export default async function RequestsPage() {
   const repo = getRepository();
-  const requests = await repo.listSampleRequests();
+  const [requests, firms] = await Promise.all([repo.listSampleRequests(), repo.listFirms()]);
+  const firmName = new Map(firms.map((f) => [f.slug, f.name]));
   return (
     <>
       <PageHeader title="Numune talepleri" eyebrow={`${requests.length} talep`}>
@@ -38,7 +39,7 @@ export default async function RequestsPage() {
               <p className="mt-1 text-[14px] tracking-wide">{r.fabricCodes.join(" · ")}</p>
               {(!!r.firmSlug || !!r.modelSlugs?.length) && (
                 <p className="mt-1 text-[13px] text-antrasit-50">
-                  {r.firmSlug ? `Firma: ${r.firmSlug}` : "ORMEN ana sayfa"}
+                  {r.firmSlug ? `Firma: ${firmName.get(r.firmSlug) ?? r.firmSlug}` : "ORMEN ana sayfa"}
                   {r.modelSlugs?.length ? ` · ${r.modelSlugs.join(", ")}` : ""}
                 </p>
               )}

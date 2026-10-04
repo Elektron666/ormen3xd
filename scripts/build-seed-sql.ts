@@ -1,5 +1,5 @@
-// Writes supabase/seed.sql: the demo catalogue (placeholder fabrics and the
-// two code-generated models) as plain SQL, so it can be pasted into the
+// Writes supabase/seed.sql: the demo catalogue (placeholder fabrics, the
+// two code-generated models and a sample firm) as plain SQL, so it can be pasted into the
 // Supabase SQL editor without installing anything. Safe to run twice.
 //
 //   npm run seed:sql
@@ -7,7 +7,7 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { buildSeedFabrics } from "../lib/seed/fabrics";
-import { SEED_MODELS } from "../lib/seed/models";
+import { SEED_FIRMS, SEED_MODELS } from "../lib/seed/models";
 
 const q = (v: string | number | boolean | null | undefined): string =>
   v === null || v === undefined ? "null" : typeof v === "string" ? `'${v.replace(/'/g, "''")}'` : String(v);
@@ -69,8 +69,13 @@ ${SEED_MODELS.map((m) =>
 ).join(",\n")}
 ) as v (slug, name, procedural_key, materials, w, d, h, fabric, active, sort_order)
 where not exists (select 1 from public.models m where m.firm_id is null and m.slug = v.slug);
+
+-- a sample firm page (/f/ornek-mobilya) with a placeholder logo
+insert into public.firms (name, slug, logo_path, accent_color, whatsapp, is_active) values
+${SEED_FIRMS.map((f) => row([f.name, f.slug, f.logoUrl, f.accentColor, f.whatsapp, f.isActive])).join(",\n")}
+on conflict (slug) do nothing;
 `;
 
 const out = path.join(process.cwd(), "supabase", "seed.sql");
 writeFileSync(out, sql);
-console.log(`${out}: ${fabrics.length} kumaş, ${SEED_MODELS.length} model`);
+console.log(`${out}: ${fabrics.length} kumaş, ${SEED_MODELS.length} model, ${SEED_FIRMS.length} firma`);

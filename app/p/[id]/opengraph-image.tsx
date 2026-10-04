@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
-import { getRepository } from "@/lib/data";
+import { loadCatalogue } from "@/lib/data";
+import { decodeShare } from "@/lib/share";
 import { summariseShare } from "@/lib/share-summary";
 import { FABRIC_TYPE_LABELS } from "@/lib/i18n/tr";
 
@@ -13,9 +14,9 @@ export const contentType = "image/png";
 
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const repo = getRepository();
-  const [models, fabrics] = await Promise.all([repo.listShowcaseModels(), repo.listFabrics()]);
-  const summary = summariseShare(id, models, fabrics);
+  const f = decodeShare(id)?.f;
+  const cat = (f ? await loadCatalogue(f) : null) ?? (await loadCatalogue(null))!;
+  const summary = summariseShare(id, cat.models, cat.fabrics);
   const shown = summary?.fabrics.slice(0, 3) ?? [];
   const names = summary ? [...new Set(summary.pieces.map((p) => p.model.name))].join(" · ") : "";
 
@@ -49,7 +50,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           ))}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 22, color: "#7D7B75", borderTop: "1px solid #E3DDD2", paddingTop: 20 }}>
-          <span>Kumaşlar: ORMEN TEKSTİL</span>
+          <span>{cat.firm ? `${cat.firm.name} · ` : ""}Kumaşlar: ORMEN TEKSTİL</span>
           <span>Açın · döndürün · numune isteyin</span>
         </div>
       </div>

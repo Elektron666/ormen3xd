@@ -19,7 +19,7 @@ interface Source {
   report: GlbReport;
 }
 
-export function ModelEditor({ model, fabrics }: { model?: FurnitureModel | null; fabrics: Fabric[] }) {
+export function ModelEditor({ model, fabrics, firmId = null }: { model?: FurnitureModel | null; fabrics: Fabric[]; firmId?: string | null }) {
   const router = useRouter();
   const [name, setName] = useState(model?.name ?? "");
   const [slug, setSlug] = useState(model?.slug ?? "");
@@ -130,9 +130,11 @@ export function ModelEditor({ model, fabrics }: { model?: FurnitureModel | null;
         dimensionsCm: report.sizeCm,
         defaultFabricCode: defaultFabric || undefined,
         isActive,
+        firmId,
       });
       if (!res.ok) return setError(res.error);
-      router.push(`/panel/modeller?kaydedildi=${encodeURIComponent(name.trim())}`);
+      const owner = model ? model.firmId : firmId;
+      router.push(owner ? `/panel/firmalar/${owner}?kaydedildi=1` : `/panel/modeller?kaydedildi=${encodeURIComponent(name.trim())}`);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Kaydedilemedi.");

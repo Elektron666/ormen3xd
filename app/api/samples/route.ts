@@ -22,6 +22,8 @@ export async function POST(request: Request) {
   if (result.value.fabricCodes.some((c) => !fabrics.has(c))) {
     return NextResponse.json({ errors: { fabricCodes: "Bilinmeyen kumaş kodu." } }, { status: 422 });
   }
-  const saved = await repo.createSampleRequest(result.value);
+  // a firm that no longer exists (or a made-up slug) is not attributed
+  const firm = result.value.firmSlug ? await repo.getFirmBySlug(result.value.firmSlug) : null;
+  const saved = await repo.createSampleRequest({ ...result.value, firmSlug: firm?.slug ?? null });
   return NextResponse.json({ id: saved.id }, { status: 201 });
 }

@@ -246,7 +246,7 @@ Numune: form (ad, telefon, not, KVKK onayı) → /api/samples → sample_request
 2d. ✅ **Yerleşim:** mobilya ekle, sürükle, döndür, çoğalt, kaldır (4 Ekim, Fatih Bey'in isteği).
 3. ✅ **Paylaşım + numune + teklif föyü** (`/p/[id]`, OG görseli, paylaşım görseli, A4 föy, form + KVKK, WhatsApp yönlendirme).
 4. ✅ **Panel** (giriş, kumaş tek ekran akışı + türetilmiş haritalar + ölçek kontrol, toplu CSV, GLB model yükleme, talepler). Sapmalar: işleme sunucuda değil tarayıcıda; model ölçüleri elle düzeltilmiyor, birim yanlışsa kayıt engelleniyor (bkz. KARARLAR.md, Dilim 4).
-5. **Firma sayfaları + QR** (`/f/...`, firma oluşturma akışı, SVG/PNG/A6 PDF).
+5. ✅ **Firma sayfaları + QR** (`/f/...`, firma oluşturma akışı, SVG/PNG/A6 PDF).
 6. **AR** (sunucuda GLB derleme, model-viewer, cihaz tespiti, masaüstü QR).
 7. **Olay kaydı + rapor**, Faz 3 `reupholster.ts` mock + "yakında" yeri.
 8. **Supabase migration'ları, README, rehberler**, uçtan uca testler, son kalite turu.

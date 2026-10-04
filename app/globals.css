@@ -86,7 +86,8 @@ body {
   body {
     background: #ffffff !important;
   }
-  body > *:not(#foy-root) {
+  /* only while the offer sheet is being printed; other print pages (A6 card) print as they are */
+  body:has(#foy-root) > *:not(#foy-root) {
     display: none !important;
   }
   #foy-root {

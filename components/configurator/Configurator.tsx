@@ -16,6 +16,7 @@ import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomS
 import { constrain, encodeLayout, findFreeSpot, newId, overlapping, type Placement } from "@/lib/room/layout";
 import type { StageApi } from "@/components/three/Stage";
 import { encodeShare } from "@/lib/share";
+import { inkFor } from "@/lib/firm";
 import { composeShareImage, groupByFabric } from "@/lib/share-image";
 import { SampleDialog } from "./SampleDialog";
 import { ShareDialog } from "./ShareDialog";
@@ -202,9 +203,9 @@ export function Configurator({
   const [printing, setPrinting] = useState<PrintData | null>(null);
 
   const shareUrl = useCallback(() => {
-    const id = encodeShare({ y: encodeLayout(items), oda: matchingPreset(room)?.id ?? encodeRoom(room), g: plan ? "plan" : undefined });
+    const id = encodeShare({ y: encodeLayout(items), oda: matchingPreset(room)?.id ?? encodeRoom(room), g: plan ? "plan" : undefined, f: firm?.slug });
     return `${window.location.origin}/p/${id}`;
-  }, [items, room, plan]);
+  }, [items, room, plan, firm]);
 
   const piecesForShare = () =>
     items.flatMap((p) => {
@@ -242,7 +243,11 @@ export function Configurator({
     if (first) setReady(true);
   }, []);
 
-  const style = firm ? ({ "--accent": firm.accentColor } as React.CSSProperties) : undefined;
+  // the theme's --color-* tokens are resolved on :root, so they are set here too
+  const ink = firm ? inkFor(firm.accentColor) : null;
+  const style = firm
+    ? ({ "--accent": firm.accentColor, "--color-accent": firm.accentColor, "--accent-ink": ink, "--color-accent-ink": ink } as React.CSSProperties)
+    : undefined;
 
   return (
     <div style={style} className="relative h-dvh w-full overflow-hidden bg-kirik-beyaz md:grid md:grid-cols-[minmax(0,1fr)_380px] lg:grid-cols-[minmax(0,1fr)_420px]">
@@ -287,7 +292,9 @@ export function Configurator({
               <button
                 type="button"
                 onClick={() => setSampleOpen(true)}
-                className="h-10 rounded-full bg-antrasit px-4 text-[13px] text-kagit transition-colors hover:bg-ceviz focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit"
+                className={`h-10 rounded-full px-4 text-[13px] transition-[color,background-color,filter] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit ${
+                  firm ? "bg-accent text-accent-ink hover:brightness-110" : "bg-antrasit text-kagit hover:bg-ceviz"
+                }`}
               >
                 Numune iste
               </button>
