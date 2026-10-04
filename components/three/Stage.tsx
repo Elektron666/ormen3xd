@@ -73,7 +73,7 @@ export interface StageProps {
   onApi?: (api: StageApi) => void;
 }
 
-function StudioLights({ ambient }: { ambient: number }) {
+export function StudioLights({ ambient }: { ambient: number }) {
   // Neutral white light only: scenes may change intensity and direction, never
   // colour temperature, so the fabric colour stays true.
   const key = useRef<THREE.DirectionalLight>(null);

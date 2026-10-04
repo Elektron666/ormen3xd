@@ -49,7 +49,8 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
         return;
       }
       if (!res.ok) throw new Error(String(res.status));
-      setStage({ kind: "done", value: check.value });
+      // the stored link is site-relative; WhatsApp needs the full address
+      setStage({ kind: "done", value: { ...check.value, link: input.link } });
       onSent?.(check.value.fabricCodes);
     } catch {
       setStage({ kind: "error", message: "Talep gönderilemedi. Bağlantınızı kontrol edip tekrar deneyin." });

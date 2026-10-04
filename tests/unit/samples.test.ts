@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalisePhone, sampleWhatsappText, validateSample, whatsappUrl } from "@/lib/samples";
+import { normalisePhone, sampleWhatsappText, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
 
 describe("phone numbers", () => {
   it.each([
@@ -45,5 +45,16 @@ describe("WhatsApp message", () => {
     expect(text).toContain("Kumaş: LUMA-02");
     expect(text).toContain("https://x/p/abc");
     expect(whatsappUrl("+90 532 000 00 00", "Merhaba ş")).toBe("https://wa.me/905320000000?text=Merhaba%20%C5%9F");
+  });
+});
+
+describe("shareLink", () => {
+  it("keeps only our own share paths", () => {
+    expect(shareLink("https://atelier.ormentekstil.com.tr/p/abc_D-9")).toBe("/p/abc_D-9");
+    expect(shareLink("/p/xyz")).toBe("/p/xyz");
+    expect(shareLink("javascript:alert(1)")).toBeUndefined();
+    expect(shareLink("https://kotu.example/baska")).toBeUndefined();
+    expect(shareLink("https://x/p/a/../../evil")).toBeUndefined();
+    expect(shareLink(42)).toBeUndefined();
   });
 });

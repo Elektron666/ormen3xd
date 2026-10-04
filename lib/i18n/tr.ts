@@ -1,8 +1,17 @@
 import type { ColorFamily, FabricType } from "@/lib/types";
 
-/** Turkish-aware upper-casing (i → İ, ı → I). */
+/** Turkish-aware upper-casing (i → İ, ı → I), for display text. */
 export function trUpper(s: string): string {
   return s.toLocaleUpperCase("tr-TR");
+}
+
+/**
+ * Upper-casing for product codes and series names (SIENA-04). Codes use the
+ * plain Latin "I", so a lower-case "i" must not become "İ"; the other Turkish
+ * letters (ş ğ ç ö ü) keep their capitals.
+ */
+export function codeUpper(s: string): string {
+  return s.replace(/i/g, "I").replace(/ı/g, "I").toLocaleUpperCase("tr-TR");
 }
 
 export const FABRIC_TYPE_LABELS: Record<FabricType, string> = {

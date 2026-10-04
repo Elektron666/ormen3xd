@@ -1,13 +1,16 @@
-// Pure image-map helpers shared by the seed texture generator and (later) the
-// panel's "derive normal + roughness from a single photo" step.
-// All buffers are square, tileable and row-major.
+// Pure image-map helpers shared by the seed texture generator and the panel's
+// "derive normal + roughness from a single photo" step (lib/fabric/process.ts).
+// Buffers are tileable and row-major.
 
-/** Tangent-space normal map from a tileable height field (wraps at the edges). */
-export function heightToNormal(height: Float32Array, size: number, strength: number): Uint8Array {
-  const out = new Uint8Array(size * size * 3);
+/**
+ * Tangent-space normal map from a tileable height field (wraps at the edges).
+ * `size` is the width; pass `rows` for non-square images.
+ */
+export function heightToNormal(height: Float32Array, size: number, strength: number, rows = size): Uint8Array {
+  const out = new Uint8Array(size * rows * 3);
   const at = (x: number, y: number) =>
-    height[((y + size) % size) * size + ((x + size) % size)];
-  for (let y = 0; y < size; y++) {
+    height[((y + rows) % rows) * size + ((x + size) % size)];
+  for (let y = 0; y < rows; y++) {
     for (let x = 0; x < size; x++) {
       // Sobel gradient
       const dx =
@@ -31,25 +34,26 @@ export function heightToNormal(height: Float32Array, size: number, strength: num
   return out;
 }
 
-/** Box blur with wrap-around, used to estimate large-scale height from luminance. */
-export function blurWrap(src: Float32Array, size: number, radius: number): Float32Array {
+/** Box blur with wrap-around (`size` = width, `rows` = height for non-square images). */
+export function blurWrap(src: Float32Array, size: number, radius: number, rows = size): Float32Array {
   const tmp = new Float32Array(src.length);
   const out = new Float32Array(src.length);
   const span = radius * 2 + 1;
-  for (let y = 0; y < size; y++) {
+  const m = (v: number, n: number) => ((v % n) + n) % n;
+  for (let y = 0; y < rows; y++) {
     let acc = 0;
-    for (let k = -radius; k <= radius; k++) acc += src[y * size + ((k + size) % size)];
+    for (let k = -radius; k <= radius; k++) acc += src[y * size + m(k, size)];
     for (let x = 0; x < size; x++) {
       tmp[y * size + x] = acc / span;
-      acc += src[y * size + ((x + radius + 1) % size)] - src[y * size + ((x - radius + size) % size)];
+      acc += src[y * size + m(x + radius + 1, size)] - src[y * size + m(x - radius, size)];
     }
   }
   for (let x = 0; x < size; x++) {
     let acc = 0;
-    for (let k = -radius; k <= radius; k++) acc += tmp[((k + size) % size) * size + x];
-    for (let y = 0; y < size; y++) {
+    for (let k = -radius; k <= radius; k++) acc += tmp[m(k, rows) * size + x];
+    for (let y = 0; y < rows; y++) {
       out[y * size + x] = acc / span;
-      acc += tmp[((y + radius + 1) % size) * size + x] - tmp[((y - radius + size) % size) * size + x];
+      acc += tmp[m(y + radius + 1, rows) * size + x] - tmp[m(y - radius, rows) * size + x];
     }
   }
   return out;

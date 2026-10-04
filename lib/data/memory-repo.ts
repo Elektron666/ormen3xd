@@ -1,32 +1,64 @@
+import { codeUpper } from "@/lib/i18n/tr";
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { buildSeedFabrics } from "@/lib/seed/fabrics";
 import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
-import type { Repository } from "./repository";
+import { DuplicateCodeError, type FabricInput, type ModelInput, type Repository } from "./repository";
 import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
 
-/** In-memory repository backed by the seed catalogue; used when Supabase is not configured. */
+/**
+ * In-memory repository backed by the seed catalogue; used when Supabase is
+ * not configured. Everything added through the panel lives only as long as
+ * the server process (and, on Vercel, only on the instance that took it).
+ */
 export class MemoryRepository implements Repository {
   readonly kind = "memory" as const;
+  readonly persistent = false;
   private fabrics: Fabric[] = buildSeedFabrics();
   private models: FurnitureModel[] = structuredClone(SEED_MODELS);
   private firms: Firm[] = structuredClone(SEED_FIRMS);
-  // Lives only as long as the server process. Real storage is Supabase
-  // (sample_requests table) once the keys are set; see README.
   private samples: SampleRequest[] = [];
+  readonly files = new Map<string, { data: ArrayBuffer; type: string }>();
 
   async listFabrics(opts?: { includeInactive?: boolean }) {
-    return this.fabrics
-      .filter((f) => opts?.includeInactive || f.isActive)
-      .sort((a, b) => a.sortOrder - b.sortOrder);
+    return this.fabrics.filter((f) => opts?.includeInactive || f.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
   }
 
   async getFabricByCode(code: string) {
-    const c = code.toLocaleUpperCase("tr-TR");
+    const c = codeUpper(code);
     return this.fabrics.find((f) => f.code === c) ?? null;
+  }
+
+  async getFabricById(id: string) {
+    return this.fabrics.find((f) => f.id === id) ?? null;
+  }
+
+  async saveFabric(input: FabricInput) {
+    const clash = this.fabrics.find((f) => f.code === input.code && f.id !== input.id);
+    if (clash) throw new DuplicateCodeError(input.code);
+    const { derivedMaps: _d, ...rest } = input;
+    void _d;
+    const existing = input.id ? this.fabrics.findIndex((f) => f.id === input.id) : -1;
+    const fabric: Fabric = {
+      ...rest,
+      id: input.id ?? crypto.randomUUID(),
+      sortOrder: input.sortOrder ?? (existing >= 0 ? this.fabrics[existing].sortOrder : this.fabrics.length),
+    };
+    if (existing >= 0) this.fabrics[existing] = fabric;
+    else this.fabrics.push(fabric);
+    return fabric;
+  }
+
+  async setFabricActive(id: string, active: boolean) {
+    const f = this.fabrics.find((x) => x.id === id);
+    if (f) f.isActive = active;
   }
 
   async listShowcaseModels() {
     return this.models.filter((m) => m.firmId === null && m.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async listAllModels() {
+    return [...this.models].sort((a, b) => a.sortOrder - b.sortOrder);
   }
 
   async listFirmModels(firmId: string) {
@@ -35,6 +67,14 @@ export class MemoryRepository implements Repository {
 
   async getModel(slug: string, firmId: string | null) {
     return this.models.find((m) => m.slug === slug && (m.firmId === firmId || m.firmId === null)) ?? null;
+  }
+
+  async saveModel(input: ModelInput) {
+    const existing = input.id ? this.models.findIndex((m) => m.id === input.id) : -1;
+    const model: FurnitureModel = { ...input, id: input.id ?? crypto.randomUUID() };
+    if (existing >= 0) this.models[existing] = model;
+    else this.models.push(model);
+    return model;
   }
 
   async getFirmBySlug(slug: string) {
@@ -51,5 +91,10 @@ export class MemoryRepository implements Repository {
 
   async listSampleRequests() {
     return [...this.samples];
+  }
+
+  async putFile(path: string, data: ArrayBuffer, contentType: string) {
+    this.files.set(path, { data, type: contentType });
+    return `/api/dosya/${path}`;
   }
 }

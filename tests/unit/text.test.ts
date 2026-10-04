@@ -29,3 +29,12 @@ describe("fabric filter", () => {
     expect(r.map((f) => f.code).sort()).toEqual(["SIENA-02", "VERSO-02"]);
   });
 });
+
+describe("product codes", () => {
+  it("upper-cases with a plain I but keeps Turkish capitals", async () => {
+    const { codeUpper } = await import("@/lib/i18n/tr");
+    expect(codeUpper("siena-04")).toBe("SIENA-04");
+    expect(codeUpper("şönil-01")).toBe("ŞÖNIL-01");
+    expect(codeUpper("SİENA")).toBe("SİENA"); // typed capitals are kept
+  });
+});

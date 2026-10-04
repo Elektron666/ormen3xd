@@ -5,6 +5,7 @@
 // extends towards +z, x is centred. A piece at rot = 0 faces +z (its back to
 // the back wall); rot = 90 faces +x (its back to the left wall).
 
+import { codeUpper } from "@/lib/i18n/tr";
 import { L_NOTCH, type RoomSpec } from "./spec";
 
 export interface Placement {
@@ -188,7 +189,7 @@ export function decodeLayout(value: string | null | undefined): Placement[] | nu
   for (const [i, part] of value.split("_").entries()) {
     const [modelSlug, fabricCode, x, z, rot] = part.split(".");
     if (!modelSlug || !fabricCode || [x, z, rot].some((v) => v === undefined || !/^-?\d+$/.test(v))) return null;
-    items.push({ id: `m${i + 1}`, modelSlug, fabricCode: fabricCode.toLocaleUpperCase("tr-TR"), x: Number(x) / 100, z: Number(z) / 100, rot: normaliseRot(Number(rot)) });
+    items.push({ id: `m${i + 1}`, modelSlug, fabricCode: codeUpper(fabricCode), x: Number(x) / 100, z: Number(z) / 100, rot: normaliseRot(Number(rot)) });
   }
   return items.length > 0 && items.length <= 12 ? items : null;
 }

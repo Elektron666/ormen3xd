@@ -1,3 +1,4 @@
+import { codeUpper } from "@/lib/i18n/tr";
 import type { Fabric, FurnitureModel } from "@/lib/types";
 import { decodeRoom, type RoomSpec } from "@/lib/room/spec";
 import { decodeLayout, type Placement } from "@/lib/room/layout";
@@ -23,7 +24,7 @@ export function initialStateFrom(
   const m = str("m");
   return {
     initialModelSlug: models.find((x) => x.slug === m)?.slug ?? models[0].slug,
-    initialFabricCode: str("k")?.toLocaleUpperCase("tr-TR"),
+    initialFabricCode: str("k") ? codeUpper(str("k")!) : undefined,
     initialRoom: decodeRoom(str("oda")),
     initialLayout: layout?.length ? layout : null,
     initialPlan: str("g") === "plan",
