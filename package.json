@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "textures": "tsx scripts/generate-textures.ts"
+    "textures": "tsx scripts/generate-textures.ts",
+    "seed:sql": "tsx scripts/build-seed-sql.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

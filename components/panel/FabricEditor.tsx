@@ -227,7 +227,7 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
               <p className="mt-1 text-[12px] text-antrasit-50">Düz serilmiş, gölgesiz, tepeden çekilmiş kare bir alan. Normal ve pürüzlülük haritaları otomatik üretilir.</p>
               {processing && <p className="mt-1 text-[12px] text-ceviz">Hazırlanıyor…</p>}
             </div>
-            <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+            <input ref={fileInput} type="file" accept="image/*" className="hidden" aria-label="Kumaş fotoğrafı" onChange={(e) => pick(e.target.files?.[0])} />
           </div>
           {errors.photo && <p className="mt-1.5 text-[12px] text-[#9a3b31]">{errors.photo}</p>}
           {processed && (

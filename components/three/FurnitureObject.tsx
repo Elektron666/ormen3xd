@@ -77,7 +77,8 @@ function ProceduralFurniture(props: FurnitureObjectProps & { generator: keyof ty
 }
 
 function GlbFurniture(props: FurnitureObjectProps & { url: string }) {
-  const gltf = useGLTF(props.url);
+  // Draco decoder served from our own domain (public/draco), not a CDN
+  const gltf = useGLTF(props.url, "/draco/");
   // clone so several viewers (e.g. compare mode) can dress the same file differently
   const source = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   return <Dressed {...props} source={source} />;

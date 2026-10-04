@@ -1,5 +1,5 @@
 import { getRepository } from "@/lib/data";
-import { whatsappUrl } from "@/lib/samples";
+import { prettyPhone, whatsappUrl } from "@/lib/samples";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
 
 export const metadata = { title: "Numune talepleri" };
@@ -36,7 +36,7 @@ export default async function RequestsPage() {
                 <p className="text-[13px] text-antrasit-50">{when(r.createdAt)}</p>
               </div>
               <p className="mt-1 text-[14px] tracking-wide">{r.fabricCodes.join(" · ")}</p>
-              {(r.firmSlug || r.modelSlugs?.length) && (
+              {(!!r.firmSlug || !!r.modelSlugs?.length) && (
                 <p className="mt-1 text-[13px] text-antrasit-50">
                   {r.firmSlug ? `Firma: ${r.firmSlug}` : "ORMEN ana sayfa"}
                   {r.modelSlugs?.length ? ` · ${r.modelSlugs.join(", ")}` : ""}
@@ -45,7 +45,7 @@ export default async function RequestsPage() {
               {r.note && <p className="mt-2 rounded-lg bg-white px-3 py-2 text-[14px] text-antrasit-70">{r.note}</p>}
               <div className="mt-3 flex flex-wrap gap-2">
                 <a href={`tel:${r.phone}`} className={buttonClass.quiet}>
-                  {r.phone}
+                  {prettyPhone(r.phone)}
                 </a>
                 <a href={whatsappUrl(r.phone, `Merhaba ${r.name}, ORMEN TEKSTİL’den yazıyoruz. ${r.fabricCodes.join(", ")} numune talebiniz için…`)} target="_blank" rel="noopener" className={buttonClass.quiet}>
                   WhatsApp’tan yaz

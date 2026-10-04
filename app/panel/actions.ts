@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getRepository } from "@/lib/data";
-import { DuplicateCodeError } from "@/lib/data/repository";
+import { isDuplicateCode } from "@/lib/data/repository";
 import { getPanelUser, signIn, signOut } from "@/lib/auth/panel";
 import { validateFabricFields, type FabricFieldErrors, type FabricFields } from "@/lib/panel/fabric-form";
 import { STORAGE_BUCKET, SUPABASE_URL } from "@/lib/supabase/config";
@@ -103,7 +103,7 @@ export async function saveFabricAction(p: SaveFabricPayload): Promise<SaveResult
     refresh();
     return { ok: true, id: saved.id };
   } catch (e) {
-    if (e instanceof DuplicateCodeError) return { ok: false, errors: { code: e.message } };
+    if (isDuplicateCode(e)) return { ok: false, errors: { code: e.message } };
     return { ok: false, error: e instanceof Error ? e.message : "Kaydedilemedi." };
   }
 }
@@ -155,4 +155,18 @@ export async function saveModelAction(p: SaveModelPayload): Promise<{ ok: true; 
   const saved = await repo.saveModel(model);
   refresh();
   return { ok: true, id: saved.id };
+}
+
+export async function setModelActiveAction(id: string, active: boolean): Promise<{ ok: boolean; error?: string }> {
+  await guard();
+  const repo = getRepository();
+  const all = await repo.listAllModels();
+  const model = all.find((m) => m.id === id);
+  if (!model) return { ok: false, error: "Model bulunamadı." };
+  // the configurator always needs something to show
+  if (!active && model.firmId === null && !all.some((m) => m.id !== id && m.firmId === null && m.isActive))
+    return { ok: false, error: "Vitrinde en az bir model açık kalmalı." };
+  await repo.saveModel({ ...model, isActive: active });
+  refresh();
+  return { ok: true };
 }

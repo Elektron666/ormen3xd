@@ -1,0 +1,124 @@
+import { expect, test, type Page } from "@playwright/test";
+import path from "node:path";
+
+const GLB = path.join(__dirname, "../fixtures/ornek-puf.glb");
+const PHOTO = path.join(__dirname, "../../public/seed/fabrics/siena/siena-04-albedo-2k.webp");
+
+async function login(page: Page) {
+  await page.goto("/panel");
+  await expect(page).toHaveURL(/\/panel\/giris/);
+  await page.getByLabel("E-posta").fill("demo@ormen.local");
+  await page.getByLabel("Şifre").fill("ormen-demo");
+  await page.getByRole("button", { name: "Giriş yap" }).click();
+  await expect(page.getByRole("heading", { name: "Genel bakış" })).toBeVisible();
+}
+
+test.describe("panel", () => {
+  test.skip(({ isMobile }) => isMobile, "panel masaüstü için");
+
+  test("giriş olmadan panel ve yükleme kapalı", async ({ page, request }) => {
+    await page.goto("/panel/kumaslar");
+    await expect(page).toHaveURL(/\/panel\/giris/);
+    expect((await request.post("/api/panel/dosya?hazirla", { data: { path: "kumaslar/x/y.webp" } })).status()).toBe(401);
+    expect((await request.get("/api/panel/talepler")).status()).toBe(401);
+  });
+
+  test("fotoğraftan yeni kumaş eklenir ve konfigüratörde görünür", async ({ page }) => {
+    test.setTimeout(120_000);
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    const code = `DENEME-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    await login(page);
+    await page.goto("/panel/kumaslar/yeni");
+    await page.getByLabel("Kumaş fotoğrafı").setInputFiles(PHOTO);
+    await page.getByLabel("Fotoğraftaki alanın eni (cm)").fill("12");
+    await page.getByLabel("Kumaş kodu").fill(code.toLowerCase());
+    await page.getByLabel("Seri").fill("DENEME");
+    await page.getByLabel("Renk adı").fill("Kum");
+    await page.getByLabel("Kumaş tipi").selectOption("dokuma");
+    await expect(page.getByText(/Ortalama renk #|kenarları birbirini tutmuyor/)).toBeVisible({ timeout: 60_000 });
+    // the height follows the photo's proportions (square photo → 12 cm)
+    await expect(page.getByLabel("Boyu (cm)")).toHaveValue("12");
+    await page.getByRole("button", { name: "Kaydet" }).click();
+    await expect(page.getByRole("status")).toContainText(`${code} kaydedildi`, { timeout: 60_000 });
+    await expect(page.getByRole("link", { name: new RegExp(code) })).toBeVisible();
+
+    await page.goto(`/?y=moduler-kanepe.${code}.0.51.0`);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            type O = { isMesh?: boolean; material?: { name?: string } };
+            const s = (window as unknown as { __ormenStage?: { get(): { scene: { traverse(cb: (o: O) => void): void } } } }).__ormenStage;
+            const names = new Set<string>();
+            s?.get().scene.traverse((o) => o.isMesh && o.material?.name?.startsWith("kumas:") && names.add(o.material.name.slice(6)));
+            return [...names];
+          }),
+        { timeout: 45_000 },
+      )
+      .toEqual([code]);
+    expect(errors).toEqual([]);
+  });
+
+  test("numune talebi panelde listelenir ve CSV olarak iner", async ({ page, request }) => {
+    const name = `Deneme ${Date.now().toString(36)}`;
+    const res = await request.post("/api/samples", {
+      data: { name, phone: "0532 123 45 67", consent: true, fabricCodes: ["LUMA-02"], link: "https://evil.example/x" },
+    });
+    expect(res.ok()).toBe(true);
+    await login(page);
+    await page.goto("/panel/talepler");
+    const item = page.getByRole("listitem").filter({ hasText: name });
+    await expect(item).toContainText("LUMA-02");
+    await expect(item.getByRole("link", { name: "Seçimi aç" })).toHaveCount(0);
+    const csv = await page.request.get("/api/panel/talepler");
+    expect(csv.headers()["content-disposition"]).toContain("numune-talepleri");
+    expect(await csv.text()).toContain(name);
+  });
+
+  test("toplu aktarım CSV satırlarını denetler", async ({ page }) => {
+    await login(page);
+    await page.goto("/panel/kumaslar/toplu");
+    const csv = "kod;seri;renk;renk_ailesi;tip;tekrar_en_cm;fotograf\nLUMA-02;LUMA;Krem;krem;bukle;10;\nYENI-01;YENI;Gri;gri;dokuma;10;yeni.jpg\nBOZUK;;;;;;\n";
+    await page.getByLabel("CSV dosyası").setInputFiles({ name: "liste.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+    const rows = page.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(0)).toContainText("zaten katalogda");
+    await expect(rows.nth(1)).toContainText("“yeni.jpg” bulunamadı");
+    await expect(page.getByRole("button", { name: "0 kumaşı aktar" })).toBeDisabled();
+  });
+
+  test("GLB model yüklenir, malzemesi seçilir ve konfigüratörde açılır", async ({ page }) => {
+    test.setTimeout(120_000);
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    const slug = `puf-${Date.now().toString(36).slice(-4)}`;
+    await login(page);
+    await page.goto("/panel/modeller/yeni");
+    await page.getByLabel("Model dosyası").setInputFiles(GLB);
+    await expect(page.getByText("54 cm").first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("checkbox", { name: /kumas/ })).toBeChecked();
+    await expect(page.getByRole("checkbox", { name: /ayak/ })).not.toBeChecked();
+    await page.getByLabel("Model adı").fill("Deneme Puf");
+    await page.getByLabel("Bağlantı adı").fill(slug);
+    await page.getByLabel("Açılışta gösterilecek kumaş").selectOption("SIENA-03");
+    await page.getByRole("button", { name: "Kaydet" }).click();
+    await expect(page.getByRole("status")).toContainText("Deneme Puf kaydedildi", { timeout: 30_000 });
+
+    await page.goto(`/?y=${slug}.SIENA-03.0.51.0`);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            type O = { isMesh?: boolean; material?: { name?: string } };
+            const s = (window as unknown as { __ormenStage?: { get(): { scene: { traverse(cb: (o: O) => void): void } } } }).__ormenStage;
+            const names = new Set<string>();
+            s?.get().scene.traverse((o) => o.isMesh && o.material?.name?.startsWith("kumas:") && names.add(o.material.name.slice(6)));
+            return [...names];
+          }),
+        { timeout: 45_000 },
+      )
+      .toEqual(["SIENA-03"]);
+    expect(errors).toEqual([]);
+  });
+});

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalisePhone, sampleWhatsappText, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
+import { normalisePhone, sampleWhatsappText, prettyPhone, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
 
 describe("phone numbers", () => {
   it.each([
@@ -56,5 +56,12 @@ describe("shareLink", () => {
     expect(shareLink("https://kotu.example/baska")).toBeUndefined();
     expect(shareLink("https://x/p/a/../../evil")).toBeUndefined();
     expect(shareLink(42)).toBeUndefined();
+  });
+});
+
+describe("prettyPhone", () => {
+  it("formats stored Turkish numbers", () => {
+    expect(prettyPhone("+905321234567")).toBe("0532 123 45 67");
+    expect(prettyPhone("+4915112345678")).toBe("+4915112345678");
   });
 });

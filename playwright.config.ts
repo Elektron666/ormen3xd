@@ -25,5 +25,12 @@ export default defineConfig({
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined
-    : { command: "npm run build && npm run start -- -p 3100", url: "http://localhost:3100", timeout: 300_000, reuseExistingServer: true },
+    : {
+        command: "npm run build && npm run start -- -p 3100",
+        url: "http://localhost:3100",
+        timeout: 300_000,
+        reuseExistingServer: true,
+        // demo panel user for the panel tests (production build has no default)
+        env: { PANEL_DEMO_EMAIL: "demo@ormen.local", PANEL_DEMO_PASSWORD: "ormen-demo", PANEL_SESSION_SECRET: "e2e-only-secret" },
+      },
 });

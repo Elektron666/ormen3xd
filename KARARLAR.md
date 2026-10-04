@@ -4,6 +4,35 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Dilim 4: Yönetim paneli (4 Ekim 2026)
+
+- **Veri katmanı:** Supabase anahtarları tanımlıysa her şey Supabase'de (Postgres + Storage), değilse bellekteki örnek veriyle çalışıyor. Sayfalar hangisinin çalıştığını bilmiyor (`lib/data/`). Bellek modunda panelin üstünde sarı uyarı var: eklenenler sunucu yeniden başlayınca kaybolur. **Vercel'de panelin gerçekten kullanılması için Supabase şart.**
+- **Şema:** `supabase/migrations/…_init.sql`. Her tabloda satır güvenliği (RLS) açık. Herkes yalnızca yayındaki kumaş/model/firmayı okuyabiliyor; numune talebi ve olaylara yalnızca ekleme yapabiliyor; okuma ve düzenleme yalnızca panel kullanıcısında. Şema ve kurallar testte gerçek bir Postgres'te (PGlite) çalıştırılıp deneniyor.
+- **Örnek veri SQL olarak:** `supabase/seed.sql`, Supabase'in SQL ekranına yapıştırılıyor. Önce Node ile çalışan bir betik yazdım, sonra vazgeçtim: yazılımcı olmayan biri için kopyala-yapıştır daha kolay ve SQL dosyası testte iki kez çalıştırılıp denenebiliyor. Dosya `npm run seed:sql` ile örnek veriden üretiliyor.
+- **Panel girişi:** Supabase Auth (e-posta + şifre). Kayıt ekranı yok; kullanıcıyı ORMEN Supabase'den ekliyor ve `profiles` tablosuna satır ekleyerek yetki veriyor. Profil satırı olmayan kullanıcı panele giremiyor. Supabase yokken tek bir deneme kullanıcısı (`PANEL_DEMO_EMAIL/PASSWORD`, imzalı çerez) var; geliştirme ortamında varsayılanı `demo@ormen.local / ormen-demo`, üretimde varsayılan yok.
+- **Sunucu yetkisi:** Panel işlemleri önce oturumu kontrol ediyor, sonra sunucuda service role anahtarıyla yazıyor. Bu anahtar tarayıcıya hiç gitmiyor.
+- **Dosya yükleme:** Fotoğraf ve modeller tarayıcıdan doğrudan Supabase Storage'a gidiyor (sunucunun verdiği tek kullanımlık imzalı adresle). Vercel'in 4,5 MB istek sınırına takılmamak için böyle. İzinli klasörler `kumaslar/`, `modeller/`, `logolar/`; SVG kabul edilmiyor (içinde betik taşıyabilir).
+- **Kumaş fotoğrafı tarayıcıda işleniyor:** Ek yeri kontrolü (kenarlar birbirini tutuyor mu), istenirse kenar yumuşatma, renk fotoğrafından kabartı (normal) ve pürüzlülük haritası üretimi, 1k/2k boyutlar, küçük görsel, ortalama renk ve renk ailesi önerisi. Sunucuya ağır iş düşmüyor, ek paket gerekmedi. Üretilen haritalar `derived_maps = true` olarak işaretleniyor; ileride ayrı çekilmiş haritalar gelirse ayırt edilebilir.
+- **Gerçek fotoğraf yüklenince "yer tutucu" işareti kalkıyor.** Yalnızca bilgileri düzenlemek dokuya ve bu işarete dokunmuyor.
+- **Kumaş silinmiyor, gizleniyor.** Silme, geçmiş taleplerdeki ve paylaşım linklerindeki kodları anlamsız bırakırdı. Vitrinde en az bir model açık kalmak zorunda.
+- **Teknik değerler uydurulmuyor:** Formda kompozisyon, gramaj, Martindale gibi alanlar boş bırakılabiliyor ve konfigüratörde boşsa hiç gösterilmiyor. Toplu ekleme şablonu da "bilmediğinizi boş bırakın" diyor.
+- **Toplu ekleme:** CSV (Excel'in `;` ayraçlı Türkçe biçimi ve `,` ikisi de okunuyor) ve fotoğraflar. Fotoğraf, `fotograf` sütunundaki adla (boşsa kumaş koduyla, uzantıdan bağımsız) eşleşiyor. Zaten var olan kodlar atlanıyor: toplu ekleme yanlışlıkla mevcut kumaşın üstüne yazmasın diye. İşlem tarayıcıda satır satır yürüyor, sunucu zaman sınırına takılmıyor.
+- **Model yükleme:** `.glb` dosyası tarayıcıda okunuyor (Draco sıkıştırmalı dosyalar da). Malzeme listesi, ölçüler ve üçgen sayısı çıkarılıyor. Adında "kumas/fabric/minder…" geçen malzemeler önceden işaretleniyor. Birim yanlışsa (mm/cm ile dışa aktarılmış) kayıt engelleniyor. 15 MB üstü ve 400 bin üçgen üstü için uyarı, 60 MB üstü ret. İşaretlenen malzemelerde UV ölçüsü parçadan parçaya %35'ten fazla değişiyorsa uyarı veriliyor; kumaşın gerçek ölçüde görünmesi buna bağlı.
+- **Draco çözücüsü kendi sunucumuzdan:** `public/draco/` (three.js ile gelen Google Draco, Apache-2.0). drei varsayılan olarak Google'ın CDN'ini kullanıyordu; dış bağımlılığı kaldırdım.
+- **Örnek puf modeli** (`tests/fixtures/ornek-puf.glb`) `scripts/generate-sample-glb.ts` ile kodla üretildi. Model yükleme testinde ve deneme için kullanılıyor; dışarıdan indirilmiş model yok.
+- **Numune talepleri:** Panelde liste, telefon ve WhatsApp'tan yaz bağlantısı, CSV indirme (Excel uyumlu, Türkiye saati). Talepteki "seçimi aç" bağlantısı yalnızca kendi `/p/…` sayfalarımıza izin veriyor; başka adres ya da `javascript:` gelirse kaydedilmiyor.
+- **Hata düzeltmesi:** Next.js geliştirme sunucusunda her rota kendi kod kopyasını yüklediği için `instanceof` kontrolleri yanlış sonuç veriyordu (yüklenen dosyalar 404 dönüyordu). Tür kontrolü addan yapılıyor.
+- **Yeni paketler:** `@supabase/supabase-js` ve `@supabase/ssr` (veritabanı, dosya, oturum çerezleri), geliştirme için `@electric-sql/pglite` (şemayı testte gerçek Postgres'te denemek için).
+
+### Planlanıp bu dilimde yapılmayanlar
+
+- Triplanar yedek malzeme (UV'si bozuk modeller için): şimdilik yalnızca uyarı var.
+- Panelde kumaş başına ΔE renk doğruluğu değeri: renk testi uçtan uca testte duruyor, panelde gösterilmiyor.
+- Firma ekleme, firma logosu, QR: firma sayfaları diliminde.
+- Supabase'e karşı canlı deneme yapılamadı (bu ortamda Supabase projesi yok). Şema ve örnek veri PGlite'ta, panel akışları bellek modunda uçtan uca test edildi. İlk kurulumda bir tur elle deneme gerekiyor.
+
+---
+
 ## Dilim 3: Paylaşım, numune talebi, teklif föyü (4 Ekim 2026)
 
 - **Paylaşım bağlantısı veritabanı gerektirmiyor.** `/p/<kimlik>` içindeki kimlik; yerleşimin, odanın ve görünümün base64url ile kısaltılmış hali (`lib/share.ts`). Bu yüzden:
@@ -32,7 +61,7 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
   - Doğrulama, tarayıcı ve sunucuda aynı kuralları kullanıyor (`lib/samples.ts`). Sunucu bilinmeyen kumaş kodunu reddediyor.
   - Kayıtta IP ya da cihaz bilgisi tutulmuyor.
   - Gönderimden sonra "WhatsApp'tan da gönder" düğmesi çıkıyor: firma sayfasında firmanın numarasına, ana sayfada `NEXT_PUBLIC_ORMEN_WHATSAPP` numarasına hazır mesaj gidiyor. Numara tanımlı değilse düğme gizli.
-  - **Şu an talepler bellekte tutuluyor.** Sunucu yeniden başlayınca kaybolur. Kalıcı kayıt (Supabase `sample_requests`) ve panelde listeleme panel diliminde gelecek.
+  - Supabase bağlıyken talepler `sample_requests` tablosunda kalıcı; bağlı değilken bellekte (Dilim 4).
 - **KVKK:** `/kvkk` sayfasındaki aydınlatma metni **taslak**. Yayından önce hukuk danışmanına onaylatılmalı; sayfada da böyle yazıyor.
 - **Yeni paket:** `qrcode` (föydeki QR; panelde firma QR'ları için de kullanılacak). `pdf-lib` eklenmedi, tarayıcının yazdırma özelliği yetti.
 

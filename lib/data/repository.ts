@@ -39,5 +39,11 @@ export interface Repository {
 export class DuplicateCodeError extends Error {
   constructor(public code: string) {
     super(`${code} kodu zaten var.`);
+    this.name = "DuplicateCodeError";
   }
+}
+
+/** Checked by name: the repository may come from another bundle's copy of the class. */
+export function isDuplicateCode(e: unknown): e is DuplicateCodeError {
+  return e instanceof Error && e.name === "DuplicateCodeError";
 }

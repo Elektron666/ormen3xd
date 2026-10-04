@@ -53,6 +53,12 @@ export function shareLink(raw: unknown): string | undefined {
   }
 }
 
+/** "+905321234567" → "0532 123 45 67" (other shapes are returned as they are). */
+export function prettyPhone(p: string): string {
+  const m = /^\+90(\d{3})(\d{3})(\d{2})(\d{2})$/.exec(p);
+  return m ? `0${m[1]} ${m[2]} ${m[3]} ${m[4]}` : p;
+}
+
 export function validateSample(input: Partial<SampleRequestInput>): { ok: true; value: SampleRequestInput } | { ok: false; errors: SampleErrors } {
   const errors: SampleErrors = {};
   const name = (input.name ?? "").trim().replace(/\s+/g, " ");

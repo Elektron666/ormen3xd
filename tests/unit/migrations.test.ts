@@ -97,3 +97,30 @@ describe("database schema", () => {
     await expect(db.query("insert into models (slug, name, procedural_key, width_cm, depth_cm, height_cm) values ('kanepe', 'K2', 'armchair', 1, 1, 1)")).rejects.toThrow();
   });
 });
+
+describe("seed.sql", () => {
+  it("loads the demo catalogue on a fresh database and is safe to run twice", async () => {
+    const fresh = new PGlite();
+    await fresh.exec(STUBS);
+    const dir = path.join(process.cwd(), "supabase/migrations");
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".sql")).sort()) await fresh.exec(readFileSync(path.join(dir, f), "utf8"));
+    const seed = readFileSync(path.join(process.cwd(), "supabase/seed.sql"), "utf8");
+    await fresh.exec(seed);
+    await fresh.exec(seed);
+    const count = async (t: string) => (await fresh.query<{ n: number }>(`select count(*)::int as n from ${t}`)).rows[0].n;
+    expect(await count("fabrics")).toBe(23);
+    expect(await count("fabric_textures")).toBe(23);
+    expect(await count("models")).toBe(2);
+    const m = await fresh.query<{ fabric_material_names: string[]; default_fabric_code: string }>("select fabric_material_names, default_fabric_code from models where slug = 'berjer'");
+    expect(m.rows[0]).toEqual({ fabric_material_names: ["kumas"], default_fabric_code: "SIENA-04" });
+
+    // README step: make a dashboard user a panel user
+    await fresh.exec("insert into auth.users (id) values ('00000000-0000-0000-0000-0000000000aa')");
+    await fresh.exec("alter table auth.users add column email text; update auth.users set email = 'fatih@ornek.com'");
+    const grant = "insert into public.profiles (id) select id from auth.users where email = 'fatih@ornek.com' on conflict (id) do nothing;";
+    await fresh.exec(grant);
+    await fresh.exec(grant);
+    expect(await count("profiles")).toBe(1);
+    await fresh.close();
+  }, 60_000);
+});

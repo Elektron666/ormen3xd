@@ -11,4 +11,6 @@ Projede kullanılan görsel ve yazı tipi kaynakları ile lisansları. İnternet
 | Fraunces yazı tipi | Google Fonts, `next/font` ile sitede barındırılıyor | SIL Open Font License 1.1 |
 | Inter yazı tipi | Google Fonts, `next/font` ile sitede barındırılıyor | SIL Open Font License 1.1 |
 | ORMEN kelime logosu | Fraunces ile yazılmış yer tutucu | Gerçek logo dosyası gelince değiştirilecek |
+| Örnek puf modeli (`tests/fixtures/ornek-puf.glb`) | `scripts/generate-sample-glb.ts` ile kodla üretildi | Projeye ait; dış kaynak yok |
+| Draco çözücüsü (`public/draco/`) | Google Draco, `three` paketiyle gelen derleme | Apache License 2.0 |
 | Arayüz ikonları (`components/ui/icons.tsx`) | Bu proje için çizildi | Projeye ait |
