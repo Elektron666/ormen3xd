@@ -13,6 +13,7 @@ import { CompareDivider, SceneTools } from "./SceneTools";
 import { useFavorites } from "@/lib/favorites";
 import { IconClose, IconHeart } from "@/components/ui/icons";
 import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomSpec } from "@/lib/room/spec";
+import { constrain, encodeLayout, findFreeSpot, newId, overlapping, type Placement } from "@/lib/room/layout";
 
 const Stage = dynamic(() => import("@/components/three/Stage").then((m) => m.Stage), {
   ssr: false,
@@ -25,6 +26,8 @@ export interface ConfiguratorProps {
   fabrics: Fabric[];
   initialFabricCode?: string;
   initialRoom?: RoomSpec | null;
+  /** Pieces from a shared link; when absent one piece of initialModelSlug is placed. */
+  initialLayout?: Placement[] | null;
   initialPlan?: boolean;
   firm?: Firm | null;
 }
@@ -36,34 +39,71 @@ interface CompareState {
   active: Slot;
 }
 
-function setQuery(params: Record<string, string>) {
+function setQuery(params: Record<string, string | null>) {
   const url = new URL(window.location.href);
-  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  for (const [k, v] of Object.entries(params)) {
+    if (v === null) url.searchParams.delete(k);
+    else url.searchParams.set(k, v);
+  }
   window.history.replaceState(window.history.state, "", url);
 }
 
-export function Configurator({ models, initialModelSlug, fabrics, initialFabricCode, initialRoom, initialPlan = false, firm }: ConfiguratorProps) {
-  const [modelSlug, setModelSlug] = useState(initialModelSlug);
-  const model = models.find((m) => m.slug === modelSlug) ?? models[0];
+export function Configurator({
+  models,
+  initialModelSlug,
+  fabrics,
+  initialFabricCode,
+  initialRoom,
+  initialLayout,
+  initialPlan = false,
+  firm,
+}: ConfiguratorProps) {
   const byCode = useMemo(() => new Map(fabrics.map((f) => [f.code, f])), [fabrics]);
-  const firstFabric = byCode.get(initialFabricCode ?? "") ?? byCode.get(model.defaultFabricCode ?? "") ?? fabrics[0];
+  const bySlug = useMemo(() => new Map(models.map((m) => [m.slug, m])), [models]);
+  const dimsOf = useCallback((slug: string) => bySlug.get(slug)?.dimensionsCm ?? { w: 100, d: 100, h: 80 }, [bySlug]);
 
-  const [selected, setSelected] = useState<Fabric>(firstFabric);
-  const [shownCode, setShownCode] = useState<string | null>(null);
+  const [room, setRoom] = useState<RoomSpec>(() => initialRoom ?? { ...DEFAULT_PRESET.spec });
+
+  // ---------------------------------------------------------------- layout
+  const [items, setItems] = useState<Placement[]>(() => {
+    if (initialLayout?.length) return initialLayout.map((p) => constrain(p, dimsOf(p.modelSlug), initialRoom ?? DEFAULT_PRESET.spec));
+    const model = bySlug.get(initialModelSlug) ?? models[0];
+    const fabricCode = (byCode.get(initialFabricCode ?? "") ?? byCode.get(model.defaultFabricCode ?? "") ?? fabrics[0]).code;
+    const spot = findFreeSpot(model.dimensionsCm, initialRoom ?? DEFAULT_PRESET.spec, []);
+    return [{ id: newId(), modelSlug: model.slug, fabricCode, ...spot }];
+  });
+  const [selectedId, setSelectedId] = useState(() => items[0].id);
+  const selectedItem = items.find((p) => p.id === selectedId) ?? items[0];
+  const selectedModel = bySlug.get(selectedItem.modelSlug) ?? models[0];
+  const selected = byCode.get(selectedItem.fabricCode) ?? fabrics[0];
+  const overlapIds = useMemo(() => overlapping(items.map((p) => ({ p, dims: dimsOf(p.modelSlug) }))), [items, dimsOf]);
+
+  // write the layout to the link, debounced (browsers limit history updates)
+  const urlTimer = useRef<number | undefined>(undefined);
+  const commit = useCallback((next: Placement[]) => {
+    setItems(next);
+    window.clearTimeout(urlTimer.current);
+    urlTimer.current = window.setTimeout(() => setQuery({ y: encodeLayout(next), m: null, k: null }), 350);
+  }, []);
+
+  const [shownCodes, setShownCodes] = useState<Record<string, string>>({});
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-
-  const loading = shownCode !== selected.code;
+  const loading = shownCodes[selectedItem.id] !== selected.code;
 
   const [tab, setTab] = useState<Tab>("kumas");
-  const [room, setRoom] = useState<RoomSpec>(() => initialRoom ?? { ...DEFAULT_PRESET.spec });
   const [ambient, setAmbient] = useState(() => (initialRoom ? matchingPreset(initialRoom) ?? DEFAULT_PRESET : DEFAULT_PRESET).ambient);
 
-  const changeRoom = useCallback((spec: RoomSpec, preset?: RoomPreset) => {
-    setRoom(spec);
-    if (preset) setAmbient(preset.ambient);
-    setQuery({ oda: matchingPreset(spec)?.id ?? encodeRoom(spec) });
-  }, []);
+  const changeRoom = useCallback(
+    (spec: RoomSpec, preset?: RoomPreset) => {
+      setRoom(spec);
+      if (preset) setAmbient(preset.ambient);
+      setQuery({ oda: matchingPreset(spec)?.id ?? encodeRoom(spec) });
+      // keep every piece inside the new walls
+      commit(items.map((p) => constrain(p, dimsOf(p.modelSlug), spec)));
+    },
+    [commit, items, dimsOf],
+  );
 
   const [closeUp, setCloseUp] = useState(false);
   const [plan, setPlan] = useState(initialPlan);
@@ -91,11 +131,44 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
         setCompare({ ...compare, right: f });
         return;
       }
-      setSelected(f);
-      setQuery({ k: f.code });
+      commit(items.map((p) => (p.id === selectedItem.id ? { ...p, fabricCode: f.code } : p)));
     },
-    [compare],
+    [compare, commit, items, selectedItem.id],
   );
+
+  const applyToAll = () => commit(items.map((p) => ({ ...p, fabricCode: selected.code })));
+
+  // ---------------------------------------------------------------- piece actions
+  const addPiece = (slug: string) => {
+    const model = bySlug.get(slug);
+    if (!model) return;
+    const spot = findFreeSpot(model.dimensionsCm, room, items.map((p) => ({ p, dims: dimsOf(p.modelSlug) })));
+    const piece: Placement = { id: newId(), modelSlug: slug, fabricCode: selected.code, ...spot };
+    commit([...items, piece]);
+    setSelectedId(piece.id);
+  };
+  const pieceActions = {
+    onSelect: (id: string) => setSelectedId(id),
+    onMove: (id: string, x: number, z: number) =>
+      setItems((list) => list.map((p) => (p.id === id ? constrain({ ...p, x, z }, dimsOf(p.modelSlug), room) : p))),
+    onDragEnd: () => commit(items),
+    onRotate: (id: string, deg: number) =>
+      commit(items.map((p) => (p.id === id ? constrain({ ...p, rot: p.rot + deg }, dimsOf(p.modelSlug), room) : p))),
+    onDuplicate: (id: string) => {
+      const src = items.find((p) => p.id === id);
+      if (!src) return;
+      const spot = findFreeSpot(dimsOf(src.modelSlug), room, items.map((p) => ({ p, dims: dimsOf(p.modelSlug) })));
+      const copy: Placement = { ...src, id: newId(), ...spot };
+      commit([...items, copy]);
+      setSelectedId(copy.id);
+    },
+    onDelete: (id: string) => {
+      if (items.length < 2) return;
+      const next = items.filter((p) => p.id !== id);
+      commit(next);
+      if (id === selectedId) setSelectedId(next[0].id);
+    },
+  };
 
   const toggleCompare = () => {
     if (compare) {
@@ -113,18 +186,10 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
 
   const intent = useCallback((f: Fabric) => prefetchFabric(f, preferredTextureSize()), []);
 
-  const onFabricShown = useCallback((code: string, first: boolean) => {
-    setShownCode(code);
+  const onFabricShown = useCallback((id: string, code: string, first: boolean) => {
+    setShownCodes((m) => ({ ...m, [id]: code }));
     if (first) setReady(true);
   }, []);
-
-  const switchModel = (slug: string) => {
-    if (slug === modelSlug) return;
-    setReady(false);
-    setShownCode(null);
-    setModelSlug(slug);
-    setQuery({ m: slug });
-  };
 
   const style = firm ? ({ "--accent": firm.accentColor } as React.CSSProperties) : undefined;
 
@@ -134,8 +199,12 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
       <section className="studio-backdrop relative h-[60dvh] md:h-dvh" aria-label="3B sahne">
         <div className={`absolute inset-0 transition-opacity duration-150 ${fading ? "opacity-0" : "opacity-100"}`}>
           <Stage
-            model={model}
-            fabric={selected}
+            models={bySlug}
+            fabrics={byCode}
+            items={items}
+            selectedId={selectedItem.id}
+            overlapIds={overlapIds}
+            actions={pieceActions}
             room={room}
             ambient={ambient}
             compareFabric={compare?.right ?? null}
@@ -154,23 +223,6 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
           >
             <BrandMark firm={firm} />
           </div>
-          {models.length > 1 && (
-            <nav aria-label="Model" className="pointer-events-auto flex rounded-full border border-cizgi bg-kagit/80 p-0.5 backdrop-blur-[2px]">
-              {models.map((m) => (
-                <button
-                  key={m.slug}
-                  type="button"
-                  onClick={() => switchModel(m.slug)}
-                  aria-pressed={m.slug === modelSlug}
-                  className={`h-9 rounded-full px-3.5 text-[13px] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-antrasit ${
-                    m.slug === modelSlug ? "bg-antrasit text-kagit" : "text-antrasit-70 hover:text-antrasit"
-                  }`}
-                >
-                  {m.name}
-                </button>
-              ))}
-            </nav>
-          )}
         </header>
 
         {compare && ready && (
@@ -181,6 +233,8 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
           <div className="pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+2.75rem)] flex justify-center px-4 md:bottom-12">
             <div className="pointer-events-auto">
               <SceneTools
+                models={models}
+                onAdd={addPiece}
                 plan={plan}
                 onPlan={togglePlan}
                 closeUp={closeUp}
@@ -311,6 +365,23 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
               <p className="mt-2 text-[12px] leading-snug text-antrasit-50">Seçili tarafa kumaş atamak için aşağıdan bir kumaşa dokunun.</p>
             </div>
           )}
+          {items.length > 1 && (
+            <div className="mb-5 flex items-center justify-between gap-3 rounded-lg bg-cizgi/40 px-3 py-2 text-[13px]">
+              <span className="text-antrasit-70">
+                Seçili: <span className="text-antrasit">{selectedModel.name}</span>
+              </span>
+              {items.some((p) => p.fabricCode !== selected.code) && (
+                <button type="button" onClick={applyToAll} className="rounded-full px-2 py-1 text-antrasit underline underline-offset-4 hover:text-ceviz focus-visible:outline-2 focus-visible:outline-antrasit">
+                  Bu kumaşı tümüne uygula
+                </button>
+              )}
+            </div>
+          )}
+          {overlapIds.size > 0 && (
+            <p role="status" className="mb-5 rounded-lg bg-[#F4E2DE] px-3 py-2 text-[13px] text-[#8a3a30]">
+              Bazı mobilyalar üst üste duruyor. Sürükleyerek ayırın.
+            </p>
+          )}
           <div className="mb-6">
             <FabricSpecs fabric={shownFabric} />
             {shownFabric.description && <p className="mt-3 text-sm leading-relaxed text-antrasit-70">{shownFabric.description}</p>}
@@ -345,7 +416,7 @@ export function Configurator({ models, initialModelSlug, fabrics, initialFabricC
           <FabricPicker fabrics={fabrics} selectedCode={shownFabric.code} onSelect={select} onIntent={intent} />
         </div>
         <div id="bolum-oda" role="tabpanel" aria-labelledby="sekme-oda" hidden={tab !== "oda"}>
-          <RoomPanel spec={room} onChange={changeRoom} furnitureCm={model.dimensionsCm} />
+          <RoomPanel spec={room} onChange={changeRoom} furnitureCm={selectedModel.dimensionsCm} />
         </div>
         <p className="mt-10 border-t border-cizgi pt-4 text-center text-[11px] tracking-[0.12em] text-antrasit-50 uppercase">
           {firm ? t.signature : "ORMEN TEKSTİL · Ankara"}

@@ -23,8 +23,10 @@ interface Framing {
  * Camera distance that fits the model's bounding box in view from the final
  * intro angle, with a margin for the overlaid header and footer.
  */
-function frameFor(size: THREE.Vector3, aspect: number, inRoom: boolean): Framing {
-  const target = new THREE.Vector3(0, size.y * 0.45, 0);
+function frameFor(box: THREE.Box3, aspect: number, inRoom: boolean): Framing {
+  const size = box.getSize(new THREE.Vector3());
+  const centre = box.getCenter(new THREE.Vector3());
+  const target = new THREE.Vector3(centre.x, box.min.y + size.y * 0.45, centre.z);
   const tanV = Math.tan(THREE.MathUtils.degToRad(FOV) / 2) * 0.78;
   const tanH = Math.tan(THREE.MathUtils.degToRad(FOV) / 2) * aspect * (aspect < 1 ? 0.95 : 0.86);
   const dir = new THREE.Vector3().setFromSpherical(new THREE.Spherical(1, POLAR, INTRO.to));
@@ -32,10 +34,10 @@ function frameFor(size: THREE.Vector3, aspect: number, inRoom: boolean): Framing
   const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
   const up = new THREE.Vector3().crossVectors(right, forward);
   let distance = 0;
-  for (const x of [-0.5, 0.5]) {
-    for (const y of [0, 1]) {
-      for (const z of [-0.5, 0.5]) {
-        const c = new THREE.Vector3(x * size.x, y * size.y, z * size.z).sub(target);
+  for (const x of [box.min.x, box.max.x]) {
+    for (const y of [box.min.y, box.max.y]) {
+      for (const z of [box.min.z, box.max.z]) {
+        const c = new THREE.Vector3(x, y, z).sub(target);
         const depth = c.dot(forward);
         distance = Math.max(distance, Math.abs(c.dot(right)) / tanH - depth, Math.abs(c.dot(up)) / tanV - depth);
       }
@@ -71,8 +73,9 @@ function placeCamera(camera: THREE.Camera, f: Framing, theta: number, phi = POLA
  */
 function closeUpView(prepared: PreparedModel): { target: THREE.Vector3; position: THREE.Vector3 } {
   const s = prepared.size;
-  const from = new THREE.Vector3(0, s.y * 0.95, s.z * 1.6);
-  const aim = new THREE.Vector3(0, s.y * 0.42, 0);
+  // in the piece's own frame: from above its front edge towards the seat
+  const from = prepared.root.localToWorld(new THREE.Vector3(0, s.y * 0.95, s.z * 1.6));
+  const aim = prepared.root.localToWorld(new THREE.Vector3(0, s.y * 0.42, 0));
   const dir = aim.clone().sub(from).normalize();
   const ray = new THREE.Raycaster(from, dir);
   ray.layers.enableAll();
@@ -101,7 +104,10 @@ function stepMove(move: Move, delta: number, camera: THREE.Camera, controls: Orb
 }
 
 export interface CameraRigProps {
+  /** The piece the overview is framed on (the first piece of the layout). */
   prepared: PreparedModel | null;
+  /** The piece "Yakından bak" goes to (the selected piece). */
+  closeTarget: PreparedModel | null;
   /** True once the model is visible; the intro starts then. */
   started: boolean;
   /** Room floor diagonal in metres, 0 when there is no room. */
@@ -110,7 +116,7 @@ export interface CameraRigProps {
 }
 
 /** Frames the model, plays the intro, and moves to / from the close-up view. */
-export function CameraRig({ prepared, started, roomExtent, closeUp }: CameraRigProps) {
+export function CameraRig({ prepared, closeTarget, started, roomExtent, closeUp }: CameraRigProps) {
   const storeCamera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const invalidate = useThree((s) => s.invalidate);
@@ -125,7 +131,8 @@ export function CameraRig({ prepared, started, roomExtent, closeUp }: CameraRigP
 
   useEffect(() => {
     if (!prepared || !controls) return;
-    const f = frameFor(prepared.size, size.width / Math.max(1, size.height), hasRoom);
+    prepared.root.updateWorldMatrix(true, true);
+    const f = frameFor(new THREE.Box3().setFromObject(prepared.root), size.width / Math.max(1, size.height), hasRoom);
     framing.current = f;
     setTarget(controls, f.target);
     limitsOverview(controls, f, roomExtent);
@@ -150,7 +157,9 @@ export function CameraRig({ prepared, started, roomExtent, closeUp }: CameraRigP
     if (!prepared || !controls || !f) return;
     intro.current.active = false;
     if (closeUp) {
-      const view = closeUpView(prepared);
+      const piece = closeTarget ?? prepared;
+      piece.root.updateWorldMatrix(true, true);
+      const view = closeUpView(piece);
       limitsCloseUp(controls);
       move.current = { t: 0, fromPos: camera.position.clone(), toPos: view.position, fromTarget: controls.target.clone(), toTarget: view.target };
     } else if (move.current || controls.target.distanceTo(f.target) > 1e-3) {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, type KeyboardEvent, type PointerEvent as RPointerEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as RPointerEvent } from "react";
+import type { FurnitureModel } from "@/lib/types";
 import { IconArrowsH, IconCompare, IconCube, IconPlan, IconRuler, IconZoom, IconZoomOut } from "@/components/ui/icons";
 
 function ToolButton({
@@ -29,7 +30,62 @@ function ToolButton({
   );
 }
 
+function AddMenu({ models, onAdd }: { models: FurnitureModel[]; onAdd: (slug: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const esc = (e: globalThis.KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("pointerdown", close);
+    window.addEventListener("keydown", esc);
+    return () => {
+      window.removeEventListener("pointerdown", close);
+      window.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+  return (
+    <div ref={root} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-11 items-center gap-2 rounded-full bg-antrasit px-4 text-[13px] text-kagit transition-colors hover:bg-ceviz focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit"
+      >
+        <span aria-hidden="true" className="text-[17px] leading-none">+</span>
+        Mobilya ekle
+      </button>
+      {open && (
+        <div role="menu" aria-label="Eklenecek mobilya" className="absolute bottom-[calc(100%+10px)] left-0 min-w-56 overflow-hidden rounded-2xl border border-cizgi bg-kagit p-1.5 shadow-[0_16px_40px_-16px_rgba(42,42,40,0.45)]">
+          {models.map((m) => (
+            <button
+              key={m.slug}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                onAdd(m.slug);
+                setOpen(false);
+              }}
+              className="flex w-full items-baseline justify-between gap-4 rounded-xl px-3 py-2.5 text-left text-[14px] text-antrasit hover:bg-cizgi/60 focus-visible:outline-2 focus-visible:outline-antrasit"
+            >
+              <span>{m.name}</span>
+              <span className="text-[12px] tabular-nums text-antrasit-50">
+                {m.dimensionsCm.w}×{m.dimensionsCm.d} cm
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SceneTools({
+  models,
+  onAdd,
   plan,
   onPlan,
   closeUp,
@@ -39,6 +95,8 @@ export function SceneTools({
   comparing,
   onCompare,
 }: {
+  models: FurnitureModel[];
+  onAdd: (slug: string) => void;
   plan: boolean;
   onPlan: () => void;
   closeUp: boolean;
@@ -81,6 +139,8 @@ export function SceneTools({
       )}
       {!plan && <ToolButton pressed={dimensions} onClick={onDimensions} icon={<IconRuler width={18} height={18} />} label="Ölçüler" />}
       <ToolButton pressed={comparing} onClick={onCompare} icon={<IconCompare width={18} height={18} />} label="Karşılaştır" />
+      <span className="mx-1 h-6 w-px bg-cizgi" aria-hidden="true" />
+      <AddMenu models={models} onAdd={onAdd} />
     </div>
   );
 }

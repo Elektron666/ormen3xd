@@ -8,6 +8,7 @@ import * as THREE from "three";
 import { showPrimary } from "@/lib/three/layers";
 import { planBounds, planMeasures, type PlanBounds, type PlanMeasure } from "@/lib/room/plan";
 import type { RoomSpec } from "@/lib/room/spec";
+import type { Footprint } from "@/lib/room/layout";
 
 // Top-down, orthographic plan of the room and the furniture. The ortho camera
 // temporarily becomes the default camera; the orbit camera is left untouched,
@@ -91,11 +92,17 @@ function ScaleBar({ at, zoom }: { at: [number, number, number]; zoom: number }) 
 
 export interface PlanViewProps {
   room: RoomSpec;
-  backZ: number;
-  furniture: THREE.Vector3;
+  /** Footprints of all pieces (for framing the studio). */
+  pieces: Footprint[];
+  /** The selected piece, whose size and clearances are measured. */
+  selected: Footprint | null;
+  /** Tallest piece, metres (dimension lines are drawn above it). */
+  tallest: number;
+  /** False while a piece is being dragged. */
+  controlsEnabled: boolean;
 }
 
-export function PlanView({ room, backZ, furniture }: PlanViewProps) {
+export function PlanView({ room, pieces, selected, tallest, controlsEnabled }: PlanViewProps) {
   const get = useThree((s) => s.get);
   const set = useThree((s) => s.set);
   const size = useThree((s) => s.size);
@@ -109,9 +116,12 @@ export function PlanView({ room, backZ, furniture }: PlanViewProps) {
     return c;
   }, []);
 
-  const foot = useMemo(() => ({ x: furniture.x, z: furniture.z }), [furniture.x, furniture.z]);
-  const bounds = useMemo(() => planBounds(room, backZ, foot), [room, backZ, foot]);
-  const measures = useMemo(() => planMeasures(room, backZ, foot), [room, backZ, foot]);
+  // frame once per room / piece count, not on every drag step
+  const frameKey = `${room.shape}:${room.widthCm}:${room.depthCm}:${pieces.length}`;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const bounds = useMemo(() => planBounds(room, pieces), [frameKey]);
+  const others = useMemo(() => pieces.filter((p) => p !== selected), [pieces, selected]);
+  const measures = useMemo(() => planMeasures(room, selected, others), [room, selected, others]);
   const fit = useMemo(() => computeFit(bounds, size), [bounds, size]);
   // zoom after the user scrolls; tied to the fit it started from
   const [userZoom, setUserZoom] = useState<{ fit: Fit; zoom: number } | null>(null);
@@ -129,7 +139,7 @@ export function PlanView({ room, backZ, furniture }: PlanViewProps) {
     invalidate();
   }, [camera, fit, size, invalidate]);
 
-  const lineY = Math.max(room.heightCm / 100, furniture.y) + 0.05;
+  const lineY = Math.max(room.heightCm / 100, tallest) + 0.05;
   const showGrid = room.shape === "yok";
 
   return (
@@ -137,6 +147,7 @@ export function PlanView({ room, backZ, furniture }: PlanViewProps) {
       <MapControls
         ref={controls}
         camera={camera}
+        enabled={controlsEnabled}
         enableRotate={false}
         screenSpacePanning
         enableDamping={false}

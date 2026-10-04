@@ -25,17 +25,19 @@ export interface FurnitureObjectProps {
 
 function Dressed({ source, model, fabric, textureSize, onPrepared, onFabricShown, onError, layer = LAYER_PRIMARY }: FurnitureObjectProps & { source: THREE.Object3D }) {
   const invalidate = useThree((s) => s.invalidate);
-  const prepared = useMemo(() => {
-    const p = prepareModel(source, model.fabricMaterialNames);
-    setObjectLayer(p.root, layer);
-    return p;
-  }, [source, model.fabricMaterialNames, layer]);
+  const prepared = useMemo(() => prepareModel(source, model.fabricMaterialNames), [source, model.fabricMaterialNames]);
   const dresser = useMemo(() => new FabricDresser(prepared.root, prepared.slots), [prepared]);
   const shown = useRef(false);
   const callbacks = useRef({ onPrepared, onFabricShown, onError });
   useEffect(() => {
     callbacks.current = { onPrepared, onFabricShown, onError };
   });
+
+  // the layer can change (e.g. compare mode) without re-preparing the model
+  useEffect(() => {
+    setObjectLayer(prepared.root, layer);
+    invalidate();
+  }, [prepared, layer, invalidate]);
 
   useEffect(() => {
     dresser.setVisible(false);

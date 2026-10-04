@@ -1,29 +1,30 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { Fabric, FurnitureModel, TextureSize } from "@/lib/types";
 import type { PreparedModel } from "@/lib/three/prepare-model";
-import { FurnitureObject } from "./FurnitureObject";
-import { GroundShadow } from "./GroundShadow";
 import { preferredTextureSize } from "@/lib/three/fabric-material";
 import { encodeRoom, type RoomSpec } from "@/lib/room/spec";
+import { encodeLayout, footprint, type Placement } from "@/lib/room/layout";
 import { Room } from "./Room";
 import { CameraRig, FOV } from "./CameraRig";
-import { Dimensions } from "./Dimensions";
 import { PlanView } from "./PlanView";
+import { PlacedFurniture, type PieceActions } from "./PlacedFurniture";
 import { enableAllLayers, renderSplit, showPrimary } from "@/lib/three/layers";
-import { LAYER_COMPARE } from "@/lib/three/constants";
 
 export interface StageProps {
-  model: FurnitureModel;
-  fabric: Fabric;
+  models: Map<string, FurnitureModel>;
+  fabrics: Map<string, Fabric>;
+  items: Placement[];
+  selectedId: string;
+  overlapIds: Set<string>;
   room: RoomSpec;
   /** Environment light multiplier of the room preset (light stays neutral white). */
   ambient?: number;
-  /** Second fabric for compare mode; null when not comparing. */
+  /** Second fabric for the selected piece in compare mode; null when not comparing. */
   compareFabric?: Fabric | null;
   /** Split position 0..1 from the left in compare mode. */
   split?: number;
@@ -31,7 +32,12 @@ export interface StageProps {
   showDimensions?: boolean;
   /** Top-down 2D plan instead of the 3D view. */
   plan?: boolean;
-  onFabricShown?: (code: string, first: boolean) => void;
+  actions: PieceActions & {
+    onSelect: (id: string) => void;
+    onMove: (id: string, x: number, z: number) => void;
+    onDragEnd?: () => void;
+  };
+  onFabricShown?: (id: string, code: string, first: boolean) => void;
   onError?: (err: unknown) => void;
 }
 
@@ -102,8 +108,11 @@ function ShadowMapRefresh({ version }: { version: string }) {
 }
 
 export function Stage({
-  model,
-  fabric,
+  models,
+  fabrics,
+  items,
+  selectedId,
+  overlapIds,
   room,
   ambient = 1,
   compareFabric = null,
@@ -111,34 +120,46 @@ export function Stage({
   closeUp = false,
   showDimensions = false,
   plan = false,
+  actions,
   onFabricShown,
   onError,
 }: StageProps) {
   const [textureSize] = useState<TextureSize>(preferredTextureSize);
-  const [prepared, setPrepared] = useState<PreparedModel | null>(null);
+  const [prepared, setPrepared] = useState<Record<string, PreparedModel>>({});
   const [visible, setVisible] = useState(false);
-
-  const [shownCode, setShownCode] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [roomExtent, setRoomExtent] = useState(0);
   const onRoomBuilt = useCallback((s: THREE.Vector3) => setRoomExtent(Math.hypot(s.x, s.z)), []);
   const inRoom = room.shape !== "yok";
   // the orbit camera; the plan view swaps in its own camera without touching this one
   const [orbitCamera, setOrbitCamera] = useState<THREE.Camera | null>(null);
-  const backZ = prepared ? -(prepared.size.z / 2 + 0.04) : 0;
 
+  const handlePrepared = useCallback((id: string, p: PreparedModel) => setPrepared((m) => ({ ...m, [id]: p })), []);
   const handleShown = useCallback(
-    (code: string, first: boolean) => {
-      setShownCode(code);
+    (id: string, code: string, first: boolean) => {
       if (first) setVisible(true);
-      onFabricShown?.(code, first);
+      onFabricShown?.(id, code, first);
     },
     [onFabricShown],
   );
+  const handleDrag = useCallback(
+    (on: boolean) => {
+      setDragging(on);
+      if (!on) actions.onDragEnd?.();
+    },
+    [actions],
+  );
 
-  const handlePrepared = useCallback((p: PreparedModel) => {
-    setVisible(false);
-    setPrepared(p);
-  }, []);
+  const sizeOf = (p: Placement) => {
+    const pr = prepared[p.id];
+    if (pr) return { w: pr.size.x * 100, d: pr.size.z * 100 };
+    const m = models.get(p.modelSlug);
+    return { w: m?.dimensionsCm.w ?? 100, d: m?.dimensionsCm.d ?? 100 };
+  };
+  const footprints = items.map((p) => footprint(p, sizeOf(p)));
+  const selectedIndex = Math.max(0, items.findIndex((p) => p.id === selectedId));
+  const tallest = Math.max(0.5, ...items.map((p) => prepared[p.id]?.size.y ?? 0));
+  const fabricKey = items.map((p) => p.fabricCode).join(",");
 
   return (
     <Canvas
@@ -157,58 +178,55 @@ export function Stage({
       style={{ touchAction: "none" }}
       onCreated={(state) => {
         showPrimary(state.camera);
+        // furniture lives on its own layer; pointer picking must see it
+        state.raycaster.layers.enableAll();
         setOrbitCamera(state.camera);
         // Exposed for automated tests (colour check, screenshots); harmless in production.
         (window as unknown as { __ormenStage?: unknown }).__ormenStage = state;
       }}
-      aria-label={`${model.name}, 3B görünüm. Döndürmek için sürükleyin.`}
+      aria-label="3B sahne. Döndürmek için boş alanı, mobilyayı taşımak için mobilyayı sürükleyin."
       role="img"
     >
       <StudioLights ambient={ambient} />
-      <Suspense fallback={null}>
-        <FurnitureObject
-          key={model.id}
-          model={model}
-          fabric={fabric}
-          textureSize={textureSize}
-          onPrepared={handlePrepared}
-          onFabricShown={handleShown}
-          onError={onError}
-        />
-      </Suspense>
-      {compareFabric && (
-        <Suspense fallback={null}>
-          <FurnitureObject
-            key={`${model.id}-karsilastir`}
+      {items.map((p) => {
+        const model = models.get(p.modelSlug);
+        const fabric = fabrics.get(p.fabricCode);
+        if (!model || !fabric) return null;
+        const selected = p.id === selectedId;
+        return (
+          <PlacedFurniture
+            key={p.id}
+            p={p}
             model={model}
-            fabric={compareFabric}
+            fabric={fabric}
+            compareFabric={selected ? compareFabric : compareFabric ? fabric : null}
             textureSize={textureSize}
-            layer={LAYER_COMPARE}
+            selected={selected}
+            overlapping={overlapIds.has(p.id)}
+            showDimensions={showDimensions && !plan}
+            showToolbar={!dragging && !compareFabric}
+            plan={plan}
+            canDelete={items.length > 1}
+            actions={actions}
+            onSelect={actions.onSelect}
+            onMove={actions.onMove}
+            onDrag={handleDrag}
+            onPrepared={handlePrepared}
+            onFabricShown={handleShown}
             onError={onError}
           />
-        </Suspense>
-      )}
+        );
+      })}
       {compareFabric && <SplitRender split={split} />}
-      {visible && prepared && showDimensions && !plan && <Dimensions size={prepared.size} />}
-      {visible && prepared && plan && <PlanView room={room} backZ={backZ} furniture={prepared.size} />}
-      {visible && prepared && (
-        <GroundShadow
-          key={`${model.id}-shadow`}
-          target={prepared.root}
-          size={prepared.size}
-          far={Math.min(0.6, prepared.size.y * 0.7)}
-          opacity={0.7}
-          blur={2.5}
-        />
+      {visible && plan && (
+        <PlanView room={room} pieces={footprints} selected={footprints[selectedIndex] ?? null} tallest={tallest} controlsEnabled={!dragging} />
       )}
-      {visible && prepared && inRoom && (
-        <Room spec={room} backZ={backZ} onBuilt={onRoomBuilt} />
-      )}
-      <ShadowMapRefresh version={`${model.id}:${shownCode}:${compareFabric?.code}:${encodeRoom(room)}:${prepared?.size.z ?? 0}`} />
+      {visible && inRoom && <Room spec={room} backZ={0} onBuilt={onRoomBuilt} />}
+      <ShadowMapRefresh version={`${encodeLayout(items)}:${fabricKey}:${compareFabric?.code}:${encodeRoom(room)}:${Object.keys(prepared).length}`} />
       <OrbitControls
         makeDefault
         camera={orbitCamera ?? undefined}
-        enabled={!plan}
+        enabled={!plan && !dragging}
         enablePan={false}
         enableDamping
         dampingFactor={0.08}
@@ -217,7 +235,13 @@ export function Stage({
         minPolarAngle={0.35}
         maxPolarAngle={Math.PI / 2 - 0.06}
       />
-      <CameraRig prepared={prepared} started={visible} roomExtent={inRoom ? roomExtent : 0} closeUp={closeUp && !plan} />
+      <CameraRig
+        prepared={items[0] ? prepared[items[0].id] ?? null : null}
+        closeTarget={prepared[selectedId] ?? null}
+        started={visible}
+        roomExtent={inRoom ? roomExtent : 0}
+        closeUp={closeUp && !plan}
+      />
     </Canvas>
   );
 }

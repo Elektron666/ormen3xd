@@ -4,6 +4,26 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Dilim 2d: Yerleşim (mobilya ekle, taşı, döndür, çoğalt, kaldır) (4 Ekim 2026)
+
+Fatih Bey'in isteği: koltuğu hareket ettirmek, mobilya eklemek. Bu karar, istem dosyasındaki "mobilya sürükleme yok" maddesini değiştiriyor.
+
+- **Yerleşim modeli** (`lib/room/layout.ts`, saf ve test edilebilir): Her parçanın modeli, kumaşı, oda içindeki konumu (m) ve dönüşü (derece) var. Oda koordinatlarında arka duvarın iç yüzü z = 0'da. Önceden oda koltuğa göre konumlanıyordu; artık mobilyalar odaya göre konumlanıyor.
+- **Mobilya ekle:** Araç çubuğundaki menüden ekleniyor. Yeni parça otomatik olarak boş bir yere konuyor; önce arka duvar boyunca ortaya yakın, sonra yan duvarlar, sonra odanın içi deneniyor. Yeni parça o an seçili kumaşı alıyor.
+- **Seçim:** Mobilyaya tıklanınca seçiliyor. Zeminde altın renkli ince bir çerçeve çıkıyor. Mobilyanın üstünde küçük bir araç çubuğu beliriyor: ↺ 45°, ↻ 45°, Çoğalt, Kaldır. Planda bu çubuk mobilyayı örtmemesi için mobilyanın ötesine konuyor.
+- **Taşıma:** Mobilya fareyle zemin üzerinde sürükleniyor; 3D'de ve planda aynı şekilde.
+  - Sürükleme sırasında kamera dönmüyor.
+  - Mobilya duvarların dışına çıkamıyor ve L odanın girintisinden dışarı itiliyor.
+  - Duvara 10 cm'den yaklaşınca 3 cm boşlukla duvara yapışıyor (mıknatıs).
+- **Çakışma:** Üst üste binen mobilyalar kırmızı kesikli çerçeveyle gösteriliyor ve panelde uyarı çıkıyor. Engellenmiyor, kullanıcı ayırıyor.
+- **Kumaş:** Seçici, seçili parçaya uygulanıyor. Birden fazla parça varken "Bu kumaşı tümüne uygula" bağlantısı var. Karşılaştırma modu yalnızca seçili parçayı ikiye bölüyor; diğer parçalar iki tarafta da aynı görünüyor.
+- **Plan ölçüleri:** Seçili parçanın kapladığı alan ve dört yandaki boşluğu gösteriliyor. Boşluk en yakın engele, yani duvara ya da başka mobilyaya kadar ölçülüyor. 45° dönmüş parçada genişlik ve derinlik, parçanın zeminde kapladığı dikdörtgenin ölçüsü.
+- **Bağlantı:** `?y=moduler-kanepe.LUMA-02.0.51.0_berjer.SIENA-03.40.240.45` biçiminde. Sırasıyla model, kumaş, x (cm), z (cm) ve dönüş (°); parçalar "_" ile ayrılıyor. Eski `?m=` ve `?k=` bağlantıları da açılıyor. Tarayıcılar adres güncellemesini sınırladığı için bağlantı her sürükleme adımında değil, 350 ms sonra yazılıyor. En fazla 12 parça.
+- **Gölgeler:** Her parçanın kendi zemin gölgesi var ve parçayla birlikte taşınıyor. Anahtar ışığın gölge haritası yerleşim değiştikçe yeniden çiziliyor.
+- **Bilerek yapılmayanlar:** Serbest açıyla döndürme tutamacı (45° adım yeterli görüldü), mobilyaların birbirine yapışması, geri al/ileri al, sehpa ve halı gibi kumaşsız aksesuarlar. Faz 2'de parametrik koltuk ve köşe takımı modülleriyle birlikte ele alınabilir.
+
+---
+
 ## Dilim 2c: 2D plan görünümü ve rekabet planı (4 Ekim 2026)
 
 Fatih Bey'in isteği: "3D ve 2D ayrımı olsun", ve ORMEN Atelier, EasternGraphics'in (pCon) Türkiye'deki rakibi olarak konumlansın. Strateji `REKABET-PLANI.md` dosyasında.
