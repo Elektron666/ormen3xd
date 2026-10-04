@@ -46,3 +46,6 @@ export const IconCube = (p: P) => (
 export const IconAr = (p: P) => (
   <svg {...base} {...p} aria-hidden="true"><path d="M10 2.8l6 3.4v7.6l-6 3.4-6-3.4V6.2z" /><path d="M4 6.2l6 3.4 6-3.4M10 9.6v7.6" /></svg>
 );
+export const IconShare = (p: P) => (
+  <svg {...base} {...p} aria-hidden="true"><path d="M10 12.5V3M6.5 6.5L10 3l3.5 3.5" /><path d="M5.5 9.5H5a1.5 1.5 0 0 0-1.5 1.5v4.5A1.5 1.5 0 0 0 5 17h10a1.5 1.5 0 0 0 1.5-1.5V11A1.5 1.5 0 0 0 15 9.5h-.5" /></svg>
+);

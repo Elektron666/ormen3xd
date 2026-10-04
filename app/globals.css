@@ -9,7 +9,7 @@
   --color-kagit: #fbf9f5;
   --color-antrasit: #2a2a28;
   --color-antrasit-70: #55544f;
-  --color-antrasit-50: #7d7b75;
+  --color-antrasit-50: #6b6963; /* ≥ 4.5:1 on kagit, kirik-beyaz and tinted panels (WCAG AA) */
   --color-cizgi: #e3ddd2;
   --color-cizgi-koyu: #cfc7b9;
   --color-ceviz: #5c3d2a;

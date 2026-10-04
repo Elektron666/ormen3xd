@@ -218,7 +218,8 @@ export function Stage({
         (window as unknown as { __ormenStage?: unknown }).__ormenStage = state;
       }}
       aria-label="3B sahne. Döndürmek için boş alanı, mobilyayı taşımak için mobilyayı sürükleyin."
-      role="img"
+      // a group, not an image: the piece toolbar inside must stay reachable
+      role="group"
     >
       <StudioLights ambient={ambient} />
       {items.map((p) => {

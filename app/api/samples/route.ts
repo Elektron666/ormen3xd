@@ -14,6 +14,8 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
   }
+  // honeypot filled in: answer like a success, store nothing
+  if (typeof (body as { web?: unknown })?.web === "string" && (body as { web: string }).web.trim()) return NextResponse.json({ id: "ok" }, { status: 201 });
   const result = validateSample(body as Record<string, never>);
   if (!result.ok) return NextResponse.json({ errors: result.errors }, { status: 422 });
 

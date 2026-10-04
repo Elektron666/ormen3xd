@@ -48,7 +48,7 @@ function applyFit(cam: THREE.OrthographicCamera, controls: MapControlsImpl | nul
 }
 
 const INK = "#2a2a28";
-const INK_SOFT = "#7d7b75";
+const INK_SOFT = "#6b6963";
 
 function Measure({ m, y }: { m: PlanMeasure; y: number }) {
   const [x0, z0] = m.from;

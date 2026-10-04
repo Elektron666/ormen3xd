@@ -11,7 +11,7 @@ import { BrandMark } from "./BrandMark";
 import { RoomPanel } from "./RoomPanel";
 import { CompareDivider, SceneTools } from "./SceneTools";
 import { useFavorites } from "@/lib/favorites";
-import { IconAr, IconClose, IconHeart } from "@/components/ui/icons";
+import { IconAr, IconClose, IconHeart, IconShare } from "@/components/ui/icons";
 import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomSpec } from "@/lib/room/spec";
 import { constrain, encodeLayout, findFreeSpot, newId, overlapping, type Placement } from "@/lib/room/layout";
 import type { StageApi } from "@/components/three/Stage";
@@ -302,22 +302,24 @@ export function Configurator({
               <button
                 type="button"
                 onClick={() => setArOpen(true)}
-                className="flex h-10 items-center gap-1.5 rounded-full border border-cizgi bg-kagit/90 px-4 text-[13px] text-antrasit backdrop-blur-[2px] transition-colors hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit"
+                className="flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-cizgi bg-kagit/90 px-3 text-[13px] text-antrasit backdrop-blur-[2px] transition-colors hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit sm:px-4"
               >
                 <IconAr width={17} height={17} />
-                Odamda gör
+                {/* icon-only on small phones so "Numune iste" always fits */}
+                <span className="max-sm:sr-only">Odamda gör</span>
               </button>
               <button
                 type="button"
                 onClick={openShare}
-                className="h-10 rounded-full border border-cizgi bg-kagit/90 px-4 text-[13px] text-antrasit backdrop-blur-[2px] transition-colors hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit"
+                className="flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-cizgi bg-kagit/90 px-3 text-[13px] text-antrasit backdrop-blur-[2px] transition-colors hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit sm:px-4"
               >
-                Paylaş
+                <IconShare width={17} height={17} className="sm:hidden" />
+                <span className="max-sm:sr-only">Paylaş</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSampleOpen(true)}
-                className={`h-10 rounded-full px-4 text-[13px] transition-[color,background-color,filter] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit ${
+                className={`h-10 whitespace-nowrap rounded-full px-4 text-[13px] transition-[color,background-color,filter] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit ${
                   firm ? "bg-accent text-accent-ink hover:brightness-110" : "bg-antrasit text-kagit hover:bg-ceviz"
                 }`}
               >

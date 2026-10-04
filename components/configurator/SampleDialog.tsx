@@ -28,6 +28,7 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
   const [consent, setConsent] = useState(false);
+  const [web, setWeb] = useState(""); // honeypot: hidden from people, bots fill it
   const [errors, setErrors] = useState<SampleErrors>({});
   const [stage, setStage] = useState<Stage>({ kind: "form" });
 
@@ -42,7 +43,7 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
     setErrors({});
     setStage({ kind: "sending" });
     try {
-      const res = await fetch("/api/samples", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      const res = await fetch("/api/samples", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...input, web }) });
       if (res.status === 422) {
         setErrors((await res.json()).errors ?? {});
         setStage({ kind: "form" });
@@ -94,6 +95,12 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
         </div>
       ) : (
         <form onSubmit={submit} noValidate className="flex flex-col gap-4">
+          <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+            <label>
+              Web sitesi
+              <input type="text" name="web" tabIndex={-1} autoComplete="off" value={web} onChange={(e) => setWeb(e.target.value)} />
+            </label>
+          </div>
           <fieldset>
             <legend className="eyebrow mb-2">Kumaş</legend>
             <div className="flex flex-wrap gap-2">

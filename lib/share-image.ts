@@ -87,7 +87,7 @@ export async function composeShareImage(snapshotUrl: string, pieces: SharePiece[
     ctx.letterSpacing = "12px";
     ctx.fillText(firm ? firm.name : "ORMEN", x, top + 44);
     ctx.letterSpacing = "6px";
-    ctx.fillStyle = "#7D7B75";
+    ctx.fillStyle = "#6B6963";
     ctx.font = `400 15px ${body}`;
     ctx.fillText(firm ? "" : "ATELİER", x + 2, top + 72);
     ctx.letterSpacing = "0px";
@@ -117,12 +117,12 @@ export async function composeShareImage(snapshotUrl: string, pieces: SharePiece[
     ctx.fillStyle = "#55544F";
     ctx.font = `400 19px ${body}`;
     ctx.fillText(`${g.fabric.series} · ${g.fabric.colorName}`, cx + r * 2 + 24, top + 74);
-    ctx.fillStyle = "#7D7B75";
+    ctx.fillStyle = "#6B6963";
     ctx.font = `400 16px ${body}`;
     ctx.fillText(g.models.join(", "), cx + r * 2 + 24, top + 98);
   }
 
-  ctx.fillStyle = "#7D7B75";
+  ctx.fillStyle = "#6B6963";
   ctx.font = `400 15px ${body}`;
   ctx.fillText("Kumaşlar: ORMEN TEKSTİL", PAD, sceneH + STRIP - 28);
   ctx.textAlign = "right";

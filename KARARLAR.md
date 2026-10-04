@@ -4,6 +4,16 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Son kalite turu (4 Ekim 2026)
+
+- **Erişilebilirlik:** Bütün sayfa türleri axe-core ile WCAG 2 A/AA'ya göre tarandı. Tek ciddi sorun soluk gri yazı rengiydi (#7D7B75, kontrast 4,0:1). Renk #6B6963'e koyulaştırıldı; açık zeminlerin hepsinde 4,5:1'in üstünde. 3B sahne "görsel" olarak işaretliydi; içindeki mobilya araç çubuğunu ekran okuyuculardan gizliyordu, "grup" yapıldı. Tarama artık uçtan uca testin parçası (`tests/e2e/a11y.spec.ts`; yeni geliştirme paketi `axe-core`, gerekçe bu).
+- **Küçük telefon:** 375 px genişlikte "Numune iste" düğmesi ekrandan taşıyordu. Küçük ekranda "Odamda gör" ve "Paylaş" yalnızca simgeyle gösteriliyor (ekran okuyucu için yazıları duruyor).
+- **Güvenlik başlıkları:** Her sayfada `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` (AR için yalnızca `xr-spatial-tracking` açık). Panel başka bir sitenin çerçevesinde açılamıyor. Herkese açık sayfalar (ana sayfa, firma sayfaları, paylaşım) çerçevede açılabiliyor: firmalar konfigüratörü kendi sitelerine gömebilsin diye, bilerek.
+- **Numune formuna spam koruması:** Görünmeyen bir tuzak alanı. Botlar doldurursa başarılı cevabı alıyor ama hiçbir şey kaydedilmiyor. IP'ye dayalı sınırlama yapılmadı (IP tutmama kuralı).
+- **Hız (üretim derlemesi, bu ortamda):** Konfigüratör sayfası yaklaşık 1,7 MB JavaScript (sıkıştırılmış yaklaşık 450 KB), çoğu three.js ve 3B kütüphaneleri. AR, QR ve model dışa aktarma kodu ilk yüklemeye girmiyor, gerektiğinde iniyor. Sahne bu ortamda (yazılımla çizim, ekran kartı yok) 4,5 sn'de hazır oluyor; gerçek bir bilgisayarda daha kısa olması beklenir ama ölçülmedi. REKABET-PLANI'ndaki "< 3 sn" hedefi gerçek cihazda ölçülmeli.
+
+---
+
 ## Dilim 7: Kullanım kaydı, rapor, Faz 3 yeri (4 Ekim 2026)
 
 - **Olaylar:** sayfa açıldı, kumaş denendi, oda değişti, AR açıldı (telefonda AR oturumu gerçekten başlayınca, düğmeye basınca değil), paylaşıldı, numune istendi. Tarayıcı `sendBeacon` ile gönderiyor; sayfa yavaşlamıyor, gönderilemezse sessizce vazgeçiliyor.

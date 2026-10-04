@@ -26,7 +26,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 40, letterSpacing: 12, color: "#5C3D2A" }}>ORMEN</span>
-            <span style={{ fontSize: 16, letterSpacing: 8, color: "#7D7B75", marginTop: 4 }}>ATELIER</span>
+            <span style={{ fontSize: 16, letterSpacing: 8, color: "#6B6963", marginTop: 4 }}>ATELIER</span>
           </div>
           <span style={{ fontSize: 24, color: "#55544F" }}>{names}</span>
         </div>
@@ -49,7 +49,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
             </div>
           ))}
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 22, color: "#7D7B75", borderTop: "1px solid #E3DDD2", paddingTop: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 22, color: "#6B6963", borderTop: "1px solid #E3DDD2", paddingTop: 20 }}>
           <span>{cat.firm ? `${cat.firm.name} · ` : ""}Kumaşlar: ORMEN TEKSTİL</span>
           <span>Açın · döndürün · numune isteyin</span>
         </div>
