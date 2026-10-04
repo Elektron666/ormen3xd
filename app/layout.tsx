@@ -16,8 +16,17 @@ const inter = Inter({
   display: "swap",
 });
 
+// Absolute base for share previews: the real domain once it is set, otherwise
+// the address Vercel gives the deployment, otherwise the local dev server.
+function siteUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://atelier.ormentekstil.com.tr"),
+  metadataBase: new URL(siteUrl()),
   title: {
     default: "ORMEN Atelier · Kumaşı koltuğun üstünde görün",
     template: "%s · ORMEN Atelier",

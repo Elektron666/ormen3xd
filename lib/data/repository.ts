@@ -1,4 +1,5 @@
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
+import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
 
 /**
  * Single entry point for all data access. Pages and API routes only talk to
@@ -14,4 +15,6 @@ export interface Repository {
   listFirmModels(firmId: string): Promise<FurnitureModel[]>;
   getModel(slug: string, firmId: string | null): Promise<FurnitureModel | null>;
   getFirmBySlug(slug: string): Promise<Firm | null>;
+  createSampleRequest(input: SampleRequestInput): Promise<SampleRequest>;
+  listSampleRequests(): Promise<SampleRequest[]>;
 }

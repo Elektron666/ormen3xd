@@ -4,6 +4,40 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Dilim 3: Paylaşım, numune talebi, teklif föyü (4 Ekim 2026)
+
+- **Paylaşım bağlantısı veritabanı gerektirmiyor.** `/p/<kimlik>` içindeki kimlik; yerleşimin, odanın ve görünümün base64url ile kısaltılmış hali (`lib/share.ts`). Bu yüzden:
+  - Link sonsuza kadar çalışıyor.
+  - Vercel demosunda, yani Supabase yokken de çalışıyor.
+  - Sunucuda hiçbir şey saklanmıyor.
+  - Bedeli: link uzun (yaklaşık 120 karakter). WhatsApp'ta sorun değil. İleride `shares` tablosuyla kısa kimlik eklenebilir.
+- **WhatsApp önizlemesi (Open Graph görseli)** sunucuda üretiliyor (`app/p/[id]/opengraph-image.tsx`). İçinde kumaş renkleri, büyük ORMEN kodları, mobilya adları ve "Kumaşlar: ORMEN TEKSTİL" imzası var. 3D sahnenin anlık görüntüsü sunucuda üretilemediği için önizlemede yer almıyor; o görüntü, paylaşılan görsel dosyasının kendisinde.
+- **Paylaşım görseli** tarayıcıda oluşturuluyor (`lib/share-image.ts`). Sahnenin seçim işaretleri olmadan alınmış anlık görüntüsü, altında firma logosu (yoksa ORMEN), her kumaşın dokusu, büyük kodu ve hangi mobilyada olduğu bulunuyor, ayrıca renk uyarısı ve ORMEN imzası. Biçim JPEG, 1600 px genişlik.
+- **Paylaşım penceresi:**
+  - Cihaz paylaşım menüsü (Web Share API destekleniyorsa).
+  - WhatsApp.
+  - Bağlantıyı kopyala.
+  - Görseli indir.
+  - Föyü yazdır.
+  
+  Masaüstü öncelikli olduğu için pencere her zaman açılıyor; sistem menüsü varsa içinde ayrı bir düğme olarak çıkıyor.
+- **Önizleme adresi:** `metadataBase` sırasıyla `NEXT_PUBLIC_SITE_URL`, Vercel'in üretim adresi, Vercel'in dağıtım adresi ve yerel adres arasından seçiliyor. Önceden henüz yayında olmayan alan adı sabit yazılıydı; Vercel demosunda WhatsApp önizlemesi boş çıkardı.
+- **Teklif föyü (A4):**
+  - Sayfa ekranda gizli, yalnızca yazdırırken görünüyor; tarayıcının "PDF olarak kaydet" seçeneği PDF'i üretiyor. Bu yolu seçtik çünkü sunucu tarafı PDF kütüphaneleri Türkçe karakter için ayrıca yazı tipi dosyası gömmeyi gerektiriyor; tarayıcı ise sitenin yazı tiplerini doğrudan kullanıyor.
+  - İçerik: firma ya da ORMEN logosu, tarih, sahne görüntüsü, mobilya ve kumaş tablosu (yalnızca bilinen künye alanları), vektör kat planı (`PlanSvg`) ve kombinasyonu açan QR kod.
+  - Doğrulama: Chromium'da PDF olarak üretilip kontrol edildi.
+- **Numune talebi:**
+  - Form alanları: ad, telefon, isteğe bağlı not, KVKK onayı. Formda kombinasyondaki kumaşlar listeleniyor ve seçili olan önceden işaretli geliyor.
+  - Telefon, Türkiye biçimlerinde kabul edilip `+90…` biçimine çevriliyor.
+  - Doğrulama, tarayıcı ve sunucuda aynı kuralları kullanıyor (`lib/samples.ts`). Sunucu bilinmeyen kumaş kodunu reddediyor.
+  - Kayıtta IP ya da cihaz bilgisi tutulmuyor.
+  - Gönderimden sonra "WhatsApp'tan da gönder" düğmesi çıkıyor: firma sayfasında firmanın numarasına, ana sayfada `NEXT_PUBLIC_ORMEN_WHATSAPP` numarasına hazır mesaj gidiyor. Numara tanımlı değilse düğme gizli.
+  - **Şu an talepler bellekte tutuluyor.** Sunucu yeniden başlayınca kaybolur. Kalıcı kayıt (Supabase `sample_requests`) ve panelde listeleme panel diliminde gelecek.
+- **KVKK:** `/kvkk` sayfasındaki aydınlatma metni **taslak**. Yayından önce hukuk danışmanına onaylatılmalı; sayfada da böyle yazıyor.
+- **Yeni paket:** `qrcode` (föydeki QR; panelde firma QR'ları için de kullanılacak). `pdf-lib` eklenmedi, tarayıcının yazdırma özelliği yetti.
+
+---
+
 ## Dilim 2d: Yerleşim (mobilya ekle, taşı, döndür, çoğalt, kaldır) (4 Ekim 2026)
 
 Fatih Bey'in isteği: koltuğu hareket ettirmek, mobilya eklemek. Bu karar, istem dosyasındaki "mobilya sürükleme yok" maddesini değiştiriyor.

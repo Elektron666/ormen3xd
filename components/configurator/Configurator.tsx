@@ -14,6 +14,12 @@ import { useFavorites } from "@/lib/favorites";
 import { IconClose, IconHeart } from "@/components/ui/icons";
 import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomSpec } from "@/lib/room/spec";
 import { constrain, encodeLayout, findFreeSpot, newId, overlapping, type Placement } from "@/lib/room/layout";
+import type { StageApi } from "@/components/three/Stage";
+import { encodeShare } from "@/lib/share";
+import { composeShareImage, groupByFabric } from "@/lib/share-image";
+import { SampleDialog } from "./SampleDialog";
+import { ShareDialog } from "./ShareDialog";
+import { PrintSheet, type PrintData } from "./PrintSheet";
 
 const Stage = dynamic(() => import("@/components/three/Stage").then((m) => m.Stage), {
   ssr: false,
@@ -186,6 +192,51 @@ export function Configurator({
 
   const intent = useCallback((f: Fabric) => prefetchFabric(f, preferredTextureSize()), []);
 
+  // ---------------------------------------------------------------- share, sample, print
+  const stageApi = useRef<StageApi | null>(null);
+  const onStageApi = useCallback((api: StageApi) => {
+    stageApi.current = api;
+  }, []);
+  const [sampleOpen, setSampleOpen] = useState(false);
+  const [share, setShare] = useState<{ image: Blob | null; snapshot: string; url: string } | null>(null);
+  const [printing, setPrinting] = useState<PrintData | null>(null);
+
+  const shareUrl = useCallback(() => {
+    const id = encodeShare({ y: encodeLayout(items), oda: matchingPreset(room)?.id ?? encodeRoom(room), g: plan ? "plan" : undefined });
+    return `${window.location.origin}/p/${id}`;
+  }, [items, room, plan]);
+
+  const piecesForShare = () =>
+    items.flatMap((p) => {
+      const model = bySlug.get(p.modelSlug);
+      const fabric = byCode.get(p.fabricCode);
+      return model && fabric ? [{ p, model, fabric, dims: model.dimensionsCm, modelName: model.name }] : [];
+    });
+  const shareText = () =>
+    "ORMEN kumaşlarıyla hazırladığım kombinasyon: " +
+    groupByFabric(piecesForShare())
+      .map((g) => `${g.fabric.code} (${g.models.join(", ")})`)
+      .join(", ");
+
+  const openShare = async () => {
+    const snapshot = stageApi.current?.snapshot() ?? "";
+    const url = shareUrl();
+    setShare({ image: null, snapshot, url });
+    try {
+      const image = await composeShareImage(snapshot, piecesForShare(), firm);
+      setShare({ image, snapshot, url });
+    } catch {
+      setShare(null);
+    }
+  };
+
+  const layoutFabrics = (() => {
+    const list = [selected, ...items.map((p) => byCode.get(p.fabricCode)).filter((f): f is Fabric => !!f)];
+    const seen = new Set<string>();
+    return list.filter((f) => (seen.has(f.code) ? false : (seen.add(f.code), true)));
+  })();
+  const whatsappNumber = firm?.whatsapp ?? process.env.NEXT_PUBLIC_ORMEN_WHATSAPP ?? null;
+
   const onFabricShown = useCallback((id: string, code: string, first: boolean) => {
     setShownCodes((m) => ({ ...m, [id]: code }));
     if (first) setReady(true);
@@ -206,6 +257,7 @@ export function Configurator({
             overlapIds={overlapIds}
             actions={pieceActions}
             room={room}
+            onApi={onStageApi}
             ambient={ambient}
             compareFabric={compare?.right ?? null}
             split={split}
@@ -223,6 +275,24 @@ export function Configurator({
           >
             <BrandMark firm={firm} />
           </div>
+          {ready && (
+            <div className="pointer-events-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={openShare}
+                className="h-10 rounded-full border border-cizgi bg-kagit/90 px-4 text-[13px] text-antrasit backdrop-blur-[2px] transition-colors hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit"
+              >
+                Paylaş
+              </button>
+              <button
+                type="button"
+                onClick={() => setSampleOpen(true)}
+                className="h-10 rounded-full bg-antrasit px-4 text-[13px] text-kagit transition-colors hover:bg-ceviz focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit"
+              >
+                Numune iste
+              </button>
+            </div>
+          )}
         </header>
 
         {compare && ready && (
@@ -422,6 +492,30 @@ export function Configurator({
           {firm ? t.signature : "ORMEN TEKSTİL · Ankara"}
         </p>
       </FabricSheet>
+      {sampleOpen && (
+        <SampleDialog
+          open
+          onClose={() => setSampleOpen(false)}
+          fabrics={layoutFabrics}
+          firmSlug={firm?.slug ?? null}
+          firmName={firm?.name ?? null}
+          whatsapp={whatsappNumber}
+          modelSlugs={items.map((p) => p.modelSlug)}
+          link={shareUrl}
+        />
+      )}
+      {share && (
+        <ShareDialog
+          open
+          onClose={() => setShare(null)}
+          image={share.image}
+          url={share.url}
+          text={shareText()}
+          fileName={`ORMEN-${layoutFabrics.map((f) => f.code).join("-")}.jpg`}
+          onPrint={() => setPrinting({ snapshot: share.snapshot, url: share.url, room, pieces: piecesForShare(), firm })}
+        />
+      )}
+      {printing && <PrintSheet data={printing} onDone={() => setPrinting(null)} />}
     </div>
   );
 }

@@ -82,3 +82,19 @@ describe("wall corners", () => {
     expect(hits.length).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe("plan outline orientation (used by the printed plan)", () => {
+  it("(−dz, dx) of every edge points out of the room", async () => {
+    const { roomOutline } = await import("@/lib/room/spec");
+    for (const shape of ["dikdortgen", "l", "kose"] as const) {
+      const { points } = roomOutline({ ...rect, shape });
+      const cx = points.reduce((a, p) => a + p[0], 0) / points.length;
+      const cz = points.reduce((a, p) => a + p[1], 0) / points.length;
+      // the first edge is the left wall; its outward normal must point away from the centre
+      const [[x0, z0], [x1, z1]] = points;
+      const n = [-(z1 - z0), x1 - x0];
+      const mid = [(x0 + x1) / 2, (z0 + z1) / 2];
+      expect(n[0] * (mid[0] - cx) + n[1] * (mid[1] - cz)).toBeGreaterThan(0);
+    }
+  });
+});

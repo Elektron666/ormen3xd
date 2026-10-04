@@ -32,6 +32,7 @@ function Outline({ size, warn }: { size: THREE.Vector3; warn: boolean }) {
   const y = 0.006;
   return (
     <Line
+      name="secim"
       points={[[-hx, y, -hz], [hx, y, -hz], [hx, y, hz], [-hx, y, hz], [-hx, y, -hz]]}
       color={warn ? WARN : ACCENT}
       lineWidth={2}

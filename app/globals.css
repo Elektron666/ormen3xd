@@ -72,3 +72,37 @@ body {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(300%); }
 }
+
+/* Teklif föyü: hidden on screen, the only thing on paper when printing. */
+#foy-root {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  html,
+  body {
+    background: #ffffff !important;
+  }
+  body > *:not(#foy-root) {
+    display: none !important;
+  }
+  #foy-root {
+    display: block;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .foy-sheet {
+    width: 186mm;
+    min-height: 268mm;
+  }
+  .foy-shot {
+    max-height: 105mm;
+    background: radial-gradient(120% 80% at 50% 30%, #fcfaf6 0%, #f1ece4 55%, #e6dfd4 100%);
+  }
+  .foy-plan {
+    max-height: 82mm;
+  }
+}

@@ -2,6 +2,7 @@ import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { buildSeedFabrics } from "@/lib/seed/fabrics";
 import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
 import type { Repository } from "./repository";
+import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
 
 /** In-memory repository backed by the seed catalogue; used when Supabase is not configured. */
 export class MemoryRepository implements Repository {
@@ -9,6 +10,9 @@ export class MemoryRepository implements Repository {
   private fabrics: Fabric[] = buildSeedFabrics();
   private models: FurnitureModel[] = structuredClone(SEED_MODELS);
   private firms: Firm[] = structuredClone(SEED_FIRMS);
+  // Lives only as long as the server process. Real storage is Supabase
+  // (sample_requests table) once the keys are set; see README.
+  private samples: SampleRequest[] = [];
 
   async listFabrics(opts?: { includeInactive?: boolean }) {
     return this.fabrics
@@ -35,5 +39,17 @@ export class MemoryRepository implements Repository {
 
   async getFirmBySlug(slug: string) {
     return this.firms.find((f) => f.slug === slug && f.isActive) ?? null;
+  }
+
+  async createSampleRequest(input: SampleRequestInput) {
+    const { consent: _consent, ...rest } = input;
+    void _consent;
+    const req: SampleRequest = { ...rest, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+    this.samples.unshift(req);
+    return req;
+  }
+
+  async listSampleRequests() {
+    return [...this.samples];
   }
 }

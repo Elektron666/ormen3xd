@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, type RootState } from "@react-three/fiber";
 import { Environment, Lightformer, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import type { Fabric, FurnitureModel, TextureSize } from "@/lib/types";
@@ -14,6 +14,37 @@ import { CameraRig, FOV } from "./CameraRig";
 import { PlanView } from "./PlanView";
 import { PlacedFurniture, type PieceActions } from "./PlacedFurniture";
 import { enableAllLayers, renderSplit, showPrimary } from "@/lib/three/layers";
+
+/** Imperative handle for the page: grab a clean picture of the current view. */
+export interface StageApi {
+  /** PNG data URL of the current view, without selection marks. */
+  snapshot: () => string;
+}
+
+/** Hides selection outlines, renders one frame and reads the canvas in the same task. */
+function takeSnapshot(state: RootState, split: number | null): string {
+  const hidden: THREE.Object3D[] = [];
+  state.scene.traverse((o) => {
+    if (o.name === "secim" && o.visible) {
+      o.visible = false;
+      hidden.push(o);
+    }
+  });
+  if (split !== null) renderSplit(state.gl, state.scene, state.camera, state.size, split);
+  else state.gl.render(state.scene, state.camera);
+  const url = state.gl.domElement.toDataURL("image/png");
+  hidden.forEach((o) => (o.visible = true));
+  state.invalidate();
+  return url;
+}
+
+function SnapshotBridge({ onApi, split }: { onApi: (api: StageApi) => void; split: number | null }) {
+  const get = useThree((s) => s.get);
+  useEffect(() => {
+    onApi({ snapshot: () => takeSnapshot(get(), split) });
+  }, [get, onApi, split]);
+  return null;
+}
 
 export interface StageProps {
   models: Map<string, FurnitureModel>;
@@ -39,6 +70,7 @@ export interface StageProps {
   };
   onFabricShown?: (id: string, code: string, first: boolean) => void;
   onError?: (err: unknown) => void;
+  onApi?: (api: StageApi) => void;
 }
 
 function StudioLights({ ambient }: { ambient: number }) {
@@ -123,6 +155,7 @@ export function Stage({
   actions,
   onFabricShown,
   onError,
+  onApi,
 }: StageProps) {
   const [textureSize] = useState<TextureSize>(preferredTextureSize);
   const [prepared, setPrepared] = useState<Record<string, PreparedModel>>({});
@@ -218,6 +251,7 @@ export function Stage({
         );
       })}
       {compareFabric && <SplitRender split={split} />}
+      {onApi && <SnapshotBridge onApi={onApi} split={compareFabric ? split : null} />}
       {visible && plan && (
         <PlanView room={room} pieces={footprints} selected={footprints[selectedIndex] ?? null} tallest={tallest} controlsEnabled={!dragging} />
       )}
