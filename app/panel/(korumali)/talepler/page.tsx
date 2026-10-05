@@ -1,3 +1,4 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import { getRepository } from "@/lib/data";
 import { prettyPhone, whatsappUrl } from "@/lib/samples";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
@@ -7,6 +8,8 @@ export const metadata = { title: "Numune talepleri" };
 const when = (iso: string) => new Date(iso).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
 
 export default async function RequestsPage() {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const repo = getRepository();
   const [requests, firms] = await Promise.all([repo.listSampleRequests(), repo.listFirms()]);
   const firmName = new Map(firms.map((f) => [f.slug, f.name]));

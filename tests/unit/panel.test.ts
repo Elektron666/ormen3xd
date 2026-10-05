@@ -54,3 +54,16 @@ describe("fabric form", () => {
     expect(validateFabricFields({ ...fields, repeatH: 10 })).toEqual({});
   });
 });
+
+describe("CSV export safety", () => {
+  it("keeps formula-like text as text", async () => {
+    const { toCsv, parseCsv } = await import("@/lib/csv");
+    const csv = toCsv([["ad", "not"], ['=HYPERLINK("https://kotu","Ali")', "+90 hesap"], ["@SUM(A1)", "-2+3"], ["Ayşe", "normal"]]);
+    const rows = parseCsv(csv.replace(/^﻿/, ""));
+    expect(rows[1]).toEqual(['\'=HYPERLINK("https://kotu","Ali")', "'+90 hesap"]);
+    expect(rows[2]).toEqual(["'@SUM(A1)", "'-2+3"]);
+    expect(rows[3]).toEqual(["Ayşe", "normal"]);
+    // numbers are not touched
+    expect(toCsv([[-5]])).toContain("-5");
+  });
+});

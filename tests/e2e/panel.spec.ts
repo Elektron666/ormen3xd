@@ -13,6 +13,19 @@ test.describe("panel", () => {
     await expect(page).toHaveURL(/\/panel\/giris/);
     expect((await request.post("/api/panel/dosya?hazirla", { data: { path: "kumaslar/x/y.webp" } })).status()).toBe(401);
     expect((await request.get("/api/panel/talepler")).status()).toBe(401);
+
+    // the redirect response itself must not carry panel data (a layout-only check would leak it)
+    const name = `Sizinti Testi ${Date.now().toString(36)}`;
+    await request.post("/api/samples", { data: { name, phone: "0532 987 65 43", consent: true, fabricCodes: ["LUMA-02"] } });
+    for (const cookie of [undefined, "ormen_panel=sahte.imza"]) {
+      for (const path of ["/panel/talepler", "/panel/rapor", "/panel"]) {
+        const r = await request.get(path, { maxRedirects: 0, headers: cookie ? { cookie } : {} });
+        expect(r.status(), path).toBe(307);
+        const body = await r.text();
+        expect(body, path).not.toContain(name);
+        expect(body, path).not.toContain("5329876543");
+      }
+    }
   });
 
   test("fotoğraftan yeni kumaş eklenir ve konfigüratörde görünür", async ({ page }) => {

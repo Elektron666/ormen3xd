@@ -43,7 +43,9 @@ export function parseCsv(text: string): string[][] {
 /** Rows → CSV text with ";" and a BOM, ready for Turkish Excel. */
 export function toCsv(rows: (string | number | null | undefined)[][]): string {
   const esc = (v: string | number | null | undefined) => {
-    const s = v === null || v === undefined ? "" : String(v);
+    let s = v === null || v === undefined ? "" : String(v);
+    // text that Excel would run as a formula (=, +, -, @, tab, CR) is kept as text
+    if (typeof v === "string" && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   return "﻿" + rows.map((r) => r.map(esc).join(";")).join("\r\n") + "\r\n";

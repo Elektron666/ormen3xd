@@ -4,6 +4,19 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Güvenlik incelemesi ve düzeltmeler (5 Ekim 2026)
+
+Yayından önce dışarıya açık bütün kapılar ayrı bir incelemeyle tarandı (panel girişi, panel işlemleri, dosya yükleme, herkese açık formlar, veritabanı izinleri, yönlendirmeler). Bulgular ve yapılanlar:
+
+- **Ciddi (düzeltildi): panel sayfalarının verisi giriş yapmadan okunabiliyordu.** Giriş kontrolü yalnızca panelin ortak çerçevesindeydi (layout). Next.js'te bu, alttaki sayfanın çalışmasını durdurmuyor: tarayıcı giriş sayfasına yönlenirken yönlendirme cevabının içinde talepler sayfasının verisi (ad, telefon) de geliyordu. Elle denendi ve doğrulandı. Düzeltme iki katlı: (1) her panel sayfası veriye dokunmadan önce oturumu kendisi kontrol ediyor; (2) `proxy.ts` oturum çerezi olmayan isteği panel sayfaları hiç çalışmadan giriş sayfasına yolluyor. Uçtan uca testte çerezsiz ve sahte çerezli istekte ad ve telefonun cevapta olmadığı kontrol ediliyor; kontrol kaldırılınca testin yakaladığı da denendi. Panel işlemleri (kaydetme vb.) ve panel API'leri zaten her seferinde kontrol ediyordu; onlarda sorun yoktu.
+- **Orta (düzeltildi): Excel formül enjeksiyonu.** Numune formundan gelen ad ya da not `=`, `+`, `-`, `@` ile başlıyorsa, talepler CSV'si Excel'de açıldığında formül olarak çalışabilirdi. Bu değerler artık metin olarak yazılıyor; telefonlar CSV'de `0532 …` biçiminde.
+- **Orta (düzeltildi): demo oturum çerezi tahmin edilebilir anahtarla imzalanabiliyordu.** Supabase'siz ve `PANEL_SESSION_SECRET` girilmemiş bir yayında çerez sabit bir anahtarla doğrulanıyordu. Artık üretimde en az 32 karakterlik `PANEL_SESSION_SECRET` yoksa demo girişi kapalı ve hiçbir demo çerezi kabul edilmiyor. Supabase'li kurulumu etkilemiyor.
+- **Düşük (sıkılaştırıldı):** Yükleme yolunda `..` gibi parçalar reddediliyor. Dosya klasörüne veritabanı tarafında 60 MB ve dosya türü sınırı kondu (beşinci migration). Rapor fonksiyonu anonim kullanıcılara açıkça kapatıldı.
+- **Açık kalan (öneri): herkese açık formlara istek seli.** Numune formu, kullanım kaydı ve kısa link uç noktaları doğrulama ve boyut sınırıyla korunuyor ama saniyede yüzlerce istek atan bir betiği durdurmuyor. IP saklamama kuralı nedeniyle bunu uygulamada değil, Vercel'in güvenlik duvarında (IP'yi saklamadan sayan hız sınırı) çözmeyi öneriyorum; README'de adımı var.
+- Temiz bulunanlar: service role anahtarı tarayıcıya hiç gitmiyor; satır güvenliği anonim kullanıcıya talep, olay ve profil okutmuyor; yönlendirmelerde dış adrese gitme yok; sunucu kullanıcı adresine istek atmıyor; sayfaya HTML olarak basılan tek içerik kendi ürettiğimiz QR kodları.
+
+---
+
 ## Faz 2, iş 7: Rapor veritabanında hesaplanıyor (5 Ekim 2026)
 
 - **Neden şimdi:** Yol haritasında "olay sayısı yüz binleri geçince" diye bekletilmişti. Gerçek veri gerektirmediği ve kurulumdan önce eklemek sonradan eklemekten kolay olduğu için öne aldım.

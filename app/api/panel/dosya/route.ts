@@ -10,6 +10,8 @@ import { serviceClient } from "@/lib/supabase/server";
 //  - POST ?path=…  (raw body) → demo mode: stored in memory.
 
 const SAFE_PATH = /^(kumaslar|modeller|logolar)\/[a-z0-9._/-]{3,160}$/;
+/** Allowed folder, allowed characters, and no "." / ".." segments or empty segments. */
+const safePath = (p: string) => SAFE_PATH.test(p) && p.split("/").every((seg) => seg !== "" && seg !== "." && seg !== "..");
 const TYPES = new Set(["image/webp", "image/jpeg", "image/png", "model/gltf-binary", "application/octet-stream"]);
 // No SVG: it can carry script and would be served from our own origin.
 
@@ -19,7 +21,7 @@ export async function POST(request: Request) {
 
   if (url.searchParams.has("hazirla")) {
     const { path } = (await request.json()) as { path?: string };
-    if (!path || !SAFE_PATH.test(path)) return NextResponse.json({ error: "Geçersiz dosya yolu." }, { status: 400 });
+    if (!path || !safePath(path)) return NextResponse.json({ error: "Geçersiz dosya yolu." }, { status: 400 });
     if (!supabaseEnabled()) return NextResponse.json({ mode: "direct" });
     const { data, error } = await serviceClient().storage.from(STORAGE_BUCKET).createSignedUploadUrl(path, { upsert: true });
     if (error || !data) return NextResponse.json({ error: error?.message ?? "Yükleme hazırlanamadı." }, { status: 500 });
@@ -27,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   const path = url.searchParams.get("path") ?? "";
-  if (!SAFE_PATH.test(path)) return NextResponse.json({ error: "Geçersiz dosya yolu." }, { status: 400 });
+  if (!safePath(path)) return NextResponse.json({ error: "Geçersiz dosya yolu." }, { status: 400 });
   const type = request.headers.get("content-type") ?? "application/octet-stream";
   if (!TYPES.has(type)) return NextResponse.json({ error: "Desteklenmeyen dosya türü." }, { status: 415 });
   const data = await request.arrayBuffer();

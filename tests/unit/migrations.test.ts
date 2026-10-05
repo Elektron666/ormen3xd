@@ -12,7 +12,7 @@ const STUBS = `
   create table auth.users (id uuid primary key);
   create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.uid', true), '')::uuid $$;
   create schema storage;
-  create table storage.buckets (id text primary key, name text, public boolean);
+  create table storage.buckets (id text primary key, name text, public boolean, file_size_limit bigint, allowed_mime_types text[]);
   create table storage.objects (id serial primary key, bucket_id text, name text);
   alter table storage.objects enable row level security;
   create role anon; create role authenticated;
@@ -190,4 +190,13 @@ describe("report function", () => {
     }
     await fresh.close();
   }, 60_000);
+});
+
+describe("hardening migrations", () => {
+  it("limits the bucket and keeps the report function from anonymous callers", async () => {
+    const b = await db.query<{ file_size_limit: string; allowed_mime_types: string[] }>("select file_size_limit, allowed_mime_types from storage.buckets where id = 'atelier'");
+    expect(Number(b.rows[0].file_size_limit)).toBe(62914560);
+    expect(b.rows[0].allowed_mime_types).not.toContain("image/svg+xml");
+    await expect(as(null, () => db.query("select atelier_report(now() - interval '1 day', now(), null)"))).rejects.toThrow(/permission denied/);
+  });
 });

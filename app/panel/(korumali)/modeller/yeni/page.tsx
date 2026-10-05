@@ -1,3 +1,4 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRepository } from "@/lib/data";
@@ -8,6 +9,8 @@ import { PageHeader } from "@/components/panel/ui";
 export const metadata = { title: "Yeni model" };
 
 export default async function NewModelPage({ searchParams }: PageProps<"/panel/modeller/yeni">) {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const sp = await searchParams;
   const repo = getRepository();
   const firm = typeof sp.firma === "string" ? await repo.getFirmById(sp.firma) : null;

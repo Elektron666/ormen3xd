@@ -1,3 +1,4 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import Link from "next/link";
 import { getRepository } from "@/lib/data";
 import { ActiveToggle } from "@/components/panel/ActiveToggle";
@@ -6,6 +7,8 @@ import { Badge, PageHeader, buttonClass } from "@/components/panel/ui";
 export const metadata = { title: "Firmalar" };
 
 export default async function FirmsPage() {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const repo = getRepository();
   const [firms, models, samples] = await Promise.all([repo.listFirms(), repo.listAllModels(), repo.listSampleRequests()]);
   return (

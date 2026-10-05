@@ -57,5 +57,7 @@ as $$
   );
 $$;
 
--- only the server (service role) runs the report
+-- only the server (service role) runs the report; Supabase grants execute to
+-- anon/authenticated by default, so those are revoked explicitly
 revoke all on function public.atelier_report(timestamptz, timestamptz, text) from public;
+revoke all on function public.atelier_report(timestamptz, timestamptz, text) from anon, authenticated;

@@ -1,3 +1,4 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import Link from "next/link";
 import { getRepository } from "@/lib/data";
 import { describeParams } from "@/lib/parametric/spec";
@@ -7,6 +8,8 @@ import { Badge, PageHeader, buttonClass } from "@/components/panel/ui";
 export const metadata = { title: "Modeller" };
 
 export default async function ModelsPage({ searchParams }: PageProps<"/panel/modeller">) {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const sp = await searchParams;
   const saved = typeof sp.kaydedildi === "string" ? sp.kaydedildi : null;
   const models = (await getRepository().listAllModels()).filter((m) => m.firmId === null);

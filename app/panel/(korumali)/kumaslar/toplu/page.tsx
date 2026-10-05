@@ -1,3 +1,4 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import { getRepository } from "@/lib/data";
 import { BulkImport } from "@/components/panel/BulkImport";
 import { PageHeader } from "@/components/panel/ui";
@@ -5,6 +6,8 @@ import { PageHeader } from "@/components/panel/ui";
 export const metadata = { title: "Toplu kumaş ekle" };
 
 export default async function BulkPage() {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const fabrics = await getRepository().listFabrics({ includeInactive: true });
   return (
     <>

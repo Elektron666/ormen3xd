@@ -1,3 +1,4 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import { notFound } from "next/navigation";
 import { getRepository, loadCatalogue } from "@/lib/data";
 import { FirmEditor } from "@/components/panel/FirmEditor";
@@ -7,6 +8,8 @@ import { siteUrl, siteUrlIsFinal } from "@/lib/site";
 import { seriesOf } from "@/lib/fabric/allowed";
 
 export default async function EditFirmPage({ params, searchParams }: PageProps<"/panel/firmalar/[id]">) {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const [{ id }, sp] = await Promise.all([params, searchParams]);
   const repo = getRepository();
   const firm = await repo.getFirmById(decodeURIComponent(id));

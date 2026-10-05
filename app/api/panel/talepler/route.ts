@@ -1,6 +1,7 @@
 import { getRepository } from "@/lib/data";
 import { getPanelUser } from "@/lib/auth/panel";
 import { toCsv } from "@/lib/csv";
+import { prettyPhone } from "@/lib/samples";
 
 // Sample requests as a CSV for Excel (";" separated, UTF-8 BOM).
 export async function GET() {
@@ -11,7 +12,7 @@ export async function GET() {
     ...rows.map((r) => [
       new Date(r.createdAt).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" }),
       r.name,
-      r.phone,
+      prettyPhone(r.phone),
       r.fabricCodes.join(", "),
       r.firmSlug ?? "",
       (r.modelSlugs ?? []).join(", "),

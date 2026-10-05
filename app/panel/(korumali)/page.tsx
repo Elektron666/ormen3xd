@@ -1,8 +1,11 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import Link from "next/link";
 import { getRepository } from "@/lib/data";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
 
 export default async function PanelHome() {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const repo = getRepository();
   const [fabrics, models, firms, samples] = await Promise.all([
     repo.listFabrics({ includeInactive: true }),

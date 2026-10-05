@@ -1,3 +1,4 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import { getRepository } from "@/lib/data";
 import { PageHeader, buttonClass, inputClass } from "@/components/panel/ui";
 
@@ -15,6 +16,8 @@ const BAR = "#A8642A"; // single-series hue, validated against the panel surface
 const nf = new Intl.NumberFormat("tr-TR");
 
 export default async function ReportPage({ searchParams }: PageProps<"/panel/rapor">) {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const sp = await searchParams;
   const days = PERIODS.some(([d]) => d === sp.gun) ? Number(sp.gun) : 30;
   const firmParam = typeof sp.firma === "string" ? sp.firma : "";

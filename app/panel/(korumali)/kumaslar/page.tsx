@@ -1,3 +1,4 @@
+import { requirePanelUser } from "@/lib/auth/panel";
 import Link from "next/link";
 import { getRepository } from "@/lib/data";
 import { FABRIC_TYPE_LABELS, codeUpper } from "@/lib/i18n/tr";
@@ -7,6 +8,8 @@ import { Badge, PageHeader, buttonClass } from "@/components/panel/ui";
 export const metadata = { title: "Kumaşlar" };
 
 export default async function FabricsPage({ searchParams }: PageProps<"/panel/kumaslar">) {
+  // checked here, not only in the layout: a layout check does not stop the page from rendering
+  await requirePanelUser();
   const sp = await searchParams;
   const saved = typeof sp.kaydedildi === "string" ? codeUpper(sp.kaydedildi) : null;
   const imported = typeof sp.aktarildi === "string" ? Number(sp.aktarildi) : null;
