@@ -3,7 +3,7 @@ import { codeUpper } from "@/lib/i18n/tr";
 import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel, ModelSource } from "@/lib/types";
 import { normaliseParams } from "@/lib/parametric/spec";
 import type { SampleRequestInput } from "@/lib/samples";
-import type { Device, EventType, StoredEvent, UsageEvent } from "@/lib/events";
+import { reportFromJson, type Device, type EventType, type StoredEvent, type UsageEvent } from "@/lib/events";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
@@ -381,6 +381,12 @@ export class SupabaseRepository implements Repository {
         createdAt: r.created_at,
       }),
     );
+  }
+
+  async eventReport(from: Date, to: Date, firmSlug?: string) {
+    // computed in the database (migration 20261007000000_report_function.sql)
+    const data = check(await this.db.rpc("atelier_report", { p_from: from.toISOString(), p_to: to.toISOString(), p_scope: firmSlug ?? null }));
+    return reportFromJson(data);
   }
 
   async createSampleRequest(input: SampleRequestInput) {

@@ -4,6 +4,15 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Faz 2, iş 7: Rapor veritabanında hesaplanıyor (5 Ekim 2026)
+
+- **Neden şimdi:** Yol haritasında "olay sayısı yüz binleri geçince" diye bekletilmişti. Gerçek veri gerektirmediği ve kurulumdan önce eklemek sonradan eklemekten kolay olduğu için öne aldım.
+- **Ne:** `atelier_report` adlı tek bir SQL fonksiyonu (dördüncü migration). Rapor sayfası Supabase'de bunu çağırıyor; bütün olayları uygulamaya taşımıyor ve önceki 50.000 olay sınırı kalktı. Supabase'siz demo modunda hesap eskisi gibi uygulamada.
+- **Doğrulama:** PGlite'ta 60 ziyaretlik rastgele veriyle SQL fonksiyonu ve uygulamadaki hesap üç kapsamda (hepsi, ORMEN sayfası, tek firma) karşılaştırılıyor; sonuçlar birebir aynı. Günler iki tarafta da İstanbul saatine göre.
+- Fonksiyonu yalnızca sunucu (service role) çalıştırabiliyor.
+
+---
+
 ## Faz 2, iş 5: Kısa paylaşım linki (5 Ekim 2026)
 
 - **Ne:** Paylaşımda artık `…/s/Ab3dE9xK` gibi 8 karakterlik link veriliyor; açılınca kalıcı yönlendirmeyle (`308`) her zamanki `/p/…` sayfasına gidiyor. WhatsApp önizlemesi aynı (yönlendirmeyi izliyor; uçtan uca testte doğrulandı).
@@ -78,7 +87,7 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 - **Kişisel veri yok:** IP, tarayıcı bilgisi, konum tutulmuyor; sunucu bunları istekten okumuyor bile. "Ziyaret" sayımı için sekme kapanınca silinen rastgele bir numara (`sessionStorage`) kullanılıyor; kimseyi tanımlamıyor. Cihaz yalnızca telefon/tablet/masaüstü. API bilinmeyen alanı ve türü kaydetmiyor.
 - **Sayılmayanlar:** Panelde oturumu açık olan ORMEN çalışanları ve otomatik testler. Aynı şeyin 2 saniye içinde tekrarı tek sayılıyor.
 - **Rapor (`/panel/rapor`):** Dönem (7/30/90 gün) ve sayfa (hepsi, ORMEN ana sayfası, tek firma) süzgeci. Özet kutuları, en çok denenen 10 kumaş, günlük ziyaret, firma tablosu. "Ziyaret başına deneme" ve "100 ziyarette numune" REKABET-PLANI'ndaki hedeflerle (5 ve 3) birlikte gösteriliyor. Günler İstanbul saatine göre.
-- Rapor hesabı uygulamada yapılıyor (dönemdeki en fazla 50.000 olay). Faz 1 hacmi için yeterli; büyüyünce SQL görünümüne taşınacak (YOL-HARITASI).
+- Rapor hesabı ilk sürümde uygulamada yapılıyordu (en fazla 50.000 olay); Faz 2'de veritabanına taşındı.
 - **Faz 3 yeri:** `lib/ai/reupholster.ts` yalnızca arayüz ve "yakında" diyen sahte (mock) bir uygulama. Hiçbir servise istek atmıyor. Kumaş panelinin altında "Kendi koltuğunuzda görün · Yakında" kutusu var; tıklanmıyor.
 - **Belgeler:** `YOL-HARITASI.md` (yayın öncesi yapılacaklar ve sonraki fazlar) ve `KUMAS-CEKIM-REHBERI.md` (ORMEN ekibi için kumaş çekimi) eklendi.
 

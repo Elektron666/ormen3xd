@@ -1,6 +1,6 @@
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
-import type { StoredEvent, UsageEvent } from "@/lib/events";
+import type { Report, StoredEvent, UsageEvent } from "@/lib/events";
 
 export type FabricInput = Omit<Fabric, "id"> & { id?: string; derivedMaps?: boolean };
 export type ModelInput = Omit<FurnitureModel, "id"> & { id?: string };
@@ -51,6 +51,8 @@ export interface Repository {
   recordEvent(e: UsageEvent): Promise<void>;
   /** Events since a date (newest first, capped), optionally of one firm ("" = ORMEN's own pages). */
   listEvents(since: Date, firmSlug?: string): Promise<StoredEvent[]>;
+  /** The panel report for a period; scope as in listEvents. */
+  eventReport(from: Date, to: Date, firmSlug?: string): Promise<Report>;
 
   /** Stores an uploaded file and returns the URL it is served from. */
   putFile(path: string, data: ArrayBuffer, contentType: string): Promise<string>;

@@ -99,7 +99,32 @@ export function buildReport(events: StoredEvent[], opts: { from: Date; to: Date 
       .slice(0, 10),
     firms: [...firms]
       .map(([slug, x]) => ({ slug, sessions: x.sessions.size, tries: x.tries, ar: x.ar, shares: x.shares, samples: x.samples }))
-      .sort((a, b) => b.sessions - a.sessions),
+      .sort((a, b) => b.sessions - a.sessions || String(a.slug).localeCompare(String(b.slug))),
     days,
+  };
+}
+
+/** Report from the database function (atelier_report), with every key present. */
+export function reportFromJson(raw: unknown): Report {
+  const r = (raw ?? {}) as Partial<Record<keyof Report, unknown>>;
+  const num = (v: unknown) => (typeof v === "number" ? v : Number(v) || 0);
+  const obj = (v: unknown) => (v && typeof v === "object" ? (v as Record<string, unknown>) : {});
+  const counts = Object.fromEntries(EVENT_TYPES.map((t) => [t, num(obj(r.counts)[t])])) as Record<EventType, number>;
+  const devices = Object.fromEntries(DEVICES.map((d) => [d, num(obj(r.devices)[d])])) as Record<Device, number>;
+  const list = (v: unknown) => (Array.isArray(v) ? (v as Record<string, unknown>[]) : []);
+  return {
+    sessions: num(r.sessions),
+    counts,
+    devices,
+    topFabrics: list(r.topFabrics).map((f) => ({ code: String(f.code), tries: num(f.tries), sessions: num(f.sessions) })),
+    firms: list(r.firms).map((f) => ({
+      slug: typeof f.slug === "string" ? f.slug : null,
+      sessions: num(f.sessions),
+      tries: num(f.tries),
+      ar: num(f.ar),
+      shares: num(f.shares),
+      samples: num(f.samples),
+    })),
+    days: list(r.days).map((d) => ({ day: String(d.day), sessions: num(d.sessions) })),
   };
 }

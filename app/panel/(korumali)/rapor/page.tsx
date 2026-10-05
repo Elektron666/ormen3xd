@@ -1,5 +1,4 @@
 import { getRepository } from "@/lib/data";
-import { buildReport } from "@/lib/events";
 import { PageHeader, buttonClass, inputClass } from "@/components/panel/ui";
 
 export const metadata = { title: "Rapor" };
@@ -25,7 +24,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
   from.setUTCHours(0, 0, 0, 0);
   const [firms, fabrics] = await Promise.all([repo.listFirms(), repo.listFabrics({ includeInactive: true })]);
   const scope = firmParam === "" ? undefined : firmParam === "ormen" ? "" : firmParam;
-  const report = buildReport(await repo.listEvents(from, scope), { from, to });
+  const report = await repo.eventReport(from, to, scope);
   const fabricByCode = new Map(fabrics.map((f) => [f.code, f]));
   const firmName = new Map(firms.map((f) => [f.slug, f.name]));
   const maxTries = Math.max(1, ...report.topFabrics.map((f) => f.tries));

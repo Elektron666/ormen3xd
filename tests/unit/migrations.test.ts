@@ -150,3 +150,44 @@ describe("fabric series limits migration", () => {
     expect(m.rows[0].fabric_series).toEqual([]);
   });
 });
+
+describe("report function", () => {
+  it("gives the same report as the app-side calculation", async () => {
+    const { buildReport, reportFromJson, EVENT_TYPES } = await import("@/lib/events");
+    const fresh = new PGlite();
+    await fresh.exec(STUBS);
+    const dir = path.join(process.cwd(), "supabase/migrations");
+    for (const f of readdirSync(dir).filter((x) => x.endsWith(".sql")).sort()) await fresh.exec(readFileSync(path.join(dir, f), "utf8"));
+
+    // deterministic pseudo-random events over 5 days, two firms and ORMEN's page
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
+    const pick = <T,>(a: readonly T[]) => a[Math.floor(rnd() * a.length)];
+    const start = Date.UTC(2026, 9, 1, 0, 0);
+    const rows: { type: string; sessionId: string; device: string | null; firmSlug: string | null; fabricCode: string | null; createdAt: string }[] = [];
+    for (let s = 0; s < 60; s++) {
+      const sessionId = `ziyaret${String(s).padStart(4, "0")}`;
+      const firmSlug = pick([null, null, "ornek-mobilya", "yildiz"]);
+      const device = pick(["telefon", "masaustu", "tablet"]);
+      let t = start + Math.floor(rnd() * 5 * 86_400_000);
+      for (let k = 0; k < 1 + Math.floor(rnd() * 6); k++) {
+        t += Math.floor(rnd() * 600_000);
+        const type = k === 0 ? "sayfa_acildi" : pick(EVENT_TYPES);
+        rows.push({ type, sessionId, device: k === 0 ? device : null, firmSlug, fabricCode: type === "kumas_denendi" ? pick(["LUMA-02", "SIENA-03", "PIETRA-01", "VERSO-04"]) : null, createdAt: new Date(t).toISOString() });
+      }
+    }
+    for (const r of rows)
+      await fresh.query("insert into events (type, session_id, device, firm_slug, fabric_code, created_at) values ($1,$2,$3,$4,$5,$6)", [r.type, r.sessionId, r.device, r.firmSlug, r.fabricCode, r.createdAt]);
+
+    const from = new Date(Date.UTC(2026, 8, 30, 21)); // 1 Oct 00:00 Istanbul
+    const to = new Date(Date.UTC(2026, 9, 6, 20, 59));
+    const norm = (r: ReturnType<typeof buildReport>) => ({ ...r, firms: [...r.firms].sort((a, b) => b.sessions - a.sessions || String(a.slug).localeCompare(String(b.slug))) });
+    for (const scope of [null, "", "ornek-mobilya"] as const) {
+      const inScope = rows.filter((r) => scope === null || (scope === "" ? r.firmSlug === null : r.firmSlug === scope));
+      const js = buildReport(inScope.map((r) => ({ ...r, device: r.device ?? undefined })) as never, { from, to });
+      const sql = (await fresh.query<{ r: unknown }>("select atelier_report($1, $2, $3) as r", [from.toISOString(), to.toISOString(), scope])).rows[0].r;
+      expect(norm(reportFromJson(sql)), `scope ${scope}`).toEqual(norm(js));
+    }
+    await fresh.close();
+  }, 60_000);
+});

@@ -37,7 +37,7 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 4. ✅ **Showroom kiosk modu:** `?kiosk`; karşılama ekranı, "Telefona al" QR'ı, dokunulmazsa uyarı ve sıfırlama.
 5. ✅ **Kısa paylaşım linki:** `/s/8karakter`; gelmezse uzun link geçerli kalıyor.
 6. **AR için sunucuda GLB:** Gerçek cihaz testinde Samsung Internet gibi WebXR'sız tarayıcılarda sorun çıkarsa.
-7. **Rapor için SQL görünümü:** Olay sayısı yüz binleri geçince hesap veritabanına taşınır.
+7. ✅ **Rapor veritabanında:** `atelier_report` fonksiyonu; olay sınırı yok.
 8. Kadife ve şönil için hav yönü görünümü (gerçek çekimlerle ayar).
 
 ## Faz 3

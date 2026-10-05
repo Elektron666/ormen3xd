@@ -4,7 +4,7 @@ import { buildSeedFabrics } from "@/lib/seed/fabrics";
 import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
 import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
-import type { StoredEvent, UsageEvent } from "@/lib/events";
+import { buildReport, type StoredEvent, type UsageEvent } from "@/lib/events";
 
 /**
  * In-memory repository backed by the seed catalogue; used when Supabase is
@@ -141,6 +141,11 @@ export class MemoryRepository implements Repository {
   async listEvents(since: Date, firmSlug?: string) {
     const t = since.toISOString();
     return this.events.filter((e) => e.createdAt >= t && (firmSlug === undefined || (e.firmSlug ?? "") === firmSlug));
+  }
+
+  async eventReport(from: Date, to: Date, firmSlug?: string) {
+    const t = to.toISOString();
+    return buildReport((await this.listEvents(from, firmSlug)).filter((e) => e.createdAt <= t), { from, to });
   }
 
   async putFile(path: string, data: ArrayBuffer, contentType: string) {
