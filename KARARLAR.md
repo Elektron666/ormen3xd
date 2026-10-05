@@ -367,3 +367,14 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 - **`ar_acilamadi` olayı:** Telefonda AR başlamadığında yazılıyor. Bu iki durumda oluyor: cihaz ya da tarayıcı AR'ı desteklemiyor, ya da oturum hata veriyor. Raporda AR kutusunda görünüyor. Faz 2 madde 6 (sunucuda GLB) bu sayıya göre yapılacak.
 - **Veritabanı:** `20261009000000_visit_sources.sql` dosyası `events` tablosuna `source` ve `tag` sütunlarını ekliyor, olay türü listesini genişletiyor ve `atelier_report` fonksiyonuna iki yeni döküm ekliyor. Daha önceki olaylar raporda "Kayıt yok" olarak görünüyor. SQL raporun uygulamadaki hesapla aynı sonucu verdiği PGlite testinde kaynak ve etiketle birlikte denetleniyor.
 - **Renk ibaresi (1. madde):** Ekranda, paylaşım görselinde, teklif föyünde ve AR sayfasında artık "renkler bağlayıcı değildir; renk onayı numuneyle verilir" yazıyor.
+
+## Pilot hazırlığı: cihaza göre görüntü kalitesi (3. madde)
+
+- **Başlangıç seviyesi (`lib/three/quality.ts`):** Tarayıcının bildirdiği bilgilere göre seçiliyor: ekran ve fare, işlemci çekirdeği, bellek.
+  - Telefonlarda en yüksek piksel oranı 1,5.
+  - Zayıf telefonlarda (≤ 4 çekirdek ya da ≤ 3 GB bellek) piksel oranı 1,25 ve gölge haritası 1024.
+  - Masaüstünde değişiklik yok.
+- **Yavaşlayınca düşürme:** Sahne yalnızca gerektiğinde çiziliyor. Bu yüzden ölçüm yalnızca art arda gelen karelerde yapılıyor (açılış dönüşü, sürükleme); 0,2 sn'den uzun aralar bekleme sayılıyor. 30 karenin ortancası ~30 kare/sn'nin altına düşerse piksel oranı 0,25 azaltılıyor, en az 1'e kadar. Oran hiç geri artırılmıyor, böylece görüntü "nefes almıyor".
+- **Neden drei'nin `PerformanceMonitor`'ı değil:** O bileşen sürekli çizim varsayıyor. İsteğe bağlı çizimde iki kare arasındaki bekleme süresini yavaşlık sanıp kaliteyi gereksiz yere düşürürdü.
+- **Ölçülmedi:** Gerçek orta sınıf Android'de denenmedi (sunucuda GPU yok). Eşikler gerçek cihaz testinde (toplantı M5) ayarlanacak.
+- **Test notu:** Playwright, `sendBeacon` ile giden isteğin gövdesini okuyamıyor. Rapor testinde `sendBeacon` kapatılıyor; sayfa `fetch` yedeğini kullanıyor ve gönderilen olayın içeriği (kaynak, etiket, IP olmaması) böylece gerçekten denetleniyor.

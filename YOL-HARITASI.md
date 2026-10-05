@@ -46,9 +46,9 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 
 Ayrıntı ve gerekçeler `TOPLANTI-2026-10-05.md` dosyasında. Fotoğraf ve avukat beklemeden yapılacak sıra:
 
-1. "Renk bağlayıcı değildir, onay numuneyle verilir" ibaresi.
-2. Ziyaretlere kaynak/kampanya etiketi ve şube kodu (QR'lar basılmadan önce).
-3. Cihaza göre kademeli görüntü kalitesi.
+1. ✅ "Renk bağlayıcı değildir, onay numuneyle verilir" ibaresi.
+2. ✅ Ziyaretlere kaynak (kiosk, QR, paylaşım, site, doğrudan) ve şube/kampanya etiketi; "AR açılamadı" sayacı. Kurulumda 6. tablo dosyası.
+3. ✅ Cihaza göre kademeli görüntü kalitesi (gerçek telefonda ölçülmedi).
 4. Telefonda sade ilk ekran.
 5. Kiosk: kartela kodu arama kutusu ve büyük yazı.
 6. Talepleri silme (elle ve süreli).

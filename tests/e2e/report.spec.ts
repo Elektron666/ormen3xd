@@ -6,7 +6,11 @@ test("ziyaret ve kumaş denemeleri raporda görünür; panel kullanıcısı say�
   test.setTimeout(120_000);
   // a visitor (automated traffic is ignored unless the test opts in)
   const visitor = await browser.newContext();
-  await visitor.addInitScript(() => ((window as { __ormenTrack?: boolean }).__ormenTrack = true));
+  await visitor.addInitScript(() => {
+    (window as { __ormenTrack?: boolean }).__ormenTrack = true;
+    // Playwright cannot read a beacon's body; without sendBeacon the page uses its fetch fallback, which it can
+    Object.defineProperty(navigator, "sendBeacon", { value: undefined });
+  });
   const v = await visitor.newPage();
   const sent: string[] = [];
   v.on("request", (r) => r.url().endsWith("/api/olay") && sent.push(r.postData() ?? ""));
@@ -15,6 +19,7 @@ test("ziyaret ve kumaş denemeleri raporda görünür; panel kullanıcısı say�
   await expect.poll(() => sceneFabrics(v), { timeout: 45_000 }).not.toEqual([]);
   await v.getByRole("radio", { name: /VERSO-04/ }).click();
   await expect.poll(() => sent.length).toBeGreaterThanOrEqual(2);
+  expect(sent.every((b) => b.includes('"sessionId"'))).toBe(true);
   expect(sent.join()).not.toMatch(/ip|userAgent|Mozilla/);
   // every event of the visit carries where it came from, even after the address bar changes
   expect(sent.every((b) => b.includes('"source":"qr"') && b.includes('"tag":"ankara-1"'))).toBe(true);
