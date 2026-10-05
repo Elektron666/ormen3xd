@@ -352,3 +352,18 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 - **Örnek dokular gerçek kumaş değil.** Bukle, dokuma, nubuk ve balıksırtı kodla, milimetre ölçüsünde üretildi. Panelde "yer tutucu" olarak etiketlenecek.
 - **Performans testi yalnızca yazılımsal grafikle yapıldı** (sunucuda GPU yok). Orta sınıf Android'de akıcılık gerçek cihazda ölçülmedi. Mimari kararlar (1K doku, talep üzerine çizim, gölgenin bir kez hesaplanması) bunu hedefliyor.
 - Konsolda `THREE.Clock` kullanım dışı uyarısı görünüyor. Bu uyarı bizim kodumuzdan değil, `@react-three/fiber` 9.8'in içinden geliyor; hata değil.
+
+## Pilot hazırlığı: ziyaret kaynağı ve etiket (5 Ekim toplantısı, 2. madde)
+
+- **Ne:** Her olay, ziyaretin geldiği yeri sabit bir listeden taşıyor: `kiosk`, `qr`, `paylasim`, `site`, `dogrudan`. Varsa ORMEN'in bağlantıya koyduğu bir şube/kampanya etiketi de ekleniyor (`?e=ankara-1`). Rapor bu ikisine göre ziyaret ve numune sayısı veriyor. 30 ziyaretin altında oran gösterilmiyor.
+- **Nasıl belirleniyor (`lib/source.ts`):** Ziyaretçinin girdiği adrese bakılıyor, ziyaretçinin kendisine değil.
+  - `?kiosk` kiosk, `?q` basılı QR demek. Panel QR'ları ve A6 kartı bu işareti kendileri ekliyor.
+  - `/p/…` paylaşım sayılıyor.
+  - Önceki sayfa başka bir siteyse "site" yazılıyor; o sitenin hangisi olduğu saklanmıyor.
+  - Bunların hiçbiri yoksa "doğrudan" sayılıyor.
+  - Kaynak, ziyaretin ilk sayfasında okunuyor ve sekme kapanana kadar `sessionStorage`'da tutuluyor. Konfigüratör adres çubuğunu sonradan değiştirse de ziyaretin kaynağı kaybolmuyor.
+- **Neden şube, kişi değil:** Satış elemanı numarası istendi (Selin). Ancak "eleman 3" firma için belli bir kişi demek; bu, çalışan performans takibi olur ve ayrı aydınlatma gerektirir (Hakan). Bu yüzden etiket serbest bir sabit değer olarak bırakıldı ve panelde "kişi adı yazmayın" uyarısı konuldu. Eleman bazında takip istenirse avukata sorulacak.
+- **Etiket biçimi:** Küçük harf, rakam ve tire; en fazla 32 karakter. Panelde yazılan "Ankara Şube 1" kendiliğinden `ankara-sube-1` olur. Veritabanı da aynı kuralı denetliyor.
+- **`ar_acilamadi` olayı:** Telefonda AR başlamadığında yazılıyor. Bu iki durumda oluyor: cihaz ya da tarayıcı AR'ı desteklemiyor, ya da oturum hata veriyor. Raporda AR kutusunda görünüyor. Faz 2 madde 6 (sunucuda GLB) bu sayıya göre yapılacak.
+- **Veritabanı:** `20261009000000_visit_sources.sql` dosyası `events` tablosuna `source` ve `tag` sütunlarını ekliyor, olay türü listesini genişletiyor ve `atelier_report` fonksiyonuna iki yeni döküm ekliyor. Daha önceki olaylar raporda "Kayıt yok" olarak görünüyor. SQL raporun uygulamadaki hesapla aynı sonucu verdiği PGlite testinde kaynak ve etiketle birlikte denetleniyor.
+- **Renk ibaresi (1. madde):** Ekranda, paylaşım görselinde, teklif föyünde ve AR sayfasında artık "renkler bağlayıcı değildir; renk onayı numuneyle verilir" yazıyor.

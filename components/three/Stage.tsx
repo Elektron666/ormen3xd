@@ -7,6 +7,7 @@ import * as THREE from "three";
 import type { Fabric, FurnitureModel, TextureSize } from "@/lib/types";
 import type { PreparedModel } from "@/lib/three/prepare-model";
 import { preferredTextureSize } from "@/lib/three/fabric-material";
+import { QUALITY, browserTier, nextDpr, type Quality } from "@/lib/three/quality";
 import { encodeRoom, type RoomSpec } from "@/lib/room/spec";
 import { encodeLayout, footprint, footprintParts, modelDims, type Placement } from "@/lib/room/layout";
 import { Room } from "./Room";
@@ -73,7 +74,24 @@ export interface StageProps {
   onApi?: (api: StageApi) => void;
 }
 
-export function StudioLights({ ambient }: { ambient: number }) {
+/**
+ * Measures frames while the scene is animating (it renders on demand, so idle
+ * gaps are skipped) and lowers the pixel ratio when they are slow.
+ */
+function AdaptiveDpr({ onLower }: { onLower: (dpr: number) => void }) {
+  const intervals = useRef<number[]>([]);
+  useFrame((state, delta) => {
+    const buf = intervals.current;
+    buf.push(delta);
+    if (buf.length < 45) return;
+    const next = nextDpr(state.viewport.dpr, buf);
+    intervals.current = [];
+    if (next < state.viewport.dpr) onLower(next);
+  });
+  return null;
+}
+
+export function StudioLights({ ambient, shadowMap = 2048 }: { ambient: number; shadowMap?: number }) {
   // Neutral white light only: scenes may change intensity and direction, never
   // colour temperature, so the fabric colour stays true.
   const key = useRef<THREE.DirectionalLight>(null);
@@ -96,7 +114,7 @@ export function StudioLights({ ambient }: { ambient: number }) {
         intensity={1.5}
         color="#ffffff"
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[shadowMap, shadowMap]}
         shadow-bias={-0.0004}
         shadow-normalBias={0.025}
         shadow-radius={6}
@@ -158,6 +176,9 @@ export function Stage({
   onApi,
 }: StageProps) {
   const [textureSize] = useState<TextureSize>(preferredTextureSize);
+  const [quality] = useState<Quality>(() => QUALITY[browserTier()]);
+  // lowered by AdaptiveDpr when frames are slow; passed to the canvas, which re-applies it on every render
+  const [maxDpr, setMaxDpr] = useState(quality.maxDpr);
   const [prepared, setPrepared] = useState<Record<string, PreparedModel>>({});
   const [visible, setVisible] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -204,7 +225,7 @@ export function Stage({
     <Canvas
       frameloop="demand"
       shadows={{ type: THREE.PCFShadowMap, enabled: true, autoUpdate: false }}
-      dpr={[1, 2]}
+      dpr={[1, maxDpr]}
       camera={{ fov: FOV, near: 0.05, far: 60, position: [0, 1.2, 5] }}
       gl={{
         antialias: true,
@@ -227,7 +248,8 @@ export function Stage({
       // a group, not an image: the piece toolbar inside must stay reachable
       role="group"
     >
-      <StudioLights ambient={ambient} />
+      <StudioLights ambient={ambient} shadowMap={quality.shadowMap} />
+      <AdaptiveDpr onLower={setMaxDpr} />
       {items.map((p) => {
         const model = models.get(p.modelSlug);
         const fabric = fabrics.get(p.fabricCode);

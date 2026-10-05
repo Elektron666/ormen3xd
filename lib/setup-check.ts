@@ -34,6 +34,7 @@ export const MIGRATIONS = [
   ["20261006000000_fabric_series_limits.sql", "Firma ve model başına kumaş serisi"],
   ["20261007000000_report_function.sql", "Rapor fonksiyonu"],
   ["20261008000000_storage_limits.sql", "Dosya klasörü sınırları"],
+  ["20261009000000_visit_sources.sql", "Ziyaret kaynağı ve etiketler"],
 ] as const;
 
 export function evaluateSetup(f: SetupFacts): Check[] {

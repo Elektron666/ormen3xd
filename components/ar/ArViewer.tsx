@@ -45,10 +45,19 @@ export function ArViewer({ model, fabric, firmSlug = null, className = "" }: { m
   useEffect(() => {
     const el = ref.current;
     if (!el || state.kind !== "ready") return;
-    const onLoad = () => setArReady(!!el.canActivateAR);
+    // counted so the report shows how often AR does not start on a phone
+    // (decides whether the GLB must be built on the server, Faz 2 madde 6)
+    const failed = () => track("ar_acilamadi", { firmSlug, modelSlug: model.slug, fabricCode: fabric.code });
+    const onLoad = () => {
+      setArReady(!!el.canActivateAR);
+      if (!el.canActivateAR && device !== "desktop") failed();
+    };
     const onStatus = (e: Event) => {
       const status = (e as CustomEvent<{ status: string }>).detail?.status;
-      if (status === "failed") setArFailed(true);
+      if (status === "failed") {
+        setArFailed(true);
+        failed();
+      }
       if (status === "session-started") track("ar_acildi", { firmSlug, modelSlug: model.slug, fabricCode: fabric.code });
     };
     el.addEventListener("load", onLoad);
@@ -57,7 +66,7 @@ export function ArViewer({ model, fabric, firmSlug = null, className = "" }: { m
       el.removeEventListener("load", onLoad);
       el.removeEventListener("ar-status", onStatus);
     };
-  }, [state, firmSlug, model.slug, fabric.code]);
+  }, [state, firmSlug, model.slug, fabric.code, device]);
 
   return (
     <div className={`studio-backdrop relative overflow-hidden rounded-2xl ${className}`}>

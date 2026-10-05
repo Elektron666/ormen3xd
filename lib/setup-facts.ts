@@ -44,6 +44,7 @@ export async function gatherSetupFacts(requestHost: string | null): Promise<Setu
         bucketLimited = null;
       }
       migrations["20261008000000_storage_limits.sql"] = bucketLimited === true;
+      migrations["20261009000000_visit_sources.sql"] = (await probe(() => db.from("events").select("source, tag").limit(1))).ok;
     }
   }
 

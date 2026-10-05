@@ -10,11 +10,14 @@ test("ziyaret ve kumaş denemeleri raporda görünür; panel kullanıcısı say�
   const v = await visitor.newPage();
   const sent: string[] = [];
   v.on("request", (r) => r.url().endsWith("/api/olay") && sent.push(r.postData() ?? ""));
-  await v.goto("/f/ornek-mobilya");
+  // arrives from a printed QR with a branch label
+  await v.goto("/f/ornek-mobilya?q&e=ankara-1");
   await expect.poll(() => sceneFabrics(v), { timeout: 45_000 }).not.toEqual([]);
   await v.getByRole("radio", { name: /VERSO-04/ }).click();
   await expect.poll(() => sent.length).toBeGreaterThanOrEqual(2);
   expect(sent.join()).not.toMatch(/ip|userAgent|Mozilla/);
+  // every event of the visit carries where it came from, even after the address bar changes
+  expect(sent.every((b) => b.includes('"source":"qr"') && b.includes('"tag":"ankara-1"'))).toBe(true);
   await visitor.close();
 
   // ORMEN staff
@@ -28,6 +31,8 @@ test("ziyaret ve kumaş denemeleri raporda görünür; panel kullanıcısı say�
   await expect(summary).not.toContainText(/Ziyaret\s*0\b/);
   await expect(p.getByRole("listitem").filter({ hasText: "VERSO-04" })).toBeVisible();
   await expect(p.getByRole("cell", { name: "Örnek Mobilya" })).toBeVisible();
+  await expect(p.getByTestId("rapor-kaynak")).toContainText("Basılı QR");
+  await expect(p.getByTestId("rapor-etiket")).toContainText("ankara-1");
   await staff.close();
 });
 

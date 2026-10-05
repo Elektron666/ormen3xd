@@ -3,7 +3,7 @@ import { codeUpper } from "@/lib/i18n/tr";
 import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel, ModelSource } from "@/lib/types";
 import { normaliseParams } from "@/lib/parametric/spec";
 import type { SampleRequestInput } from "@/lib/samples";
-import { reportFromJson, type Device, type EventType, type StoredEvent, type UsageEvent } from "@/lib/events";
+import { reportFromJson, type Device, type EventType, type Source, type StoredEvent, type UsageEvent } from "@/lib/events";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
@@ -348,6 +348,8 @@ export class SupabaseRepository implements Repository {
         firm_slug: e.firmSlug ?? null,
         model_slug: e.modelSlug ?? null,
         fabric_code: e.fabricCode ?? null,
+        source: e.source ?? null,
+        tag: e.tag ?? null,
       }),
     );
   }
@@ -356,7 +358,7 @@ export class SupabaseRepository implements Repository {
     // aggregated in the app; fine for Faz 1 volumes (a SQL view can take over later)
     let q = this.db
       .from("events")
-      .select("type, session_id, device, firm_slug, model_slug, fabric_code, created_at")
+      .select("type, session_id, device, firm_slug, model_slug, fabric_code, source, tag, created_at")
       .gte("created_at", since.toISOString())
       .order("created_at", { ascending: false })
       .limit(50_000);
@@ -368,6 +370,8 @@ export class SupabaseRepository implements Repository {
       firm_slug: string | null;
       model_slug: string | null;
       fabric_code: string | null;
+      source: Source | null;
+      tag: string | null;
       created_at: string;
     }[];
     return rows.map(
@@ -378,6 +382,8 @@ export class SupabaseRepository implements Repository {
         firmSlug: r.firm_slug,
         modelSlug: r.model_slug,
         fabricCode: r.fabric_code,
+        source: r.source,
+        tag: r.tag,
         createdAt: r.created_at,
       }),
     );

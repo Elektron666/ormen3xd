@@ -10,6 +10,8 @@ describe("usage events", () => {
       firmSlug: null,
       modelSlug: null,
       fabricCode: "LUMA-02",
+      source: null,
+      tag: null,
     });
     expect(parseEvent({ type: "hack", sessionId: "abcd1234" })).toBeNull();
     expect(parseEvent({ type: "paylasildi", sessionId: "x" })).toBeNull();

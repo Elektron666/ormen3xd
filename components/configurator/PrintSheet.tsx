@@ -102,7 +102,7 @@ function Sheet({ data }: { data: PrintData }) {
         </div>
         <div className="max-w-[70mm] text-right text-[10px] leading-snug text-antrasit-50">
           <p className="tracking-[0.12em] uppercase">Kumaşlar: ORMEN TEKSTİL</p>
-          <p>Ekran ve baskı renkleri gerçek kumaştan farklı olabilir. Karar öncesi numune isteyin.</p>
+          <p>Ekran ve baskı renkleri gerçek kumaştan farklı olabilir ve bağlayıcı değildir. Renk onayı numune üzerinden verilir.</p>
         </div>
       </footer>
     </article>

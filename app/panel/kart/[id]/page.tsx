@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 import { getRepository, loadCatalogue } from "@/lib/data";
 import { requirePanelUser } from "@/lib/auth/panel";
 import { siteUrl, siteUrlIsFinal } from "@/lib/site";
+import { cleanTag, markedPath } from "@/lib/source";
 import { PrintButton } from "./PrintButton";
 
 // A6 counter card for a firm's showroom: logo, a short line, a large QR.
@@ -19,8 +20,11 @@ export default async function FirmCardPage({ params, searchParams }: PageProps<"
   const modelSlug = typeof sp.model === "string" ? sp.model : null;
   const model = modelSlug ? cat?.models.find((m) => m.slug === modelSlug) : null;
   if (modelSlug && !model) notFound();
-  const url = `${siteUrl()}/f/${firm.slug}${model ? `/${model.slug}` : ""}`;
-  const qr = await QRCode.toString(url, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#2A2A28", light: "#00000000" } });
+  const path = `/f/${firm.slug}${model ? `/${model.slug}` : ""}`;
+  const url = `${siteUrl()}${path}`;
+  // the code itself carries ?q (and the branch label) so card visits are counted as "QR"
+  const qrUrl = `${siteUrl()}${markedPath(path, { qr: true, tag: cleanTag(typeof sp.etiket === "string" ? sp.etiket : null) })}`;
+  const qr = await QRCode.toString(qrUrl, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#2A2A28", light: "#00000000" } });
 
   return (
     <main className="min-h-dvh bg-cizgi/40 py-8 print:min-h-0 print:bg-white print:py-0">

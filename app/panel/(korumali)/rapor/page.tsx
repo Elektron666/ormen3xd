@@ -14,6 +14,14 @@ const PERIODS = [
 ] as const;
 const BAR = "#A8642A"; // single-series hue, validated against the panel surface
 const nf = new Intl.NumberFormat("tr-TR");
+const SOURCE_LABELS: Record<string, string> = {
+  kiosk: "Showroom ekranı (kiosk)",
+  qr: "Basılı QR (kart, afiş)",
+  paylasim: "Paylaşılan kombinasyon",
+  site: "Başka bir web sitesi",
+  dogrudan: "Doğrudan bağlantı (WhatsApp, adres çubuğu)",
+  bilinmiyor: "Kayıt yok (bu özellikten önce)",
+};
 
 export default async function ReportPage({ searchParams }: PageProps<"/panel/rapor">) {
   // checked here, not only in the layout: a layout check does not stop the page from rendering
@@ -38,7 +46,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
   const tiles = [
     ["Ziyaret", report.sessions, "konfigüratörü açan ayrı ziyaret"],
     ["Kumaş denemesi", report.counts.kumas_denendi, `ziyaret başına ${per(report.counts.kumas_denendi)} (hedef 5)`],
-    ["AR", report.counts.ar_acildi, "telefonda odada görme"],
+    ["AR", report.counts.ar_acildi, report.counts.ar_acilamadi ? `telefonda odada görme · ${nf.format(report.counts.ar_acilamadi)} kez açılamadı` : "telefonda odada görme"],
     ["Paylaşım", report.counts.paylasildi, "kombinasyon paylaşma"],
     ["Numune talebi", report.counts.numune_istendi, `100 ziyarette ${per(report.counts.numune_istendi, 100)} (hedef 3)`],
   ] as const;
@@ -148,6 +156,27 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
         </section>
       </div>
 
+      <section aria-labelledby="kaynaklar" className="mt-8">
+        <h2 id="kaynaklar" className="eyebrow mb-3">
+          Nereden geldiler
+        </h2>
+        <div className="grid gap-8 lg:grid-cols-2">
+          <BreakdownTable
+            caption="Kaynak"
+            rows={report.sources.map((x) => ({ key: x.source, label: SOURCE_LABELS[x.source] ?? x.source, sessions: x.sessions, samples: x.samples }))}
+            empty="Bu dönemde ziyaret yok."
+            testId="rapor-kaynak"
+          />
+          <BreakdownTable
+            caption="Şube / kampanya etiketi"
+            rows={report.tags.map((x) => ({ key: x.tag, label: x.tag, sessions: x.sessions, samples: x.samples }))}
+            empty="Etiketli bağlantıdan gelen ziyaret yok. Etiket, Firmalar → firma → bağlantı ve QR bölümünde eklenir."
+            testId="rapor-etiket"
+          />
+        </div>
+        <p className="mt-2 text-[12px] text-antrasit-50">“100 ziyarette” oranı en az 30 ziyaret olunca gösterilir; daha azında yanıltıcı olur.</p>
+      </section>
+
       <section aria-labelledby="firmalar" className="mt-8">
         <h2 id="firmalar" className="eyebrow mb-3">
           Sayfalara göre
@@ -187,5 +216,42 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
         </div>
       </section>
     </>
+  );
+}
+
+function BreakdownTable({ caption, rows, empty, testId }: { caption: string; rows: { key: string; label: string; sessions: number; samples: number }[]; empty: string; testId: string }) {
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-cizgi bg-kagit" data-testid={testId}>
+      <table className="w-full text-left text-[14px]">
+        <thead className="text-[12px] text-antrasit-50">
+          <tr className="border-b border-cizgi">
+            <th className="px-4 py-2 font-normal">{caption}</th>
+            <th className="px-4 py-2 text-right font-normal">Ziyaret</th>
+            <th className="px-4 py-2 text-right font-normal">Numune</th>
+            <th className="px-4 py-2 text-right font-normal">100 ziyarette</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-cizgi tabular-nums">
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={4} className="px-4 py-6 text-center text-[13px] text-antrasit-50">
+                {empty}
+              </td>
+            </tr>
+          )}
+          {rows.map((r) => (
+            <tr key={r.key}>
+              <td className="px-4 py-2">{r.label}</td>
+              <td className="px-4 py-2 text-right">{nf.format(r.sessions)}</td>
+              <td className="px-4 py-2 text-right">{nf.format(r.samples)}</td>
+              <td className="px-4 py-2 text-right text-antrasit-70">
+                {/* too few visits make a rate meaningless */}
+                {r.sessions >= 30 ? new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 }).format((r.samples / r.sessions) * 100) : "–"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

@@ -38,6 +38,19 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 
 Kumaş ya da model silinmez, **gizlenir** (listedeki anahtar). Gizlenen konfigüratörden kalkar; anahtarı tekrar açınca bilgileriyle geri gelir.
 
+## Ziyaretler nereden geliyor (kaynak ve etiket)
+
+Raporun “Nereden geldiler” bölümü ziyaretleri ve numune taleplerini geldikleri yere göre ayırır:
+- showroom ekranı,
+- basılı QR,
+- paylaşılan kombinasyon,
+- başka bir site,
+- doğrudan bağlantı.
+
+Panelde basılan QR'lar ve A6 kartı bunu kendiliğinden işaretler (adresin sonundaki `?q`).
+
+Şubeye ya da kampanyaya göre ayırmak için Panel → Firmalar → firma → bağlantı bölümünde **“Şube / kampanya etiketi”** yazın (ör. “Ankara şube”, “Fuar 2027”). Bağlantı, QR, kiosk adresi ve A6 kart o etiketle çıkar. **QR bastırmadan önce etiketi yazın**; basılmış koda sonradan etiket eklenemez. Etikete kişi adı yazmayın. Kişisel veri tutulmaz: yalnızca bu sabit değerler ve rastgele bir ziyaret numarası saklanır.
+
 ## Showroom ekranı (kiosk)
 
 Mağazadaki dokunmatik ekran ya da tablet için firma bağlantısının sonuna `?kiosk` ekleyin (panelde firma sayfasında hazır yazıyor), ör. `https://atelier.ormentekstil.com.tr/f/firma-adi?kiosk`. Ekran bir karşılama sayfasıyla açılır; 90 saniye dokunulmazsa bir sonraki müşteri için baştan başlar ve önceki kişinin seçimleri silinir. Ziyaretçi “Telefona al” ile seçtiği kombinasyonu QR'la telefonuna alır.
@@ -69,7 +82,7 @@ QR kodları sitenin adresini içerir. **Gerçek alan adı bağlanmadan QR bastı
 Panelde eklediğiniz kumaşların ve gelen taleplerin kalıcı olması için Supabase gerekir. Supabase olmadan site örnek veriyle çalışır ama panelde eklenenler sunucu yeniden başlayınca kaybolur.
 
 1. **Proje açın.** [supabase.com](https://supabase.com) → hesabınızla girin → **New project**. Ad: `ormen-atelier`. Bölge: **Central EU (Frankfurt)** (Türkiye’ye en yakın). Veritabanı şifresini güvenli bir yere not edin. Proje birkaç dakikada hazır olur.
-2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/` klasöründeki dosyaları **ad sırasıyla, tek tek** yapıştırıp **Run**’a basın: önce `20261004000000_init.sql`, sonra `20261005000000_parametric_models.sql`, sonra `20261006000000_fabric_series_limits.sql`, `20261007000000_report_function.sql`, en son `20261008000000_storage_limits.sql`. Her birinde “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
+2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/` klasöründeki dosyaları **ad sırasıyla, tek tek** yapıştırıp **Run**’a basın: önce `20261004000000_init.sql`, sonra `20261005000000_parametric_models.sql`, sonra `20261006000000_fabric_series_limits.sql`, `20261007000000_report_function.sql`, `20261008000000_storage_limits.sql`, en son `20261009000000_visit_sources.sql`. Her birinde “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
 3. **Örnek kataloğu yükleyin.** Yine **SQL Editor** → **New query** → `supabase/seed.sql` dosyasının tamamını yapıştırın → **Run**. 23 yer tutucu kumaş, 3 örnek model (kanepe, berjer, köşe takımı) ve bir örnek firma (`/f/ornek-mobilya`) gelir. Gerçek kumaşlarınızı ekledikçe bunları panelden gizleyebilirsiniz.
 4. **Anahtarları alın.** **Project Settings** → **API** (yeni arayüzde **API Keys**) sayfasından üç değeri kopyalayın:
    - Project URL → `NEXT_PUBLIC_SUPABASE_URL`

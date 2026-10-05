@@ -77,7 +77,7 @@ export const t = {
   fireRating: "Yanmazlık",
   placeholder: "Yer tutucu",
   colorDisclaimer:
-    "Ekran renkleri gerçek kumaştan farklı görünebilir. Karar öncesi numune isteyin.",
+    "Ekran renkleri bağlayıcı değildir; renk onayı numuneyle verilir.",
   loadingFabric: "Kumaş hazırlanıyor",
   dragHint: "Kumaşları görmek için yukarı kaydırın",
   showFabrics: "Kumaşları göster",

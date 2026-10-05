@@ -32,7 +32,7 @@ export function ArLanding({ model, fabric, firm, backHref }: { model: FurnitureM
       <ol className="flex flex-col gap-1 text-[13px] leading-snug text-antrasit-70">
         <li>1. “Odamda gör”e dokunun.</li>
         <li>2. Telefonu yere doğru tutup yavaşça gezdirin; zemin bulununca koltuk gerçek boyutunda yerleşir.</li>
-        <li>3. Parmağınızla kaydırıp döndürün. Renkler ışığa göre değişebilir; karar öncesi numune isteyin.</li>
+        <li>3. Parmağınızla kaydırıp döndürün. Renkler ışığa göre değişebilir ve bağlayıcı değildir; renk onayı numuneyle verilir.</li>
       </ol>
       <p className="mt-auto border-t border-cizgi pt-3 text-center text-[12px] tracking-[0.18em] text-antrasit-50">{t.signature.toLocaleUpperCase("tr-TR")}</p>
     </div>

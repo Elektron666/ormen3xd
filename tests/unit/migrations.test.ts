@@ -164,20 +164,23 @@ describe("report function", () => {
     const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31);
     const pick = <T,>(a: readonly T[]) => a[Math.floor(rnd() * a.length)];
     const start = Date.UTC(2026, 9, 1, 0, 0);
-    const rows: { type: string; sessionId: string; device: string | null; firmSlug: string | null; fabricCode: string | null; createdAt: string }[] = [];
+    const rows: { type: string; sessionId: string; device: string | null; firmSlug: string | null; fabricCode: string | null; source: string | null; tag: string | null; createdAt: string }[] = [];
     for (let s = 0; s < 60; s++) {
       const sessionId = `ziyaret${String(s).padStart(4, "0")}`;
       const firmSlug = pick([null, null, "ornek-mobilya", "yildiz"]);
       const device = pick(["telefon", "masaustu", "tablet"]);
+      // null: events stored before sources were recorded
+      const source = pick([null, "kiosk", "qr", "paylasim", "site", "dogrudan"]);
+      const tag = pick([null, null, "ankara-1", "fuar-2027"]);
       let t = start + Math.floor(rnd() * 5 * 86_400_000);
       for (let k = 0; k < 1 + Math.floor(rnd() * 6); k++) {
         t += Math.floor(rnd() * 600_000);
         const type = k === 0 ? "sayfa_acildi" : pick(EVENT_TYPES);
-        rows.push({ type, sessionId, device: k === 0 ? device : null, firmSlug, fabricCode: type === "kumas_denendi" ? pick(["LUMA-02", "SIENA-03", "PIETRA-01", "VERSO-04"]) : null, createdAt: new Date(t).toISOString() });
+        rows.push({ type, sessionId, device: k === 0 ? device : null, firmSlug, fabricCode: type === "kumas_denendi" ? pick(["LUMA-02", "SIENA-03", "PIETRA-01", "VERSO-04"]) : null, source, tag, createdAt: new Date(t).toISOString() });
       }
     }
     for (const r of rows)
-      await fresh.query("insert into events (type, session_id, device, firm_slug, fabric_code, created_at) values ($1,$2,$3,$4,$5,$6)", [r.type, r.sessionId, r.device, r.firmSlug, r.fabricCode, r.createdAt]);
+      await fresh.query("insert into events (type, session_id, device, firm_slug, fabric_code, source, tag, created_at) values ($1,$2,$3,$4,$5,$6,$7,$8)", [r.type, r.sessionId, r.device, r.firmSlug, r.fabricCode, r.source, r.tag, r.createdAt]);
 
     const from = new Date(Date.UTC(2026, 8, 30, 21)); // 1 Oct 00:00 Istanbul
     const to = new Date(Date.UTC(2026, 9, 6, 20, 59));
@@ -187,9 +190,19 @@ describe("report function", () => {
       const js = buildReport(inScope.map((r) => ({ ...r, device: r.device ?? undefined })) as never, { from, to });
       const sql = (await fresh.query<{ r: unknown }>("select atelier_report($1, $2, $3) as r", [from.toISOString(), to.toISOString(), scope])).rows[0].r;
       expect(norm(reportFromJson(sql)), `scope ${scope}`).toEqual(norm(js));
+      expect(js.sources.length).toBeGreaterThan(3);
     }
     await fresh.close();
   }, 60_000);
+});
+
+describe("visit sources", () => {
+  it("accepts only known sources, clean labels and event types", async () => {
+    await db.query("insert into events (type, session_id, source, tag) values ('ar_acilamadi', 'ziyaret0001', 'qr', 'ankara-1')");
+    await expect(db.query("insert into events (type, session_id, source) values ('sayfa_acildi', 'ziyaret0001', 'instagram')")).rejects.toThrow();
+    await expect(db.query("insert into events (type, session_id, tag) values ('sayfa_acildi', 'ziyaret0001', 'Ali Veli')")).rejects.toThrow();
+    await expect(db.query("insert into events (type, session_id) values ('uydurma', 'ziyaret0001')")).rejects.toThrow();
+  });
 });
 
 describe("hardening migrations", () => {

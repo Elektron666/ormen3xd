@@ -1,17 +1,20 @@
 import QRCode from "qrcode";
 import { getPanelUser } from "@/lib/auth/panel";
 import { FIRM_PATH, siteUrl } from "@/lib/site";
+import { cleanTag, markedPath } from "@/lib/source";
 
 // QR codes for firm pages, as SVG (for print shops) or a 1200 px PNG.
-//   GET /api/panel/qr?yol=/f/ornek-mobilya[/model]&bicim=svg|png
+//   GET /api/panel/qr?yol=/f/ornek-mobilya[/model]&bicim=svg|png[&etiket=ankara-1]
+// The code carries ?q so visits from print are counted as "QR" in the report.
 
 export async function GET(request: Request) {
   if (!(await getPanelUser())) return new Response("Giriş gerekli.", { status: 401 });
   const q = new URL(request.url).searchParams;
   const path = q.get("yol") ?? "";
   if (!FIRM_PATH.test(path)) return new Response("Geçersiz adres.", { status: 400 });
-  const url = `${siteUrl()}${path}`;
-  const name = `qr-${path.slice(3).replace(/\//g, "-")}`;
+  const tag = cleanTag(q.get("etiket"));
+  const url = `${siteUrl()}${markedPath(path, { qr: true, tag })}`;
+  const name = `qr-${path.slice(3).replace(/\//g, "-")}${tag ? `-${tag}` : ""}`;
   const opts = { margin: 2, errorCorrectionLevel: "M" as const, color: { dark: "#2A2A28", light: "#FFFFFF" } };
 
   if (q.get("bicim") === "png") {

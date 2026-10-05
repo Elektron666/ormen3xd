@@ -126,7 +126,7 @@ export async function composeShareImage(snapshotUrl: string, pieces: SharePiece[
   ctx.font = `400 15px ${body}`;
   ctx.fillText("Kumaşlar: ORMEN TEKSTİL", PAD, sceneH + STRIP - 28);
   ctx.textAlign = "right";
-  ctx.fillText("Ekran renkleri gerçek kumaştan farklı görünebilir. Karar öncesi numune isteyin.", W - PAD, sceneH + STRIP - 28);
+  ctx.fillText("Ekran renkleri bağlayıcı değildir; renk onayı numuneyle verilir.", W - PAD, sceneH + STRIP - 28);
   ctx.textAlign = "left";
 
   return new Promise((resolve, reject) =>
