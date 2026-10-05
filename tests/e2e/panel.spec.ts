@@ -134,4 +134,14 @@ test.describe("panel", () => {
     await page.goto(`/?y=${slug}.SIENA-05.0.51.0`);
     await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).toEqual(["SIENA-05"]);
   });
+
+  test("kurulum durumu eksikleri söyler", async ({ page }) => {
+    await login(page);
+    await page.goto("/panel/durum");
+    const list = page.getByTestId("kurulum-listesi");
+    await expect(list.getByRole("heading", { name: "Supabase bağlantısı" })).toBeVisible();
+    await expect(list.getByRole("heading", { name: "KVKK aydınlatma metni" })).toBeVisible();
+    // the demo catalogue has only placeholder fabrics
+    await expect(list.locator("li").filter({ hasText: "Kumaşlar" })).toContainText("yer tutucu");
+  });
 });

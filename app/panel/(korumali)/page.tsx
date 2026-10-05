@@ -1,5 +1,8 @@
 import { requirePanelUser } from "@/lib/auth/panel";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { gatherSetupFacts } from "@/lib/setup-facts";
+import { evaluateSetup, overall } from "@/lib/setup-check";
 import { getRepository } from "@/lib/data";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
 
@@ -19,8 +22,14 @@ export default async function PanelHome() {
     { href: "/panel/firmalar", title: "Firmalar", value: firms.filter((f) => f.isActive).length, note: "kendi sayfası olan firma" },
     { href: "/panel/talepler", title: "Numune talepleri", value: samples.length, note: samples[0] ? `son: ${new Date(samples[0].createdAt).toLocaleDateString("tr-TR")}` : "henüz yok" },
   ];
+  const setup = overall(evaluateSetup(await gatherSetupFacts((await headers()).get("host"))));
   return (
     <>
+      {(setup === "error" || setup === "warn") && (
+        <Link href="/panel/durum" className="mb-6 block rounded-xl border border-[#e7c3bd] bg-[#fbeeec] px-4 py-3 text-[14px] hover:border-[#b4483c]">
+          Kurulumda {setup === "error" ? "yapılması gereken" : "eksik"} adımlar var. <span className="underline">Kurulum durumunu gör</span>
+        </Link>
+      )}
       <PageHeader title="Genel bakış">
         <Link href="/panel/kumaslar/yeni" className={buttonClass.primary}>
           Yeni kumaş

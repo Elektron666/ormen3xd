@@ -13,7 +13,8 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 3. **WhatsApp numarası:** Vercel → **Settings → Environment Variables** → `NEXT_PUBLIC_ORMEN_WHATSAPP` = ORMEN’in numarası (ör. `+90 532 123 45 67`) → **Redeploy**.
 4. **Alan adı:** aşağıdaki “Alan adı ve QR kodları”. DNS’in yayılması birkaç saat sürebilir; o sırada diğer adımlara devam edebilirsiniz.
 5. **Form koruması (önerilir):** Vercel → proje → **Firewall** → **Add Rule**: yol `/api/samples`, `/api/olay` ya da `/api/paylas` ile başlıyorsa **Rate Limit** (ör. IP başına dakikada 30 istek). Vercel bunu IP'yi bizim veritabanımıza yazmadan yapar.
-6. **Deneme:** `/panel`’e girin, bir kumaş fotoğrafı yükleyin, ana sayfada görün; bir numune talebi gönderip “Talepler”de görün; telefonla “Odamda gör”ü deneyin.
+6. **Kontrol:** Panelde **Kurulum** sekmesini açın. Her adım yeşil, sarı ya da kırmızı görünür ve eksik olanın nasıl tamamlanacağı yazar; bir adımı bitirince sayfayı yenileyin.
+7. **Deneme:** `/panel`’e girin, bir kumaş fotoğrafı yükleyin, ana sayfada görün; bir numune talebi gönderip “Talepler”de görün; telefonla “Odamda gör”ü deneyin.
 
 ## Site ve panel adresleri
 

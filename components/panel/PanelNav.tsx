@@ -9,6 +9,7 @@ const LINKS = [
   ["/panel/firmalar", "Firmalar"],
   ["/panel/talepler", "Talepler"],
   ["/panel/rapor", "Rapor"],
+  ["/panel/durum", "Kurulum"],
 ] as const;
 
 export function PanelNav() {

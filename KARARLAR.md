@@ -4,6 +4,14 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Kurulum durumu sayfası (5 Ekim 2026)
+
+- Panelde **Kurulum** sekmesi (`/panel/durum`): Supabase bağlantısı, beş tablo dosyasından hangilerinin çalıştırıldığı (her biri yarattığı tablo/sütun/fonksiyon/klasör sınırıyla tespit ediliyor), kumaş ve model durumu, alan adı (panelin açıldığı adresle karşılaştırılarak), WhatsApp numarası, üretimde demo giriş. Elle yapılacak üç iş (KVKK, telefonda AR, güvenlik duvarı) ayrı "Sizde" olarak listeleniyor.
+- Her açılışta yeniden kontrol ediyor; genel bakış sayfasında kırmızı/sarı varsa uyarı şeridi çıkıyor.
+- Kuralların hepsi birim testli (`lib/setup-check.ts`). Supabase'e karşı tespit kısmı gerçek bir Supabase projesiyle denenemedi; kurulumda ilk kez çalışacak.
+
+---
+
 ## Güvenlik incelemesi ve düzeltmeler (5 Ekim 2026)
 
 Yayından önce dışarıya açık bütün kapılar ayrı bir incelemeyle tarandı (panel girişi, panel işlemleri, dosya yükleme, herkese açık formlar, veritabanı izinleri, yönlendirmeler). Bulgular ve yapılanlar:
