@@ -96,13 +96,15 @@ export interface PlanViewProps {
   pieces: Footprint[];
   /** The selected piece, whose size and clearances are measured. */
   selected: Footprint | null;
+  /** What the clearances run up to: the other pieces, corner sets by their real parts. */
+  others: Footprint[];
   /** Tallest piece, metres (dimension lines are drawn above it). */
   tallest: number;
   /** False while a piece is being dragged. */
   controlsEnabled: boolean;
 }
 
-export function PlanView({ room, pieces, selected, tallest, controlsEnabled }: PlanViewProps) {
+export function PlanView({ room, pieces, selected, others, tallest, controlsEnabled }: PlanViewProps) {
   const get = useThree((s) => s.get);
   const set = useThree((s) => s.set);
   const size = useThree((s) => s.size);
@@ -120,8 +122,9 @@ export function PlanView({ room, pieces, selected, tallest, controlsEnabled }: P
   const frameKey = `${room.shape}:${room.widthCm}:${room.depthCm}:${pieces.length}`;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const bounds = useMemo(() => planBounds(room, pieces), [frameKey]);
-  const others = useMemo(() => pieces.filter((p) => p !== selected), [pieces, selected]);
-  const measures = useMemo(() => planMeasures(room, selected, others), [room, selected, others]);
+  const othersKey = others.map((o) => `${o.minX},${o.maxX},${o.minZ},${o.maxZ}`).join(";");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const measures = useMemo(() => planMeasures(room, selected, others), [room, selected, othersKey]);
   const fit = useMemo(() => computeFit(bounds, size), [bounds, size]);
   // zoom after the user scrolls; tied to the fit it started from
   const [userZoom, setUserZoom] = useState<{ fit: Fit; zoom: number } | null>(null);

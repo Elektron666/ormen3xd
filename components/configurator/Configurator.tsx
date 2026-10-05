@@ -13,7 +13,7 @@ import { CompareDivider, SceneTools } from "./SceneTools";
 import { useFavorites } from "@/lib/favorites";
 import { IconAr, IconClose, IconHeart, IconShare } from "@/components/ui/icons";
 import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomSpec } from "@/lib/room/spec";
-import { constrain, encodeLayout, findFreeSpot, newId, overlapping, type Placement } from "@/lib/room/layout";
+import { constrain, encodeLayout, findFreeSpot, modelDims, newId, overlapping, type Dims, type Placement } from "@/lib/room/layout";
 import type { StageApi } from "@/components/three/Stage";
 import { encodeShare } from "@/lib/share";
 import { shortenShare } from "@/lib/share-client";
@@ -77,7 +77,10 @@ export function Configurator({
 }: ConfiguratorProps) {
   const byCode = useMemo(() => new Map(fabrics.map((f) => [f.code, f])), [fabrics]);
   const bySlug = useMemo(() => new Map(models.map((m) => [m.slug, m])), [models]);
-  const dimsOf = useCallback((slug: string) => bySlug.get(slug)?.dimensionsCm ?? { w: 100, d: 100, h: 80 }, [bySlug]);
+  const dimsOf = useCallback((slug: string): Dims => {
+    const m = bySlug.get(slug);
+    return m ? modelDims(m) : { w: 100, d: 100 };
+  }, [bySlug]);
 
   const [room, setRoom] = useState<RoomSpec>(() => initialRoom ?? { ...DEFAULT_PRESET.spec });
 
@@ -168,7 +171,7 @@ export function Configurator({
   const addPiece = (slug: string) => {
     const model = bySlug.get(slug);
     if (!model) return;
-    const spot = findFreeSpot(model.dimensionsCm, room, items.map((p) => ({ p, dims: dimsOf(p.modelSlug) })));
+    const spot = findFreeSpot(modelDims(model), room, items.map((p) => ({ p, dims: dimsOf(p.modelSlug) })));
     const piece: Placement = { id: newId(), modelSlug: slug, fabricCode: startFabric(fabricsForModel(fabrics, model), selected.code, model).code, ...spot };
     commit([...items, piece]);
     setSelectedId(piece.id);
@@ -240,7 +243,7 @@ export function Configurator({
     items.flatMap((p) => {
       const model = bySlug.get(p.modelSlug);
       const fabric = byCode.get(p.fabricCode);
-      return model && fabric ? [{ p, model, fabric, dims: model.dimensionsCm, modelName: model.name }] : [];
+      return model && fabric ? [{ p, model, fabric, dims: modelDims(model), modelName: model.name }] : [];
     });
   const shareText = () =>
     "ORMEN kumaşlarıyla hazırladığım kombinasyon: " +

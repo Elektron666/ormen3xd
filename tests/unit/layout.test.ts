@@ -6,6 +6,8 @@ import {
   encodeLayout,
   findFreeSpot,
   footprint,
+  footprintParts,
+  modelDims,
   halfExtents,
   overlapping,
   type Placement,
@@ -94,5 +96,59 @@ describe("layout link", () => {
     expect(decodeLayout("kanepe.LUMA-02.x.1.0")).toBeNull();
     expect(decodeLayout("")).toBeNull();
     expect(decodeLayout("a.B")).toBeNull();
+  });
+});
+
+describe("corner and U sets", () => {
+  // 290 × 220 köşe takımı, corner on the right: back run 0–195 cm, return 195–290 cm reaching 220 cm forward
+  const kose = modelDims({
+    dimensionsCm: { w: 290, d: 220, h: 82 },
+    source: { kind: "parametric", params: { tip: "kose", kol: "kalin", sirt: "orta", ayak: "gizli", genislikCm: 290, derinlikCm: 95, solUc: "kol", sagUc: "kose", solBoyCm: 160, sagBoyCm: 220 } },
+  });
+  const table = { w: 100, d: 60 };
+  const set = p(0, 1.13, 0, "set");
+
+  it("keeps the real shape for parametric corner sets only", () => {
+    expect(kose.parts).toHaveLength(2);
+    expect(modelDims({ dimensionsCm: { w: 238, d: 96, h: 80 }, source: { kind: "glb", url: "x.glb" } })).toEqual({ w: 238, d: 96 });
+    // the box (walls, framing) is unchanged
+    expect(footprint(set, kose)).toEqual(footprint(set, { w: 290, d: 220 }));
+  });
+
+  it("a table inside the L does not count as overlapping", () => {
+    // in front of the back run, left of the return
+    const inside = p(-0.2, 1.7, 0, "masa");
+    expect(overlapping([{ p: set, dims: kose }, { p: inside, dims: table }]).size).toBe(0);
+    // with the bounding box it would have
+    expect(overlapping([{ p: set, dims: { w: 290, d: 220 } }, { p: inside, dims: table }]).size).toBe(2);
+    // on the return itself it still does
+    expect(overlapping([{ p: set, dims: kose }, { p: p(1.0, 1.7, 0, "masa"), dims: table }]).size).toBe(2);
+  });
+
+  it("turns the parts with the piece", () => {
+    // turned to face +x (back on the left wall)
+    const turned = footprintParts({ x: 0, z: 0, rot: 90 }, kose);
+    const box = footprint({ x: 0, z: 0, rot: 90 }, kose);
+    for (const f of turned) {
+      expect(f.minX).toBeGreaterThanOrEqual(box.minX - 1e-9);
+      expect(f.maxX).toBeLessThanOrEqual(box.maxX + 1e-9);
+      expect(f.minZ).toBeGreaterThanOrEqual(box.minZ - 1e-9);
+      expect(f.maxZ).toBeLessThanOrEqual(box.maxZ + 1e-9);
+    }
+    // the back run sits against x = box.minX
+    expect(Math.min(...turned.map((f) => f.minX))).toBeCloseTo(box.minX);
+    // the right-hand return turns to the -z side (rotation.y = +90°: +x goes to -z)
+    const ret = turned.find((f) => f.maxX - f.minX > 2)!;
+    expect(ret.minZ).toBeCloseTo(box.minZ);
+  });
+
+  it("finds a free spot for a table inside the L", () => {
+    const small: RoomSpec = { ...room, widthCm: 300, depthCm: 260 };
+    const placed = [{ p: constrain(p(0, 0, 0, "set"), kose, small), dims: kose }];
+    const spot = findFreeSpot({ w: 60, d: 50 }, small, placed);
+    const table2 = { ...p(spot.x, spot.z, spot.rot, "masa") };
+    expect(overlapping([...placed, { p: table2, dims: { w: 60, d: 50 } }]).size).toBe(0);
+    // it went into the L, which the box would have ruled out
+    expect(footprint(table2, { w: 60, d: 50 }).minZ).toBeLessThan(2.2);
   });
 });

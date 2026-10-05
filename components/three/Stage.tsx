@@ -8,7 +8,7 @@ import type { Fabric, FurnitureModel, TextureSize } from "@/lib/types";
 import type { PreparedModel } from "@/lib/three/prepare-model";
 import { preferredTextureSize } from "@/lib/three/fabric-material";
 import { encodeRoom, type RoomSpec } from "@/lib/room/spec";
-import { encodeLayout, footprint, type Placement } from "@/lib/room/layout";
+import { encodeLayout, footprint, footprintParts, modelDims, type Placement } from "@/lib/room/layout";
 import { Room } from "./Room";
 import { CameraRig, FOV } from "./CameraRig";
 import { PlanView } from "./PlanView";
@@ -191,6 +191,12 @@ export function Stage({
   };
   const footprints = items.map((p) => footprint(p, sizeOf(p)));
   const selectedIndex = Math.max(0, items.findIndex((p) => p.id === selectedId));
+  // clearances are measured to the real shape of corner/U sets, not their box
+  const obstacles = items.flatMap((p, i) => {
+    if (i === selectedIndex) return [];
+    const m = models.get(p.modelSlug);
+    return footprintParts(p, { ...sizeOf(p), parts: m ? modelDims(m).parts : null });
+  });
   const tallest = Math.max(0.5, ...items.map((p) => prepared[p.id]?.size.y ?? 0));
   const fabricKey = items.map((p) => p.fabricCode).join(",");
 
@@ -254,7 +260,7 @@ export function Stage({
       {compareFabric && <SplitRender split={split} />}
       {onApi && <SnapshotBridge onApi={onApi} split={compareFabric ? split : null} />}
       {visible && plan && (
-        <PlanView room={room} pieces={footprints} selected={footprints[selectedIndex] ?? null} tallest={tallest} controlsEnabled={!dragging} />
+        <PlanView room={room} pieces={footprints} selected={footprints[selectedIndex] ?? null} others={obstacles} tallest={tallest} controlsEnabled={!dragging} />
       )}
       {visible && inRoom && <Room spec={room} backZ={0} onBuilt={onRoomBuilt} />}
       <ShadowMapRefresh version={`${encodeLayout(items)}:${fabricKey}:${compareFabric?.code}:${encodeRoom(room)}:${Object.keys(prepared).length}`} />

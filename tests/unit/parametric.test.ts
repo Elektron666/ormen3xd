@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { DEFAULTS, TIPLER, describeParams, normaliseParams, paramDimensions, shapeName, validateParams, type ParametricParams } from "@/lib/parametric/spec";
+import { DEFAULTS, TIPLER, describeParams, normaliseParams, paramDimensions, paramFloorRects, shapeName, validateParams, type ParametricParams } from "@/lib/parametric/spec";
 import { buildParametric } from "@/lib/three/procedural/parametric";
 import { prepareModel } from "@/lib/three/prepare-model";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
@@ -74,5 +74,44 @@ describe("parametric builder", () => {
     };
     expect(side("sag")).toBe(1);
     expect(side("sol")).toBe(-1);
+  });
+});
+
+describe("paramFloorRects", () => {
+  const corners = cases.filter((c) => c.tip === "kose");
+
+  it("is null for pieces that fill their box", () => {
+    expect(paramFloorRects(DEFAULTS.uclu)).toBeNull();
+    expect(paramFloorRects(DEFAULTS.puf)).toBeNull();
+  });
+
+  it.each(corners.map((c) => [describeParams(c), c] as const))("covers every vertex of the built %s and stays inside its box", (_, c) => {
+    const rects = paramFloorRects(c)!;
+    const { w, d } = paramDimensions(c);
+    for (const r of rects) {
+      expect(r.x0).toBeGreaterThanOrEqual(-w / 2 - 1e-9);
+      expect(r.x1).toBeLessThanOrEqual(w / 2 + 1e-9);
+      expect(r.z0).toBeCloseTo(-d / 2);
+      expect(r.z1).toBeLessThanOrEqual(d / 2 + 1e-9);
+    }
+    const prepared = prepareModel(buildParametric(c), [FABRIC_MATERIAL]);
+    prepared.root.updateMatrixWorld(true);
+    const v = new THREE.Vector3();
+    let outside = 0;
+    prepared.root.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const pos = mesh.geometry.getAttribute("position");
+      for (let i = 0; i < pos.count; i += 7) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
+        const x = v.x * 100, z = v.z * 100;
+        // 3 cm for cushion bulges and rounding
+        if (!rects.some((r) => x >= r.x0 - 3 && x <= r.x1 + 3 && z >= r.z0 - 3 && z <= r.z1 + 3)) outside++;
+      }
+    });
+    expect(outside).toBe(0);
+    // an L or U leaves floor free inside its box
+    const area = rects.reduce((a, r) => a + (r.x1 - r.x0) * (r.z1 - r.z0), 0);
+    expect(area).toBeLessThan(w * d - 1);
   });
 });

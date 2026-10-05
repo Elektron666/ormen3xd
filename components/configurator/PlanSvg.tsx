@@ -1,6 +1,6 @@
 import type { Fabric } from "@/lib/types";
 import { roomOutline, type RoomSpec } from "@/lib/room/spec";
-import { footprint, type Placement } from "@/lib/room/layout";
+import { footprintParts, type Dims, type Placement } from "@/lib/room/layout";
 import { planBounds, PLAN_WALL_T } from "@/lib/room/plan";
 
 // Vector floor plan of the layout, for print: crisp at any size, drawn from
@@ -8,14 +8,14 @@ import { planBounds, PLAN_WALL_T } from "@/lib/room/plan";
 
 export interface PlanSvgPiece {
   p: Placement;
-  dims: { w: number; d: number };
+  dims: Dims;
   fabric: Fabric;
 }
 
 export function PlanSvg({ room, pieces, className }: { room: RoomSpec; pieces: PlanSvgPiece[]; className?: string }) {
   const b = planBounds(
     room,
-    pieces.map((x) => footprint(x.p, x.dims)),
+    pieces.flatMap((x) => footprintParts(x.p, x.dims)),
   );
   const vb = [b.minX * 100, b.minZ * 100, (b.maxX - b.minX) * 100, (b.maxZ - b.minZ) * 100];
   const { points, walls } = roomOutline(room);
@@ -63,16 +63,43 @@ export function PlanSvg({ room, pieces, className }: { room: RoomSpec; pieces: P
       )}
       {pieces.map(({ p, dims, fabric }) => (
         <g key={p.id} transform={`translate(${p.x * 100} ${p.z * 100}) rotate(${-p.rot})`}>
-          <rect x={-dims.w / 2} y={-dims.d / 2} width={dims.w} height={dims.d} rx={6} fill={fabric.texture.avgColor} stroke="#2a2a28" strokeWidth={1.5} />
+          {dims.parts?.length ? (
+            // L/U set: draw its real outline, so the free corner inside reads
+            <path d={outlinePath(dims.parts)} fill={fabric.texture.avgColor} stroke="#2a2a28" strokeWidth={1.5} strokeLinejoin="round" />
+          ) : (
+            <rect x={-dims.w / 2} y={-dims.d / 2} width={dims.w} height={dims.d} rx={6} fill={fabric.texture.avgColor} stroke="#2a2a28" strokeWidth={1.5} />
+          )}
           {/* the back of the piece, so its orientation reads */}
           <line x1={-dims.w / 2 + 4} y1={-dims.d / 2 + 5} x2={dims.w / 2 - 4} y2={-dims.d / 2 + 5} stroke="#2a2a28" strokeWidth={4} />
         </g>
       ))}
-      {pieces.map(({ p, fabric }) => (
-        <text key={`t-${p.id}`} x={p.x * 100} y={p.z * 100 + 7} textAnchor="middle" fontSize={18} fill="#2a2a28" stroke="#FBF9F5" strokeWidth={4} paintOrder="stroke">
+      {pieces.map(({ p, dims, fabric }) => (
+        <text key={`t-${p.id}`} {...labelAt(p, dims)} textAnchor="middle" fontSize={18} fill="#2a2a28" stroke="#FBF9F5" strokeWidth={4} paintOrder="stroke">
           {fabric.code}
         </text>
       ))}
     </svg>
   );
+}
+
+/**
+ * Outline of touching rectangles that share the back edge (a corner set's
+ * run and ends), as one closed path: along the back, then down and up each
+ * part's front edge from right to left.
+ */
+function outlinePath(parts: NonNullable<Dims["parts"]>): string {
+  const sorted = [...parts].sort((a, b) => a.x0 - b.x0);
+  const back = Math.min(...sorted.map((r) => r.z0));
+  const pts: [number, number][] = [[sorted[0].x0, back], [sorted[sorted.length - 1].x1, back]];
+  for (let i = sorted.length - 1; i >= 0; i--) pts.push([sorted[i].x1, sorted[i].z1], [sorted[i].x0, sorted[i].z1]);
+  return "M" + pts.map(([x, z]) => `${x} ${z}`).join(" L") + " Z";
+}
+
+/**
+ * Where a piece's fabric code goes: its centre, or for an L/U set (whose
+ * centre is free floor) the middle of its widest part, so the code fits.
+ */
+function labelAt(p: Placement, dims: Dims): { x: number; y: number } {
+  const big = footprintParts(p, dims).reduce((a, f) => (f.maxX - f.minX > a.maxX - a.minX ? f : a));
+  return { x: ((big.minX + big.maxX) / 2) * 100, y: ((big.minZ + big.maxZ) / 2) * 100 + 7 };
 }

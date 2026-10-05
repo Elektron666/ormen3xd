@@ -88,7 +88,11 @@ Yayından önce dışarıya açık bütün kapılar ayrı bir incelemeyle tarand
 - **Veritabanı:** İkinci migration (`20261005000000_parametric_models.sql`): `models.params` (jsonb) ve `procedural_key = 'parametric'`. Tarifi olmayan parametrik modeli kurallar reddediyor (PGlite'ta test edildi). Kayıtta tarif sunucuda yeniden doğrulanıyor.
 - **Vitrine örnek köşe takımı** eklendi (`/?y=kose-takimi…`, seed.sql'de de var).
 - **AR** parametrik modellerde de çalışıyor (aynı kod yolu).
-- **Bilinen sınır:** Yerleşimde ve teklif föyündeki planda köşe takımı dış dikdörtgeniyle hesaplanıyor; L'nin iç boşluğu da dolu sayılıyor (oraya sehpa konunca "çakışma" uyarısı çıkar). Ekrandaki 2D plan görünümü gerçek L şeklini gösteriyor.
+- **Gerçek L/U şekli:** Köşe takımı yerleşimde birkaç dikdörtgen olarak hesaplanıyor: arka duvar boyunca uzanan bölüm, köşe ya da şezlong uçları (`paramFloorRects`, `lib/parametric/spec.ts`). L'nin içine konan sehpa ya da berjer "çakışma" uyarısı vermiyor, "Mobilya ekle" boş yer ararken L'nin içini de kullanabiliyor, plandaki boşluk ölçüleri parçaların kendisine kadar alınıyor ve teklif föyündeki plan L/U çizgisini çiziyor.
+  - Duvara yaslama ve oda sınırı hâlâ dış kutuyla yapılıyor. Duvarlar düz olduğu için sonuç aynı.
+  - L biçimli odanın kesik köşesinden kaçınma da dış kutuyla yapılıyor; bu temkinli tarafta kalıyor, çakışmaya yol açmıyor.
+  - Bir birim testi, parçaların modelin gerçek 3D geometrisini (3 cm payla) kapsadığını denetliyor; çizim kodu ile yerleşim hesabı birbirinden kayarsa test kırılıyor.
+  - Dosyayla yüklenen (GLB) modeller kutu olarak kalıyor; şekillerini bilmiyoruz.
 
 ---
 

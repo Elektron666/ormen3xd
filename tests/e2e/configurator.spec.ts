@@ -142,3 +142,16 @@ test("mobilya eklenir, sürüklenir, döndürülür; yerleşim bağlantıya yaz�
   await expect.poll(async () => (await fabricOnModel(page)).sort()).toEqual(["LUMA-02", "SIENA-03"]);
   expect(errors).toEqual([]);
 });
+
+test("köşe takımının L içine konan berjer çakışma sayılmaz", async ({ page, isMobile }) => {
+  test.skip(isMobile, "yerleşim masaüstü öncelikli");
+  const warning = page.getByText("Bazı mobilyalar üst üste duruyor");
+  // berjer in the free corner inside the L (corner on the right)
+  await page.goto("/?y=kose-takimi.LUMA-03.0.113.0_berjer.SIENA-04.-20.160.0&g=plan");
+  await expect.poll(async () => (await fabricOnModel(page)).sort()).toEqual(["LUMA-03", "SIENA-04"]);
+  await expect(warning).toHaveCount(0);
+  // the same berjer on the corner's return does overlap
+  await page.goto("/?y=kose-takimi.LUMA-03.0.113.0_berjer.SIENA-04.100.160.0&g=plan");
+  await expect.poll(async () => (await fabricOnModel(page)).sort()).toEqual(["LUMA-03", "SIENA-04"]);
+  await expect(warning).toBeVisible();
+});

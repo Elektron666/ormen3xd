@@ -6,6 +6,8 @@
 // the back wall); rot = 90 faces +x (its back to the left wall).
 
 import { codeUpper } from "@/lib/i18n/tr";
+import { paramFloorRects, type FloorRect } from "@/lib/parametric/spec";
+import type { FurnitureModel } from "@/lib/types";
 import { L_NOTCH, type RoomSpec } from "./spec";
 
 export interface Placement {
@@ -25,7 +27,18 @@ export interface Footprint {
   maxZ: number;
 }
 
-export type Dims = { w: number; d: number }; // centimetres
+/**
+ * Size of a piece, centimetres. `parts` is the real floor shape when it is not
+ * a full rectangle (corner and U sets): the free space inside the L stays usable.
+ */
+export type Dims = { w: number; d: number; parts?: FloorRect[] | null };
+
+/** Layout size of a model, with its floor shape when it has one. */
+export function modelDims(model: Pick<FurnitureModel, "dimensionsCm" | "source">): Dims {
+  const { w, d } = model.dimensionsCm;
+  const parts = model.source.kind === "parametric" ? paramFloorRects(model.source.params) : null;
+  return parts ? { w, d, parts } : { w, d };
+}
 
 /** Gap left between furniture and a wall it is pushed against. */
 export const WALL_GAP = 0.03;
@@ -50,6 +63,27 @@ export function footprint(p: Pick<Placement, "x" | "z" | "rot">, dims: Dims): Fo
   const { hx, hz } = halfExtents(dims, p.rot);
   return { minX: p.x - hx, maxX: p.x + hx, minZ: p.z - hz, maxZ: p.z + hz };
 }
+
+/** A floor rectangle (cm, piece-relative) turned and moved into the room, metres. */
+function placeRect(p: Pick<Placement, "x" | "z" | "rot">, r: FloorRect): Footprint {
+  const a = (p.rot * Math.PI) / 180;
+  const c = Math.cos(a), s = Math.sin(a);
+  // same turn as the 3D piece (rotation.y) and the plan: front +z turns to +x at 90°
+  const xs: number[] = [], zs: number[] = [];
+  for (const [x, z] of [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]]) {
+    xs.push(p.x + (x * c + z * s) / 100);
+    zs.push(p.z + (-x * s + z * c) / 100);
+  }
+  const k = (v: number) => Math.round(v * 1e6) / 1e6;
+  return { minX: k(Math.min(...xs)), maxX: k(Math.max(...xs)), minZ: k(Math.min(...zs)), maxZ: k(Math.max(...zs)) };
+}
+
+/** The floor a piece really takes: its box, or each part of an L/U set. */
+export function footprintParts(p: Pick<Placement, "x" | "z" | "rot">, dims: Dims): Footprint[] {
+  return dims.parts?.length ? dims.parts.map((r) => placeRect(p, r)) : [footprint(p, dims)];
+}
+
+const anyOverlap = (a: Footprint[], b: Footprint[], tolerance?: number) => a.some((x) => b.some((y) => overlaps(x, y, tolerance)));
 
 /** Inner rectangle of the room (the whole floor for the studio). */
 export function roomRect(spec: RoomSpec): Footprint {
@@ -129,14 +163,15 @@ export function findFreeSpot(
   placed: { p: Placement; dims: Dims }[],
 ): Pick<Placement, "x" | "z" | "rot"> {
   const r = roomRect(spec);
-  const taken = placed.map((o) => footprint(o.p, o.dims));
+  const taken = placed.flatMap((o) => footprintParts(o.p, o.dims));
   const free = (c: Pick<Placement, "x" | "z" | "rot">) => {
     const fixed = constrain({ id: "", modelSlug: "", fabricCode: "", ...c }, dims, spec);
-    const f = footprint(fixed, dims);
+    const f = footprintParts(fixed, dims);
     const n = notch(spec);
-    if (n && overlaps(f, n, 0)) return null;
+    if (n && anyOverlap(f, [n], 0)) return null;
     // a little breathing room between pieces
-    return taken.every((t) => !overlaps(f, { minX: t.minX - 0.1, maxX: t.maxX + 0.1, minZ: t.minZ - 0.1, maxZ: t.maxZ + 0.1 }, 0)) ? fixed : null;
+    const roomy = taken.map((t) => ({ minX: t.minX - 0.1, maxX: t.maxX + 0.1, minZ: t.minZ - 0.1, maxZ: t.maxZ + 0.1 }));
+    return anyOverlap(f, roomy, 0) ? null : fixed;
   };
   const sweep = (from: number, to: number) => {
     const out: number[] = [];
@@ -166,7 +201,7 @@ export function overlapping(items: { p: Placement; dims: Dims }[]): Set<string> 
   const out = new Set<string>();
   for (let i = 0; i < items.length; i++)
     for (let j = i + 1; j < items.length; j++)
-      if (overlaps(footprint(items[i].p, items[i].dims), footprint(items[j].p, items[j].dims))) {
+      if (anyOverlap(footprintParts(items[i].p, items[i].dims), footprintParts(items[j].p, items[j].dims))) {
         out.add(items[i].p.id);
         out.add(items[j].p.id);
       }

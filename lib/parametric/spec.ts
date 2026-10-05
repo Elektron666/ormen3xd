@@ -128,6 +128,34 @@ export function paramDimensions(p: ParametricParams): { w: number; d: number; h:
   return { w: Math.round(p.genislikCm), d: Math.round(d), h };
 }
 
+/** A rectangle on the floor, cm, relative to the piece's centre; z grows towards the front. */
+export interface FloorRect {
+  x0: number;
+  x1: number;
+  z0: number;
+  z1: number;
+}
+
+/**
+ * The real floor shape of a corner/modular set as rectangles (the back-wall run
+ * plus each corner or chaise end), centred like its bounding box. Other types
+ * fill their box, so they return null. Mirrors buildParametric's layout.
+ */
+export function paramFloorRects(p: ParametricParams): FloorRect[] | null {
+  if (p.tip !== "kose") return null;
+  const { w, d } = paramDimensions(p);
+  const D = p.derinlikCm;
+  const back = -d / 2;
+  const sol = p.solUc ?? "kol";
+  const sag = p.sagUc ?? "kol";
+  const xl = -w / 2 + endWidthCm(p, sol);
+  const xr = w / 2 - endWidthCm(p, sag);
+  const rects: FloorRect[] = [{ x0: xl, x1: xr, z0: back, z1: back + D }];
+  if (sol !== "kol") rects.push({ x0: -w / 2, x1: xl, z0: back, z1: back + (p.solBoyCm ?? D) });
+  if (sag !== "kol") rects.push({ x0: xr, x1: w / 2, z0: back, z1: back + (p.sagBoyCm ?? D) });
+  return rects;
+}
+
 /** Keeps only known values; unknown or missing ones fall back to the type's defaults. */
 export function normaliseParams(raw: unknown): ParametricParams | null {
   if (!raw || typeof raw !== "object") return null;
