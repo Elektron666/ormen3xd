@@ -43,6 +43,11 @@ export interface Repository {
   createSampleRequest(input: SampleRequestInput): Promise<SampleRequest>;
   listSampleRequests(): Promise<SampleRequest[]>;
 
+  /** Short link → long share id; null when unknown. */
+  getShare(code: string): Promise<string | null>;
+  /** Stores a short link. False when the code is already taken by another combination. */
+  saveShare(code: string, longId: string, firmSlug?: string | null): Promise<boolean>;
+
   recordEvent(e: UsageEvent): Promise<void>;
   /** Events since a date (newest first, capped), optionally of one firm ("" = ORMEN's own pages). */
   listEvents(since: Date, firmSlug?: string): Promise<StoredEvent[]>;

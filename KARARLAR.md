@@ -4,6 +4,17 @@ Bu dosyada projede verilen kararlar, yapılan varsayımlar ve bilinen sınırlar
 
 ---
 
+## Faz 2, iş 5: Kısa paylaşım linki (5 Ekim 2026)
+
+- **Ne:** Paylaşımda artık `…/s/Ab3dE9xK` gibi 8 karakterlik link veriliyor; açılınca kalıcı yönlendirmeyle (`308`) her zamanki `/p/…` sayfasına gidiyor. WhatsApp önizlemesi aynı (yönlendirmeyi izliyor; uçtan uca testte doğrulandı).
+- **Kod içerikten türetiliyor** (uzun kimliğin SHA-256 özeti, base62). Aynı kombinasyon her seferinde aynı kodu alıyor, tekrar paylaşmak tabloya satır eklemiyor. Başka bir kombinasyonla çakışırsa (pratikte olmaz) 10 karakterlik kod veriliyor.
+- **Uzun link hiç kaybolmuyor:** Paylaşım penceresi önce uzun linkle açılıyor, kısa link 2,5 sn içinde gelirse yerine geçiyor. Gelmezse uzun link kalıyor; her iki link de çalışıyor. Kioskta QR da kısalıyor (daha seyrek, daha kolay okunan bir QR).
+- Yalnızca geçerli bir kombinasyon kaydediliyor (`shares` tablosu zaten vardı; migration gerekmedi). Kişisel veri yok.
+- **Supabase'siz Vercel'de kısa link verilmiyor:** Bellekteki kayıt tek sunucu kopyasında kalır, link başka kopyada açılmayabilirdi. O durumda uzun link kullanılıyor.
+- Numune talebiyle panele düşen "Seçimi aç" bağlantısı uzun `/p/…` olarak kalıyor (kendi kendine yeterli, veritabanına bağlı değil).
+
+---
+
 ## Faz 2, iş 4: Showroom kiosk modu (4 Ekim 2026)
 
 - **Açılış:** Herhangi bir konfigüratör adresinin sonuna `?kiosk` (ör. `/f/firma?kiosk`). Bekleme süresi varsayılan 90 sn; `?kiosk=120` gibi 30–600 sn verilebilir. Panelde firma sayfasında kiosk bağlantısı yazıyor. Ayrı bir kiosk uygulaması ya da hesap yok; bir tarayıcıyı tam ekran açmak yetiyor.

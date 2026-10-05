@@ -11,11 +11,14 @@ test.describe("paylaşım ve numune", () => {
     await page.goto(`/?oda=acik-salon&y=${LAYOUT}`);
     await page.getByRole("button", { name: "Paylaş", exact: true }).click();
     await expect(page.getByAltText("Paylaşılacak görsel")).toBeVisible({ timeout: 45_000 });
-    const url = (await page.locator("dialog p[translate=no]").textContent())!;
-    expect(url).toMatch(/\/p\/[A-Za-z0-9_-]+$/);
+    // the long link is replaced by a short one
+    const link = page.locator("dialog p[translate=no]");
+    await expect(link).toHaveText(/\/s\/[0-9A-Za-z]{8}$/);
+    const url = (await link.textContent())!;
 
     const other = await browser.newPage();
     await other.goto(url);
+    await expect(other).toHaveURL(/\/p\/[A-Za-z0-9_-]+$/);
     await expect
       .poll(() =>
         other.evaluate(() => {
@@ -29,6 +32,19 @@ test.describe("paylaşım ve numune", () => {
       .toEqual(["LUMA-02", "SIENA-03"]);
     await other.close();
     expect(errors).toEqual([]);
+  });
+
+  test("kısa link: aynı kombinasyon aynı kodu alır, bozuk istek kaydedilmez", async ({ request }) => {
+    const id = Buffer.from(`y=${LAYOUT}`).toString("base64url");
+    const a = await (await request.post("/api/paylas", { data: { id } })).json();
+    const b = await (await request.post("/api/paylas", { data: { id } })).json();
+    expect(a.path).toMatch(/^\/s\/[0-9A-Za-z]{8}$/);
+    expect(b.path).toBe(a.path);
+    expect((await request.post("/api/paylas", { data: { id: "bozuk!" } })).status()).toBe(422);
+    expect((await request.get("/s/YOKBOYLE1", { maxRedirects: 0 })).status()).toBe(404);
+    const r = await request.get(a.path, { maxRedirects: 0 });
+    expect(r.status()).toBe(308);
+    expect(r.headers().location).toContain(`/p/${id}`);
   });
 
   test("WhatsApp önizlemesi için görsel üretilir", async ({ request, page }) => {

@@ -16,6 +16,7 @@ import { DEFAULT_PRESET, encodeRoom, matchingPreset, type RoomPreset, type RoomS
 import { constrain, encodeLayout, findFreeSpot, newId, overlapping, type Placement } from "@/lib/room/layout";
 import type { StageApi } from "@/components/three/Stage";
 import { encodeShare } from "@/lib/share";
+import { shortenShare } from "@/lib/share-client";
 import { accentStyle } from "@/lib/firm";
 import { composeShareImage, groupByFabric } from "@/lib/share-image";
 import { SampleDialog } from "./SampleDialog";
@@ -250,16 +251,22 @@ export function Configurator({
   const [takeHome, setTakeHome] = useState<string | null>(null);
   const openShare = async () => {
     track("paylasildi", { firmSlug: firm?.slug, modelSlug: selectedItem.modelSlug, fabricCode: selected.code });
+    const id = shareId();
+    const longUrl = `${window.location.origin}/p/${id}`;
+    // the long link works at once; the short one replaces it when it arrives
+    const short = shortenShare(id);
     if (kiosk) {
-      setTakeHome(shareUrl());
+      setTakeHome(longUrl);
+      const s = await short;
+      if (s) setTakeHome((cur) => (cur === longUrl ? s : cur));
       return;
     }
     const snapshot = stageApi.current?.snapshot() ?? "";
-    const url = shareUrl();
-    setShare({ image: null, snapshot, url });
+    setShare({ image: null, snapshot, url: longUrl });
+    short.then((s) => s && setShare((cur) => (cur && cur.url === longUrl ? { ...cur, url: s } : cur)));
     try {
       const image = await composeShareImage(snapshot, piecesForShare(), firm);
-      setShare({ image, snapshot, url });
+      setShare((cur) => (cur ? { ...cur, image } : cur));
     } catch {
       setShare(null);
     }

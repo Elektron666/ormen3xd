@@ -20,6 +20,7 @@ export class MemoryRepository implements Repository {
   private firmShowcase = new Map<string, string[]>();
   private samples: SampleRequest[] = [];
   private events: StoredEvent[] = [];
+  private shares = new Map<string, string>();
   readonly files = new Map<string, { data: ArrayBuffer; type: string }>();
 
   async listFabrics(opts?: { includeInactive?: boolean }) {
@@ -119,6 +120,17 @@ export class MemoryRepository implements Repository {
 
   async listSampleRequests() {
     return [...this.samples];
+  }
+
+  async getShare(code: string) {
+    return this.shares.get(code) ?? null;
+  }
+
+  async saveShare(code: string, longId: string) {
+    const existing = this.shares.get(code);
+    if (existing !== undefined) return existing === longId;
+    this.shares.set(code, longId);
+    return true;
   }
 
   async recordEvent(e: UsageEvent) {

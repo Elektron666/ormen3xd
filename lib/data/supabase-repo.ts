@@ -323,6 +323,22 @@ export class SupabaseRepository implements Repository {
     if (ids.length) check(await this.db.from("firm_models").insert(ids.map((model_id, i) => ({ firm_id: firmId, model_id, sort_order: i }))));
   }
 
+  async getShare(code: string) {
+    const r = check(await this.db.from("shares").select("payload").eq("id", code).maybeSingle()) as { payload: string } | null;
+    return r?.payload ?? null;
+  }
+
+  async saveShare(code: string, longId: string, firmSlug?: string | null) {
+    const existing = await this.getShare(code);
+    if (existing !== null) return existing === longId;
+    const firm = firmSlug ? await this.getFirmBySlug(firmSlug) : null;
+    const res = await this.db.from("shares").insert({ id: code, payload: longId, firm_id: firm?.id ?? null });
+    // inserted at the same moment by someone else: fine if it is the same combination
+    if (res.error?.code === "23505") return (await this.getShare(code)) === longId;
+    check(res);
+    return true;
+  }
+
   async recordEvent(e: UsageEvent) {
     check(
       await this.db.from("events").insert({
