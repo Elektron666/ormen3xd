@@ -28,6 +28,8 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 - [ ] İlk gerçek kumaşların çekimi ve yüklenmesi (`KUMAS-CEKIM-REHBERI.md`), yer tutucu kumaşların gizlenmesi.
 - [ ] Gerçek telefonla 5 dakikalık AR denemesi (README, "Telefonda AR denemesi").
 - [ ] İlk 3-5 pilot firma.
+- [ ] Kararlar (`TOPLANTI-2026-10-05.md`): numune formundaki "Not" alanı, numuneyi kim gönderir, satış kodu kişi mi şube mi, avukat paketi (yurt dışı aktarım ve firma protokolü dahil).
+- [ ] Her pilot firmanın araçtan önceki 4 haftalık numune/sipariş sayısı (karşılaştırma için).
 
 ## Faz 2: önerilen sıra
 
@@ -36,9 +38,21 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 3. ✅ **Firma ve model başına kumaş serisi:** firma sayfası ve her model belirli serilerle sınırlanabiliyor.
 4. ✅ **Showroom kiosk modu:** `?kiosk`; karşılama ekranı, "Telefona al" QR'ı, dokunulmazsa uyarı ve sıfırlama.
 5. ✅ **Kısa paylaşım linki:** `/s/8karakter`; gelmezse uzun link geçerli kalıyor.
-6. **AR için sunucuda GLB:** Gerçek cihaz testinde Samsung Internet gibi WebXR'sız tarayıcılarda sorun çıkarsa.
+6. **AR için sunucuda GLB:** Önce ölçülecek ("AR açılamadı" sayacı ve gerçek cihaz testi); pilotta sayı yüksekse yapılacak.
 7. ✅ **Rapor veritabanında:** `atelier_report` fonksiyonu; olay sınırı yok.
 8. Kadife ve şönil için hav yönü görünümü (gerçek çekimlerle ayar).
+
+## Pilot hazırlığı (5 Ekim toplantısı)
+
+Ayrıntı ve gerekçeler `TOPLANTI-2026-10-05.md` dosyasında. Fotoğraf ve avukat beklemeden yapılacak sıra:
+
+1. "Renk bağlayıcı değildir, onay numuneyle verilir" ibaresi.
+2. Ziyaretlere kaynak/kampanya etiketi ve şube kodu (QR'lar basılmadan önce).
+3. Cihaza göre kademeli görüntü kalitesi.
+4. Telefonda sade ilk ekran.
+5. Kiosk: kartela kodu arama kutusu ve büyük yazı.
+6. Talepleri silme (elle ve süreli).
+7. Talep durumu ve "siparişe döndü" (numuneyi kimin gönderdiği kararından sonra).
 
 ## Faz 3
 
