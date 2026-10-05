@@ -38,9 +38,31 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 3. ✅ **Firma ve model başına kumaş serisi:** firma sayfası ve her model belirli serilerle sınırlanabiliyor.
 4. ✅ **Showroom kiosk modu:** `?kiosk`; karşılama ekranı, "Telefona al" QR'ı, dokunulmazsa uyarı ve sıfırlama.
 5. ✅ **Kısa paylaşım linki:** `/s/8karakter`; gelmezse uzun link geçerli kalıyor.
-6. **AR için sunucuda GLB:** Önce ölçülecek ("AR açılamadı" sayacı ve gerçek cihaz testi); pilotta sayı yüksekse yapılacak.
+6. **AR için sunucuda GLB:** Rafa kalktı (2. toplantı). "AR açılamadı" sayacı yüksek çıkarsa yeniden açılır.
 7. ✅ **Rapor veritabanında:** `atelier_report` fonksiyonu; olay sınırı yok.
-8. Kadife ve şönil için hav yönü görünümü (gerçek çekimlerle ayar).
+8. Kadife ve şönil için hav yönü görünümü: rafa kalktı (2. toplantı); ölçü doğruluğu görüntüden önce geliyor.
+
+## Yön değişikliği: Kesim masası (5 Ekim, 2. toplantı)
+
+Ayrıntı: `TOPLANTI-2026-10-05-2.md`. Araç showroomdaki deneme ekranından, **siparişin ORMEN koduyla, doğru metreyle ve doğru partiden verildiği yere** dönüşüyor. Fiyat, sepet ve üyelik yine yok; metrajı biz uydurmuyoruz.
+
+1. Numune formunda "Not" alanı yerine seçmeli düğmeler.
+2. "Yakında: kendi koltuğunda gör" vitrininin kaldırılması.
+3. Talep durumları ve panelden basılan numune etiketi (kod, numune no, lot kutusu, QR).
+4. Kumaşa desen raporu ve hav yönü alanları.
+5. Model başına firmanın kendi metrajı (referans kumaş eniyle).
+6. Usta föyü: metraj ya da "hesap yok", lot kutusu, numune zımba kutusu ve imza, gerçek metre satırı.
+7. "Gerçek metre" geri bildirimi (kalibrasyon verisi).
+8. "ORMEN'e ön bildirim" WhatsApp düğmesi.
+
+**Kararlar:**
+- Numuneyi ORMEN gönderir, firmanın mağazasına; son müşterinin adresi alınmaz.
+- Oda kurucu donduruldu.
+- Faz 2'nin 6. ve 8. maddeleri rafa kalktı.
+
+**Fatih Bey'e sorular:**
+- Yeniden döşeme / döşemeci kanalı açılsın mı?
+- Son müşterinin telefonu ORMEN'e hiç gelmesin mi? (brief değişikliği)
 
 ## Pilot hazırlığı (5 Ekim toplantısı)
 
