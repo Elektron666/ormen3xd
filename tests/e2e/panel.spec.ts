@@ -141,7 +141,9 @@ test.describe("panel", () => {
     const list = page.getByTestId("kurulum-listesi");
     await expect(list.getByRole("heading", { name: "Supabase bağlantısı" })).toBeVisible();
     await expect(list.getByRole("heading", { name: "KVKK aydınlatma metni" })).toBeVisible();
-    // the demo catalogue has only placeholder fabrics
-    await expect(list.locator("li").filter({ hasText: "Kumaşlar" })).toContainText("yer tutucu");
+    // without Supabase the connection is flagged, with a fix
+    await expect(list.locator("li").filter({ hasText: "Supabase bağlantısı" })).toContainText("Supabase projesini açıp");
+    // the fabric line reflects the catalogue (placeholders only, or the real ones other tests uploaded)
+    await expect(list.locator("li").filter({ hasText: "Kumaşlar" })).toContainText(/yer tutucu|gerçek kumaş/);
   });
 });
