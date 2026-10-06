@@ -12,7 +12,7 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 2. **Supabase’i kurun:** aşağıdaki “Supabase kurulumu” 1–7. adımlar. Anahtarları 1. adımdaki Vercel projesine girersiniz.
 3. **WhatsApp numarası:** Vercel → **Settings → Environment Variables** → `NEXT_PUBLIC_ORMEN_WHATSAPP` = ORMEN’in numarası (ör. `+90 532 123 45 67`) → **Redeploy**.
 4. **Alan adı:** aşağıdaki “Alan adı ve QR kodları”. DNS’in yayılması birkaç saat sürebilir; o sırada diğer adımlara devam edebilirsiniz.
-5. **Form koruması (önerilir):** Vercel → proje → **Firewall** → **Add Rule**: yol `/api/samples`, `/api/olay` ya da `/api/paylas` ile başlıyorsa **Rate Limit** (ör. IP başına dakikada 30 istek). Vercel bunu IP'yi bizim veritabanımıza yazmadan yapar.
+5. **Form koruması (önerilir):** Vercel → proje → **Firewall** → **Add Rule**: yol `/api/samples`, `/api/olay`, `/api/paylas` ya da `/n/` ile başlıyorsa **Rate Limit** (ör. IP başına dakikada 30 istek). Vercel bunu IP'yi bizim veritabanımıza yazmadan yapar.
 6. **Kontrol:** Panelde **Kurulum** sekmesini açın. Her adım yeşil, sarı ya da kırmızı görünür ve eksik olanın nasıl tamamlanacağı yazar; bir adımı bitirince sayfayı yenileyin.
 7. **Deneme:** `/panel`’e girin, bir kumaş fotoğrafı yükleyin, ana sayfada görün; bir numune talebi gönderip “Talepler”de görün; telefonla “Odamda gör”ü deneyin.
 
@@ -50,6 +50,21 @@ Raporun “Nereden geldiler” bölümü ziyaretleri ve numune taleplerini geldi
 Panelde basılan QR'lar ve A6 kartı bunu kendiliğinden işaretler (adresin sonundaki `?q`).
 
 Şubeye ya da kampanyaya göre ayırmak için Panel → Firmalar → firma → bağlantı bölümünde **“Şube / kampanya etiketi”** yazın (ör. “Ankara şube”, “Fuar 2027”). Bağlantı, QR, kiosk adresi ve A6 kart o etiketle çıkar. **QR bastırmadan önce etiketi yazın**; basılmış koda sonradan etiket eklenemez. Etikete kişi adı yazmayın. Kişisel veri tutulmaz: yalnızca bu sabit değerler ve rastgele bir ziyaret numarası saklanır.
+
+## Numune talepleri: adımlar ve etiket
+
+Numuneyi ORMEN keser ve **firmanın mağazasına** gönderir; müşteriye doğrudan gönderilmez, müşterinin adresi alınmaz.
+
+1. Panel → Talepler. Her talebin bir numune kodu vardır (ör. `N-HQTY86`).
+2. Kesime başlayınca **Adım**'ı “Hazırlanıyor” yapın. Topun parti numarası (**Lot**) biliniyorsa yazıp kaydedin.
+3. **Numune etiketi** düğmesine basın. Etiket 100 × 70 mm boyutunda, siyah beyaz ve kumaş başına birer tane basılır.
+   - Lot girilmediyse etikette lotun elle yazılacağı bir kutu çıkar.
+   - Etikette müşterinin adı ve telefonu yoktur.
+4. Numune mağazaya gidince Adım'ı “Mağazaya gönderildi” yapın.
+5. Sipariş kesinleşince mağaza etiketteki QR'ı okutur ve “Bu numuneyle sipariş verildi”ye basar. Talep kendiliğinden “Siparişe döndü” olur.
+   - Açılan sayfada müşteri bilgisi yoktur.
+   - Mağaza aynı sayfadan ORMEN'e metraj ve lot için WhatsApp yazabilir.
+   - Yanlışlıkla basılırsa adımı panelden geri alın.
 
 ## Showroom ekranı (kiosk)
 

@@ -399,3 +399,19 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 - **"Kendi koltuğunuzda görün: yakında" kartı ekrandan kalktı.**
   - **Neden:** Brief gerçek yapay zekâyı yasaklıyor. Bu kart tutamayacağımız bir söz vermiş oluyordu. Defne: "Her 'yakında', markadan küçük bir yalan."
   - `lib/ai/reupholster.ts` arayüzü Faz 3 için duruyor, ama ekranda gösterilmiyor.
+
+## Kesim masası, 3. adım: talep adımları, numune etiketi, `/n/<kod>` (2. toplantı)
+
+- **Adımlar:** yeni → hazırlanıyor → mağazaya gönderildi → siparişe döndü / dönmedi. Numuneyi ORMEN keser ve firmanın mağazasına gönderir; bu karar 9 oyun 9'uyla alındı. Müşterinin adresi hiç alınmıyor, böylece brief değişmiyor.
+- **Numune kodu:** `N-` ve ardından 6 karakter. Karakterler, birbirine karışmasın diye I ve O'suz 34 harf ve rakamdan rastgele seçiliyor. Kod talep kaydedilirken veriliyor. Supabase'de benzersiz; nadir bir çakışmada yeniden çekiliyor.
+- **Etiket (`/panel/etiket/<id>`):**
+  - 100 × 70 mm, siyah beyaz, kumaş başına bir tane.
+  - Üzerinde: kumaş kodu, seri ve renk, lot (girildiyse) ya da elle yazılacak kutu, numune kodu ve tarih, `/n/<kod>`'u açan QR.
+  - Müşteri bilgisi yok. Kerem'in "kâğıtta yanlış renk basmayalım" uyarısı yüzünden renkli kumaş görseli de konmadı.
+- **Lot elle giriliyor.** Hakan'ın önerisi: iki hafta sonra kaç talebe lot yazıldığı sayılacak. Depo yazmıyorsa lot kilidi fikri kod yazılmadan bırakılacak.
+- **`/n/<kod>` sayfası herkese açık; bu bilerek seçildi.**
+  - **Gösterdikleri:** yalnızca numune, lot, mağaza adı, tarih ve adım. Arama motorlarına kapalı.
+  - **"Bu numuneyle sipariş verildi" düğmesi:** Talebi "siparişe döndü"ye taşıyor, ama yalnızca talep henüz kapanmamışsa. Siparişe dönüş böylece müşterinin telefonu olmadan, numune koduyla ölçülüyor.
+  - **Neden giriş yok:** Kodu yalnızca etiketi elinde tutan biliyor; tahmin edilmesi pratikte imkânsız (34⁶ ≈ 1,5 milyar). Yanlış basılırsa ORMEN panelden geri alıyor. Firewall hız sınırına `/n/` de eklendi.
+  - **Aynı sayfadaki "ORMEN'e metraj ve lot için yaz" bağlantısı:** ORMEN'in WhatsApp'ına hazır mesaj açıyor (numune, kumaş, lot, mağaza). Bu, 8. maddenin ("ORMEN'e ön bildirim") ilk hâli. "24 saatte teyit" sözü sayfaya yazılmadı; bu bir operasyon kararı ve Fatih Bey onaylamadı.
+- **Teknik not:** Panelde talep kartını her kayıttan sonra `key` ile baştan kurmak, React'te bekleyen işlemin bitmemiş görünmesine yol açtı ve "Kaydet" düğmesi kilitli kaldı. Kart artık yalnızca talep kimliğiyle anahtarlanıyor.

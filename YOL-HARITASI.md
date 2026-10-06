@@ -48,7 +48,7 @@ Ayrıntı: `TOPLANTI-2026-10-05-2.md`. Araç showroomdaki deneme ekranından, **
 
 1. ✅ Numune formunda "Not" alanı yerine seçmeli düğmeler (ne için, kaç parça, ne zaman).
 2. ✅ "Yakında: kendi koltuğunda gör" vitrininin kaldırılması.
-3. Talep durumları ve panelden basılan numune etiketi (kod, numune no, lot kutusu, QR).
+3. ✅ Talep adımları ve panelden basılan numune etiketi (kumaş kodu, numune kodu, lot ya da lot kutusu, QR). QR'ı okutan mağaza "siparişe döndü" diyebiliyor ve ORMEN'e WhatsApp'tan ön bildirim gönderebiliyor (8. maddenin ilk hâli).
 4. Kumaşa desen raporu ve hav yönü alanları.
 5. Model başına firmanın kendi metrajı (referans kumaş eniyle).
 6. Usta föyü: metraj ya da "hesap yok", lot kutusu, numune zımba kutusu ve imza, gerçek metre satırı.

@@ -1,5 +1,5 @@
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
-import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
+import type { SampleRequest, SampleRequestInput, SampleStep } from "@/lib/samples";
 import type { Report, StoredEvent, UsageEvent } from "@/lib/events";
 
 export type FabricInput = Omit<Fabric, "id"> & { id?: string; derivedMaps?: boolean };
@@ -42,6 +42,10 @@ export interface Repository {
 
   createSampleRequest(input: SampleRequestInput): Promise<SampleRequest>;
   listSampleRequests(): Promise<SampleRequest[]>;
+  getSampleRequest(id: string): Promise<SampleRequest | null>;
+  getSampleByCode(code: string): Promise<SampleRequest | null>;
+  /** Moves a request to another step (stamps the time) and/or records the lot ("" clears it). */
+  updateSampleRequest(id: string, patch: { status?: SampleStep; lot?: string }): Promise<void>;
 
   /** Short link → long share id; null when unknown. */
   getShare(code: string): Promise<string | null>;

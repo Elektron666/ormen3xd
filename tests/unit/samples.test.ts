@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeChoices, normalisePhone, sampleWhatsappText, prettyPhone, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
+import { SAMPLE_CODE, STEP_KEYS, canMarkOrdered, cleanLot, cleanSampleCode, describeChoices, newSampleCode, normalisePhone, sampleWhatsappText, prettyPhone, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
 
 describe("phone numbers", () => {
   it.each([
@@ -83,5 +83,41 @@ describe("fixed choices instead of a note", () => {
     const text = sampleWhatsappText({ name: "Ali", phone: "+905321234567", fabricCodes: ["LUMA-02"], choices: { scope: "takim" } });
     expect(text).toContain("Takım");
     expect(text).not.toContain("Not:");
+  });
+});
+
+describe("sample flow", () => {
+  it("draws readable sample codes and cleans what is scanned or typed", () => {
+    for (let i = 0; i < 200; i++) expect(newSampleCode()).toMatch(SAMPLE_CODE);
+    expect(newSampleCode()).not.toMatch(/[IO]/);
+    expect(cleanSampleCode(" n-7k3p9q ")).toBe("N-7K3P9Q");
+    expect(cleanSampleCode("N-7K3P9")).toBeNull();
+    expect(cleanSampleCode("N-7K3PIO")).toBeNull();
+  });
+
+  it("keeps the lot short and printable", () => {
+    expect(cleanLot("  L-2026/118 ")).toBe("L-2026/118");
+    expect(cleanLot("")).toBeUndefined();
+    expect(cleanLot("a\u0000b")).toBe("ab");
+    expect(cleanLot("x".repeat(60))).toHaveLength(40);
+  });
+
+  it("lets the shop mark only open samples as ordered", () => {
+    expect(STEP_KEYS.filter(canMarkOrdered)).toEqual(["yeni", "hazirlaniyor", "gonderildi"]);
+  });
+
+  it("gives every stored request a code and the first step (memory store)", async () => {
+    const { MemoryRepository } = await import("@/lib/data/memory-repo");
+    const repo = new MemoryRepository();
+    const r = await repo.createSampleRequest({ name: "Ali Veli", phone: "+905321234567", consent: true, fabricCodes: ["LUMA-02"] });
+    expect(r.status).toBe("yeni");
+    expect(r.code).toMatch(SAMPLE_CODE);
+    expect((await repo.getSampleByCode(r.code!))?.id).toBe(r.id);
+    await repo.updateSampleRequest(r.id, { status: "gonderildi", lot: " 118 " });
+    const after = await repo.getSampleRequest(r.id);
+    expect(after).toMatchObject({ status: "gonderildi", lot: "118" });
+    expect(after?.statusAt).toBeTruthy();
+    await repo.updateSampleRequest(r.id, { lot: "" });
+    expect((await repo.getSampleRequest(r.id))?.lot).toBeUndefined();
   });
 });

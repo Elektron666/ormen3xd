@@ -74,6 +74,49 @@ test.describe("panel", () => {
     expect(await csv.text()).toContain(name);
   });
 
+  test("numune: adım, lot, etiket; mağaza QR'dan siparişe döndü der", async ({ page, browser, request }) => {
+    const name = `Etiket ${Date.now().toString(36)}`;
+    const res = await request.post("/api/samples", { data: { name, phone: "0532 765 43 21", consent: true, fabricCodes: ["LUMA-02", "SIENA-03"] } });
+    expect(res.ok()).toBe(true);
+    await login(page);
+    await page.goto("/panel/talepler");
+    const item = page.getByRole("listitem").filter({ hasText: name });
+    const code = (await item.getByText(/^N-[0-9A-Z]{6}$/).textContent())!;
+    await expect(item.getByTestId("talep-adim")).toHaveText("Yeni");
+
+    // ORMEN prepares it and writes the lot
+    await item.getByLabel("Adım").selectOption("hazirlaniyor");
+    await item.getByLabel(/^Lot/).fill("P-118");
+    await item.getByRole("button", { name: "Kaydet" }).click();
+    await expect(item.getByRole("button", { name: "Kaydet" })).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole("listitem").filter({ hasText: name }).getByTestId("talep-adim")).toHaveText("Hazırlanıyor");
+
+    // one label per fabric, with code and lot, nothing about the customer
+    const label = await page.context().newPage();
+    await label.goto(`/panel/etiket/${(await item.getByRole("link", { name: "Numune etiketi" }).getAttribute("href"))!.split("/").pop()}`);
+    await expect(label.getByTestId("numune-etiketi")).toHaveCount(2);
+    await expect(label.getByTestId("numune-etiketi").first()).toContainText("P-118");
+    await expect(label.getByTestId("numune-etiketi").first()).toContainText(code);
+    await expect(label.locator("body")).not.toContainText(name);
+
+    // the shop scans the QR (not signed in): no personal data, one button
+    const shop = await browser.newContext();
+    const s = await shop.newPage();
+    await s.goto(`/n/${code.toLowerCase()}`);
+    await expect(s.getByRole("heading", { name: code })).toBeVisible();
+    await expect(s.locator("body")).not.toContainText(name);
+    await expect(s.locator("body")).not.toContainText("765");
+    await s.getByRole("button", { name: "Bu numuneyle sipariş verildi" }).click();
+    await expect(s.getByRole("status")).toContainText("siparişe dönmüş");
+    await expect(s.getByTestId("numune-adim")).toHaveText("Siparişe döndü");
+    await shop.close();
+
+    await page.reload();
+    await expect(page.getByRole("listitem").filter({ hasText: name }).getByTestId("talep-adim")).toHaveText("Siparişe döndü");
+    expect((await request.get("/n/N-0000000")).status()).toBe(404);
+  });
+
   test("toplu aktarım CSV satırlarını denetler", async ({ page }) => {
     await login(page);
     await page.goto("/panel/kumaslar/toplu");

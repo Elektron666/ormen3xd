@@ -1,6 +1,7 @@
 import { requirePanelUser } from "@/lib/auth/panel";
 import { getRepository } from "@/lib/data";
-import { describeChoices, prettyPhone, whatsappUrl } from "@/lib/samples";
+import { SAMPLE_STEPS, describeChoices, prettyPhone, whatsappUrl } from "@/lib/samples";
+import { SampleControls } from "@/components/panel/SampleControls";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
 
 export const metadata = { title: "Numune talepleri" };
@@ -27,6 +28,9 @@ export default async function RequestsPage() {
           Demo modundasınız: talepler sunucu yeniden başlayınca silinir. Supabase bağlanınca kalıcı olur.
         </p>
       )}
+      <p className="mb-4 text-[13px] text-antrasit-50">
+        Numuneyi ORMEN keser ve firmanın mağazasına gönderir; müşteriye doğrudan gönderilmez. Etiketteki QR’ı firma siparişte okutunca talep kendiliğinden “Siparişe döndü” olur.
+      </p>
       {requests.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-cizgi-koyu p-10 text-center text-[15px] text-antrasit-50">
           Henüz numune talebi yok. Konfigüratördeki “Numune iste” düğmesinden gelen talepler burada listelenir.
@@ -37,7 +41,17 @@ export default async function RequestsPage() {
             <li key={r.id} className="rounded-2xl border border-cizgi bg-kagit p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <p className="text-[16px] font-medium">{r.name}</p>
-                <p className="text-[13px] text-antrasit-50">{when(r.createdAt)}</p>
+                <p className="flex items-center gap-2 text-[13px] text-antrasit-50">
+                  {r.code && (
+                    <span translate="no" className="tracking-wide">
+                      {r.code}
+                    </span>
+                  )}
+                  <span className="rounded-full bg-cizgi/60 px-2 py-0.5 text-[12px] text-antrasit-70" data-testid="talep-adim">
+                    {SAMPLE_STEPS[r.status]}
+                  </span>
+                  {when(r.createdAt)}
+                </p>
               </div>
               <p className="mt-1 text-[14px] tracking-wide">{r.fabricCodes.join(" · ")}</p>
               {(!!r.firmSlug || !!r.modelSlugs?.length) && (
@@ -60,6 +74,7 @@ export default async function RequestsPage() {
                   </a>
                 )}
               </div>
+              <SampleControls key={r.id} id={r.id} status={r.status} lot={r.lot} code={r.code} />
             </li>
           ))}
         </ul>

@@ -12,6 +12,7 @@ import { getPanelUser, signIn, signOut } from "@/lib/auth/panel";
 import { validateFabricFields, type FabricFieldErrors, type FabricFields } from "@/lib/panel/fabric-form";
 import { STORAGE_BUCKET, SUPABASE_URL } from "@/lib/supabase/config";
 import type { FurnitureModel, TextureMapSet } from "@/lib/types";
+import { STEP_KEYS, type SampleStep } from "@/lib/samples";
 
 // ------------------------------------------------------------------ session
 
@@ -279,4 +280,17 @@ export async function saveParametricModelAction(p: SaveParametricPayload): Promi
   });
   refresh();
   return { ok: true, id: saved.id };
+}
+
+// ------------------------------------------------------------------ sample requests
+
+export async function updateSampleAction(id: string, patch: { status?: string; lot?: string }): Promise<{ ok: boolean; error?: string }> {
+  await guard();
+  const repo = getRepository();
+  const req = await repo.getSampleRequest(id);
+  if (!req) return { ok: false, error: "Talep bulunamadı." };
+  if (patch.status !== undefined && !STEP_KEYS.includes(patch.status as SampleStep)) return { ok: false, error: "Geçersiz adım." };
+  await repo.updateSampleRequest(id, { status: patch.status as SampleStep | undefined, lot: patch.lot });
+  revalidatePath("/panel/talepler");
+  return { ok: true };
 }

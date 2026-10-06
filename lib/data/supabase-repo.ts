@@ -2,7 +2,7 @@ import "server-only";
 import { codeUpper } from "@/lib/i18n/tr";
 import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel, ModelSource } from "@/lib/types";
 import { normaliseParams } from "@/lib/parametric/spec";
-import type { SampleChoices, SampleRequestInput } from "@/lib/samples";
+import { cleanLot, newSampleCode, type SampleChoices, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
 import { reportFromJson, type Device, type EventType, type Source, type StoredEvent, type UsageEvent } from "@/lib/events";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
@@ -397,58 +397,94 @@ export class SupabaseRepository implements Repository {
 
   async createSampleRequest(input: SampleRequestInput) {
     const firm = input.firmSlug ? await this.getFirmBySlug(input.firmSlug) : null;
-    const r = check(
-      await this.db
-        .from("sample_requests")
-        .insert({
-          firm_id: firm?.id ?? null,
-          firm_slug: input.firmSlug ?? null,
-          fabric_codes: input.fabricCodes,
-          model_slugs: input.modelSlugs ?? [],
-          name: input.name,
-          phone: input.phone,
-          purpose: input.choices?.purpose ?? null,
-          scope: input.choices?.scope ?? null,
-          timing: input.choices?.timing ?? null,
-          link: input.link ?? null,
-        })
-        .select("id, created_at")
-        .single(),
-    ) as { id: string; created_at: string };
-    const { consent: _c, ...rest } = input;
-    void _c;
-    return { ...rest, id: r.id, createdAt: r.created_at };
+    const row = {
+      firm_id: firm?.id ?? null,
+      firm_slug: input.firmSlug ?? null,
+      fabric_codes: input.fabricCodes,
+      model_slugs: input.modelSlugs ?? [],
+      name: input.name,
+      phone: input.phone,
+      purpose: input.choices?.purpose ?? null,
+      scope: input.choices?.scope ?? null,
+      timing: input.choices?.timing ?? null,
+      link: input.link ?? null,
+    };
+    // the sample code is random; on the rare clash another one is drawn
+    for (let attempt = 0; ; attempt++) {
+      const code = newSampleCode();
+      const res = await this.db.from("sample_requests").insert({ ...row, code }).select("id, created_at").single();
+      if (res.error?.code === "23505" && attempt < 4) continue;
+      const r = check(res) as { id: string; created_at: string };
+      const { consent: _c, ...rest } = input;
+      void _c;
+      return { ...rest, id: r.id, createdAt: r.created_at, status: "yeni" as const, code };
+    }
   }
 
   async listSampleRequests() {
-    const rows = check(await this.db.from("sample_requests").select("*").order("created_at", { ascending: false }).limit(1000)) as {
-      id: string;
-      firm_slug: string | null;
-      fabric_codes: string[];
-      model_slugs: string[];
-      name: string;
-      phone: string;
-      purpose: SampleChoices["purpose"] | null;
-      scope: SampleChoices["scope"] | null;
-      timing: SampleChoices["timing"] | null;
-      link: string | null;
-      created_at: string;
-    }[];
-    return rows.map((r) => ({
-      id: r.id,
-      firmSlug: r.firm_slug,
-      fabricCodes: r.fabric_codes,
-      modelSlugs: r.model_slugs,
-      name: r.name,
-      phone: r.phone,
-      choices: { purpose: und(r.purpose), scope: und(r.scope), timing: und(r.timing) },
-      link: und(r.link),
-      createdAt: r.created_at,
-    }));
+    const rows = check(await this.db.from("sample_requests").select("*").order("created_at", { ascending: false }).limit(1000)) as SampleRow[];
+    return rows.map(sampleFromRow);
+  }
+
+  async getSampleRequest(id: string) {
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+    const row = check(await this.db.from("sample_requests").select("*").eq("id", id).maybeSingle()) as SampleRow | null;
+    return row ? sampleFromRow(row) : null;
+  }
+
+  async getSampleByCode(code: string) {
+    const row = check(await this.db.from("sample_requests").select("*").eq("code", code).maybeSingle()) as SampleRow | null;
+    return row ? sampleFromRow(row) : null;
+  }
+
+  async updateSampleRequest(id: string, patch: { status?: SampleStep; lot?: string }) {
+    const update: Record<string, unknown> = {};
+    if (patch.status) {
+      update.status = patch.status;
+      update.status_at = new Date().toISOString();
+    }
+    if (patch.lot !== undefined) update.lot = cleanLot(patch.lot) ?? null;
+    if (Object.keys(update).length) check(await this.db.from("sample_requests").update(update).eq("id", id));
   }
 
   async putFile(path: string, data: ArrayBuffer, contentType: string) {
     check(await this.db.storage.from(STORAGE_BUCKET).upload(path, data, { contentType, upsert: true, cacheControl: "31536000" }));
     return publicFileUrl(path)!;
   }
+}
+
+interface SampleRow {
+  id: string;
+  firm_slug: string | null;
+  fabric_codes: string[];
+  model_slugs: string[];
+  name: string;
+  phone: string;
+  purpose: SampleChoices["purpose"] | null;
+  scope: SampleChoices["scope"] | null;
+  timing: SampleChoices["timing"] | null;
+  link: string | null;
+  status: SampleStep;
+  code: string | null;
+  lot: string | null;
+  status_at: string | null;
+  created_at: string;
+}
+
+function sampleFromRow(r: SampleRow): SampleRequest {
+  return {
+    id: r.id,
+    firmSlug: r.firm_slug,
+    fabricCodes: r.fabric_codes,
+    modelSlugs: r.model_slugs,
+    name: r.name,
+    phone: r.phone,
+    choices: { purpose: und(r.purpose), scope: und(r.scope), timing: und(r.timing) },
+    link: und(r.link),
+    status: r.status,
+    code: und(r.code),
+    lot: und(r.lot),
+    statusAt: und(r.status_at),
+    createdAt: r.created_at,
+  };
 }

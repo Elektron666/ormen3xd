@@ -3,7 +3,7 @@ import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { buildSeedFabrics } from "@/lib/seed/fabrics";
 import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
-import type { SampleRequest, SampleRequestInput } from "@/lib/samples";
+import { cleanLot, newSampleCode, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
 import { buildReport, type StoredEvent, type UsageEvent } from "@/lib/events";
 
 /**
@@ -113,13 +113,35 @@ export class MemoryRepository implements Repository {
   async createSampleRequest(input: SampleRequestInput) {
     const { consent: _consent, ...rest } = input;
     void _consent;
-    const req: SampleRequest = { ...rest, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
+    let code = newSampleCode();
+    while (this.samples.some((x) => x.code === code)) code = newSampleCode();
+    const req: SampleRequest = { ...rest, id: crypto.randomUUID(), createdAt: new Date().toISOString(), status: "yeni", code };
     this.samples.unshift(req);
     return req;
   }
 
   async listSampleRequests() {
-    return [...this.samples];
+    return this.samples.map((x) => ({ ...x }));
+  }
+
+  async getSampleRequest(id: string) {
+    const r = this.samples.find((x) => x.id === id);
+    return r ? { ...r } : null;
+  }
+
+  async getSampleByCode(code: string) {
+    const r = this.samples.find((x) => x.code === code);
+    return r ? { ...r } : null;
+  }
+
+  async updateSampleRequest(id: string, patch: { status?: SampleStep; lot?: string }) {
+    const r = this.samples.find((x) => x.id === id);
+    if (!r) return;
+    if (patch.status && patch.status !== r.status) {
+      r.status = patch.status;
+      r.statusAt = new Date().toISOString();
+    }
+    if (patch.lot !== undefined) r.lot = cleanLot(patch.lot);
   }
 
   async getShare(code: string) {

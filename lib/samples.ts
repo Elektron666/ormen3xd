@@ -46,9 +46,56 @@ export interface SampleRequestInput {
   link?: string;
 }
 
+/**
+ * What happens to a request (2nd meeting): ORMEN cuts the sample and sends it
+ * to the firm's shop, never to the customer; the firm scans the label's QR when
+ * the order comes, so "turned into an order" is measured without the phone.
+ */
+export const SAMPLE_STEPS = {
+  yeni: "Yeni",
+  hazirlaniyor: "Hazırlanıyor",
+  gonderildi: "Mağazaya gönderildi",
+  siparis: "Siparişe döndü",
+  donmedi: "Dönmedi",
+} as const;
+export type SampleStep = keyof typeof SAMPLE_STEPS;
+export const STEP_KEYS = Object.keys(SAMPLE_STEPS) as SampleStep[];
+
 export interface SampleRequest extends Omit<SampleRequestInput, "consent"> {
   id: string;
   createdAt: string;
+  status: SampleStep;
+  /** Printed on the sample label and in its QR (N-XXXXXX). */
+  code?: string;
+  /** Dye lot the sample was cut from, written in by ORMEN. */
+  lot?: string;
+  statusAt?: string;
+}
+
+/** Letters and digits that cannot be misread on a label (no I, O). */
+const CODE_ALPHABET = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+export const SAMPLE_CODE = /^N-[0-9A-HJ-NP-Z]{6}$/;
+
+export function newSampleCode(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(6));
+  return `N-${Array.from(bytes, (b) => CODE_ALPHABET[b % CODE_ALPHABET.length]).join("")}`;
+}
+
+/** Sample code as typed or scanned ("n-7k3p9q", " N-7K3P9Q ") → "N-7K3P9Q", or null. */
+export function cleanSampleCode(raw: string | null | undefined): string | null {
+  const c = (raw ?? "").trim().toUpperCase();
+  return SAMPLE_CODE.test(c) ? c : null;
+}
+
+/** Lot as written on the roll: printable, at most 40 characters; empty = not known. */
+export function cleanLot(raw: string | null | undefined): string | undefined {
+  const l = (raw ?? "").replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 40);
+  return l || undefined;
+}
+
+/** The firm (or anyone holding the sample) may only mark it as ordered, and only before ORMEN closed it. */
+export function canMarkOrdered(status: SampleStep): boolean {
+  return status === "yeni" || status === "hazirlaniyor" || status === "gonderildi";
 }
 
 export type SampleErrors = Partial<Record<"name" | "phone" | "consent" | "fabricCodes", string>>;
