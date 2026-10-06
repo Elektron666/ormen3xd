@@ -193,3 +193,8 @@ export function retentionDays(raw: string | undefined = process.env.SAMPLE_RETEN
   const n = Number(raw);
   return raw && Number.isInteger(n) && n >= 30 && n <= 3650 ? n : null;
 }
+
+/** Cut-off date for the retention period, or null when none is set. */
+export function retentionCutoff(days: number | null, now = new Date()): Date | null {
+  return days ? new Date(now.getTime() - days * 86_400_000) : null;
+}

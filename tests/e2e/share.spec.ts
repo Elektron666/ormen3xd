@@ -81,7 +81,8 @@ test.describe("paylaşım ve numune", () => {
     ]);
     expect(resp.status()).toBe(201);
     expect(resp.request().postDataJSON().choices).toEqual({ purpose: "yeniden", scope: "takim" });
-    await expect(page.getByText("Talebiniz alındı.")).toBeVisible();
+    await expect(page.getByText(/Talebiniz alındı/)).toBeVisible();
+    await expect(page.getByRole("list", { name: "Bundan sonra" }).getByRole("listitem")).toHaveCount(3);
   });
 
   test("numune API'si geçersiz isteği reddeder", async ({ request }) => {

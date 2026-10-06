@@ -1,6 +1,6 @@
 import { requirePanelUser } from "@/lib/auth/panel";
 import { getRepository } from "@/lib/data";
-import { SAMPLE_STEPS, describeChoices, prettyPhone, retentionDays, whatsappUrl } from "@/lib/samples";
+import { SAMPLE_STEPS, describeChoices, prettyPhone, retentionCutoff, retentionDays, whatsappUrl } from "@/lib/samples";
 import { SampleControls } from "@/components/panel/SampleControls";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
 
@@ -14,9 +14,11 @@ export default async function RequestsPage() {
   const repo = getRepository();
   // the retention period, when set, is applied whenever the list is opened
   const keep = retentionDays();
-  if (keep) await repo.purgeSampleRequests(new Date(Date.now() - keep * 86_400_000));
+  const cutoff = retentionCutoff(keep);
+  if (cutoff) await repo.purgeSampleRequests(cutoff);
   const [requests, firms] = await Promise.all([repo.listSampleRequests(), repo.listFirms()]);
   const firmName = new Map(firms.map((f) => [f.slug, f.name]));
+  const firmBySlug = new Map(firms.map((f) => [f.slug, f]));
   return (
     <>
       <PageHeader title="Numune talepleri" eyebrow={`${requests.length} talep`}>
@@ -80,6 +82,26 @@ export default async function RequestsPage() {
                 {r.link && (
                   <a href={r.link} target="_blank" rel="noopener" className={buttonClass.quiet}>
                     Seçimi aç
+                  </a>
+                )}
+                {r.firmSlug && firmBySlug.get(r.firmSlug)?.whatsapp && (
+                  // the shop calls the customer when the sample arrives, so ORMEN passes the request on
+                  <a
+                    href={whatsappUrl(
+                      firmBySlug.get(r.firmSlug)!.whatsapp,
+                      [
+                        `Merhaba, ORMEN TEKSTİL'den yazıyoruz. Atelier'deki sayfanızdan numune talebi geldi:`,
+                        `${r.name} · ${prettyPhone(r.phone)}`,
+                        `Kumaş: ${r.fabricCodes.join(", ")}`,
+                        ...(r.choices && describeChoices(r.choices) ? [describeChoices(r.choices)] : []),
+                        ...(r.code ? [`Numune kodu: ${r.code} (numune mağazanıza bu etiketle gelecek)`] : []),
+                      ].join("\n"),
+                    )}
+                    target="_blank"
+                    rel="noopener"
+                    className={buttonClass.quiet}
+                  >
+                    Mağazaya ilet (WhatsApp)
                   </a>
                 )}
               </div>

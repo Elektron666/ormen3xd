@@ -77,8 +77,31 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
       {stage.kind === "done" ? (
         <div className="flex flex-col gap-4">
           <p className="text-[15px] leading-relaxed">
-            Talebiniz alındı. <strong>{stage.value.fabricCodes.join(", ")}</strong> numunesi için {recipient} sizinle iletişime geçecek.
+            Talebiniz alındı: <strong>{stage.value.fabricCodes.join(", ")}</strong>.
           </p>
+          {/* what happens next, without promising dates (the flow decided on 5 Oct: ORMEN cuts, the shop calls) */}
+          <ol className="flex flex-col gap-3" aria-label="Bundan sonra">
+            {(firmName
+              ? [
+                  ["ORMEN TEKSTİL numunenizi keser", "Seçtiğiniz kumaştan, topun partisi etikete yazılarak."],
+                  [`${firmName} mağazasına gönderilir`, "Numune size değil, mağazaya gider; adresiniz istenmez."],
+                  ["Size haber verilir", `Numune mağazaya ulaşınca ${firmName} ya da ORMEN sizi arar; rengi gün ışığında, elinizde görürsünüz.`],
+                ]
+              : [
+                  ["ORMEN TEKSTİL numunenizi keser", "Seçtiğiniz kumaştan, topun partisi etikete yazılarak."],
+                  ["ORMEN sizi arar", "Numuneyi nasıl göreceğinizi birlikte kararlaştırırsınız."],
+                  ["Rengi numunede onaylarsınız", "Ekrandaki renk bağlayıcı değildir."],
+                ]
+            ).map(([title, note], i) => (
+              <li key={title} className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-cizgi-koyu text-[13px] tabular-nums">{i + 1}</span>
+                <span className="text-[14px] leading-snug">
+                  <span className="block text-antrasit">{title}</span>
+                  <span className="text-antrasit-70">{note}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
           {whatsapp && (
             <a
               href={whatsappUrl(whatsapp, sampleWhatsappText(stage.value))}
