@@ -38,6 +38,15 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 
 Kumaş ya da model silinmez, **gizlenir** (listedeki anahtar). Gizlenen konfigüratörden kalkar; anahtarı tekrar açınca bilgileriyle geri gelir.
 
+## Firmaya aylık özet
+
+Panel → Firmalar → firma → **Aylık özet** sayfası tek sayfalık bir A4 verir. Raporda firmanın adının yanındaki “aylık özet” bağlantısı da aynı sayfayı açar. Sayfada şunlar var:
+- o ayki ziyaret, kumaş denemesi, AR, numune talebi ve siparişe dönen numune sayıları,
+- en çok denenen kumaşlar,
+- ziyaretlerin nereden geldiği.
+
+Varsayılan ay geçen aydır. Satış temsilcisi ay başındaki ziyarette bu sayfayı basıp elden verir. 30 ziyaretin altındaki aylarda sıralama gösterilmez, çünkü az veriyle yanıltıcı olur. Sayfada kişisel veri yoktur.
+
 ## Kartela askısı etiketleri
 
 Panel → Firmalar → firma → **Askı etiketleri (A4)**. Firmanın sunduğu her kumaşa küçük bir etiket basılır: kod, renk ve QR. Kâğıt A4'tür, sayfada 3 × 8 etiket vardır (L7159 tipi yapışkan etiket kâğıdı).

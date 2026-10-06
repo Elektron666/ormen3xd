@@ -529,3 +529,14 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
   - A4 kâğıtta 3 × 8 etiket (63,5 × 33,9 mm, yaygın L7159 yapışkan etiket kâğıdı), firmanın sunduğu her kumaşa bir tane: kod, seri ve renk, QR.
   - QR'ın açtığı adres: `/f/<firma>?q&k=<kod>&e=aski`. Sayfa o kumaş koltuğa giydirilmiş olarak açılıyor ve ziyaret raporda "QR" kaynağıyla, "aski" etiketiyle sayılıyor. Etiket kutusuna şube yazıldıysa o kullanılıyor.
   - Kumaş kodu değişirse eski etiket hiçbir kumaşı açmaz; firma sayfası varsayılan kumaşla açılır. Selin'in "eski QR yanlış kumaşı açar" riski böylece yanlış kumaş yerine "kumaşsız" açılışa dönüşüyor.
+
+## Firmaya aylık özet (1. toplantı, Selin ve Ece)
+
+- **Ne:** `/panel/ozet/<firma>?ay=YYYY-AA` adresinde tek sayfalık bir A4. Üstte firmanın logosu ve rengi var. Sayfada şunlar yer alıyor:
+  - ziyaret, kumaş denemesi, AR, numune talebi ve siparişe dönen numune sayıları,
+  - en çok denenen 10 kumaş,
+  - ziyaretlerin nereden geldiği.
+- **Varsayılan ay geçen ay:** Satış temsilcisinin ziyareti genelde ay başında oluyor. Ay sınırları İstanbul saatine göre.
+- **Eşik:** 30 ziyaretin altında sıralama gösterilmiyor; az veriyle "en çok denenen" yanıltıcı olur (Ece).
+- **"Siparişe dönen":** Numune sayfasında mağazanın "Bu numuneyle sipariş verildi" işaretinden geliyor.
+- **Neden ayrı sayfa, neden e-posta değil:** Mert'in itirazı geçerli. E-posta dış servis ve anahtar gerektirir. Bu sayfa ise elden verilen kâğıt; satışçı ziyarete somut bir gerekçeyle gidiyor (Selin).

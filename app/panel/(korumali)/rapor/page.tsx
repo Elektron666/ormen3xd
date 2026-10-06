@@ -42,6 +42,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
   const cal = calibration(cuts);
   const fabricByCode = new Map(fabrics.map((f) => [f.code, f]));
   const firmName = new Map(firms.map((f) => [f.slug, f.name]));
+  const firmId = new Map(firms.map((f) => [f.slug, f.id]));
   const maxTries = Math.max(1, ...report.topFabrics.map((f) => f.tries));
   const maxDay = Math.max(1, ...report.days.map((d) => d.sessions));
 
@@ -242,7 +243,14 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
               )}
               {report.firms.map((f) => (
                 <tr key={f.slug ?? "ormen"}>
-                  <td className="px-4 py-2">{f.slug ? (firmName.get(f.slug) ?? f.slug) : "ORMEN ana sayfası"}</td>
+                  <td className="px-4 py-2">
+                    {f.slug ? (firmName.get(f.slug) ?? f.slug) : "ORMEN ana sayfası"}
+                    {f.slug && firmId.get(f.slug) && (
+                      <a href={`/panel/ozet/${firmId.get(f.slug)}`} target="_blank" rel="noopener" className="ml-2 text-[12px] text-antrasit-70 underline underline-offset-2">
+                        aylık özet
+                      </a>
+                    )}
+                  </td>
                   {[f.sessions, f.tries, f.ar, f.shares, f.samples].map((v, i) => (
                     <td key={i} className="px-4 py-2 text-right">
                       {nf.format(v)}

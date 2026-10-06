@@ -77,6 +77,7 @@ Ayrıntı ve gerekçeler `TOPLANTI-2026-10-05.md` dosyasında. Fotoğraf ve avuk
 7. ✅ Talep durumu ve "siparişe döndü" (kesim masasıyla birlikte yapıldı).
 8. ✅ Numune sonrası "bundan sonra ne olacak" adımları; panelden talebi mağazanın WhatsApp'ına iletme.
 9. ✅ Kartela askısı QR'ı: firma başına A4 askı etiketi sayfası; okutunca o kumaş firmanın koltuğunda açılır.
+10. ✅ Firmaya aylık tek sayfalık özet (ziyaret, deneme, AR, numune, siparişe dönen; 30 ziyaretten sonra en çok denenen kumaşlar).
 
 ## Faz 3
 

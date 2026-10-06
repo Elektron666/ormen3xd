@@ -45,3 +45,25 @@ test("olay API'si bilinmeyen alanları ve türleri reddeder", async ({ request }
   expect((await request.post("/api/olay", { data: { type: "hack", sessionId: "abcdefgh" } })).status()).toBe(422);
   expect((await request.post("/api/olay", { data: "x".repeat(2000) })).status()).toBe(413);
 });
+
+test("firma aylık özeti: 30 ziyaretten sonra en çok denenenler sıralanır", async ({ page, request, isMobile }) => {
+  test.skip(isMobile, "panel");
+  const before = await (async () => {
+    await login(page);
+    await page.goto("/panel/firmalar");
+    await page.getByRole("link", { name: /Örnek Mobilya/ }).first().click();
+    return (await page.getByRole("link", { name: "Aylık özet" }).getAttribute("href"))!;
+  })();
+  const month = new Date(Date.now() + 3 * 3_600_000).toISOString().slice(0, 7);
+  // 30 anonymous visits on the firm page, each trying VERSO-02
+  for (let i = 0; i < 30; i++) {
+    const sessionId = `ozet${Date.now().toString(36)}${i}`;
+    await request.post("/api/olay", { data: { type: "sayfa_acildi", sessionId, firmSlug: "ornek-mobilya", source: "qr" } });
+    await request.post("/api/olay", { data: { type: "kumas_denendi", sessionId, firmSlug: "ornek-mobilya", fabricCode: "VERSO-02" } });
+  }
+  await page.goto(`${before}?ay=${month}`);
+  const sheet = page.getByTestId("aylik-ozet");
+  await expect(sheet).not.toContainText("ziyaretten sonra gösterilir");
+  await expect(sheet.getByRole("row").filter({ hasText: "VERSO-02" })).toBeVisible();
+  await expect(sheet).toContainText("Basılı QR");
+});
