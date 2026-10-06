@@ -514,3 +514,18 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
   - /panel/durum bunu "yapılacak" olarak gösteriyor.
   - /kvkk metninde süre için görünür bir yer tutucu var: "[Avukat onayıyla belirlenecek süre]". Metin zaten avukat onayı bekliyor; yayından önce doldurulacak.
 - **Neden pg_cron değil:** Supabase'de ayrıca açılması ve izlenmesi gereken bir zamanlayıcı yerine silme, talepleri gören tek yerde, listenin açılışında yapılıyor. Panel kullanılmadığı sürece süresi geçmiş talepler bir süre daha durabilir; bu, pilot ölçeği için kabul edildi.
+
+## Numune sonrası adımlar, mağazaya iletme, askı etiketleri
+
+- **"Bundan sonra" adımları (Deniz):** Numune talebi gönderilince müşteriye üç adım gösteriliyor.
+  - Firma sayfasından gelen talepte:
+    1. ORMEN numuneyi keser.
+    2. Numune firmanın mağazasına gönderilir; müşterinin adresi istenmez.
+    3. Numune mağazaya ulaşınca firma ya da ORMEN arar.
+  - ORMEN ana sayfasından gelen talepte ORMEN arar.
+  - Hiçbir tarih ya da süre sözü yok (Deniz: "uydurma süre yazılmasın").
+- **Mağazaya ilet:** Telefon numarası ORMEN'e geliyor; etikette ve mağaza sayfasında kişisel veri yok. Ama müşteriyi mağaza arayacak. Bu yüzden panelde, firmanın WhatsApp numarası girilmişse, talebi tek dokunuşla firmaya ileten bir düğme var: ad, telefon, kumaş, seçimler ve numune kodu. Onay metni zaten "firma ve ORMEN ile paylaşılmasını kabul ediyorum" diyor.
+- **Askı etiketleri (`/panel/aski/<firma>`, Selin):**
+  - A4 kâğıtta 3 × 8 etiket (63,5 × 33,9 mm, yaygın L7159 yapışkan etiket kâğıdı), firmanın sunduğu her kumaşa bir tane: kod, seri ve renk, QR.
+  - QR'ın açtığı adres: `/f/<firma>?q&k=<kod>&e=aski`. Sayfa o kumaş koltuğa giydirilmiş olarak açılıyor ve ziyaret raporda "QR" kaynağıyla, "aski" etiketiyle sayılıyor. Etiket kutusuna şube yazıldıysa o kullanılıyor.
+  - Kumaş kodu değişirse eski etiket hiçbir kumaşı açmaz; firma sayfası varsayılan kumaşla açılır. Selin'in "eski QR yanlış kumaşı açar" riski böylece yanlış kumaş yerine "kumaşsız" açılışa dönüşüyor.

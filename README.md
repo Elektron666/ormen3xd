@@ -38,6 +38,12 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 
 Kumaş ya da model silinmez, **gizlenir** (listedeki anahtar). Gizlenen konfigüratörden kalkar; anahtarı tekrar açınca bilgileriyle geri gelir.
 
+## Kartela askısı etiketleri
+
+Panel → Firmalar → firma → **Askı etiketleri (A4)**. Firmanın sunduğu her kumaşa küçük bir etiket basılır: kod, renk ve QR. Kâğıt A4'tür, sayfada 3 × 8 etiket vardır (L7159 tipi yapışkan etiket kâğıdı).
+
+Etiket showroomdaki kartela askısına yapıştırılır. Müşteri QR'ı okutunca firmanın sayfası o kumaş koltuğa giydirilmiş olarak açılır. Bu ziyaretler raporda “QR” kaynağında ve “aski” etiketiyle sayılır. Etiket kutusuna şube adı yazıldıysa o ad kullanılır.
+
 ## Ziyaretler nereden geliyor (kaynak ve etiket)
 
 Raporun “Nereden geldiler” bölümü ziyaretleri ve numune taleplerini geldikleri yere göre ayırır:
@@ -61,6 +67,8 @@ Numuneyi ORMEN keser ve **firmanın mağazasına** gönderir; müşteriye doğru
    - Lot girilmediyse etikette lotun elle yazılacağı bir kutu çıkar.
    - Etikette müşterinin adı ve telefonu yoktur.
 4. Numune mağazaya gidince Adım'ı “Mağazaya gönderildi” yapın.
+Firma sayfasından gelen talepte, firmanın WhatsApp numarası girilmişse, **Mağazaya ilet (WhatsApp)** düğmesi talebi (ad, telefon, kumaş, numune kodu) firmaya iletir. Numune mağazaya ulaşınca müşteriyi mağaza arar.
+
 5. Sipariş kesinleşince mağaza etiketteki QR'ı okutur ve “Bu numuneyle sipariş verildi”ye basar. Talep kendiliğinden “Siparişe döndü” olur.
    - Açılan sayfada müşteri bilgisi yoktur.
    - Mağaza aynı sayfadan ORMEN'e metraj ve lot için WhatsApp yazabilir.

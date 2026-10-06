@@ -46,11 +46,15 @@ export function cleanTag(raw: string | null | undefined): string | null {
   return TAG.test(t) ? t : null;
 }
 
-/** A firm link with its source markers: ?q for printed QR codes, ?kiosk for the showroom screen, ?e= for a label. */
-export function markedPath(path: string, opts: { qr?: boolean; kiosk?: boolean; tag?: string | null } = {}): string {
+/**
+ * A firm link with its source markers: ?q for printed QR codes, ?kiosk for the
+ * showroom screen, ?e= for a label; ?k= opens it with that fabric on the sofa.
+ */
+export function markedPath(path: string, opts: { qr?: boolean; kiosk?: boolean; tag?: string | null; fabric?: string } = {}): string {
   const parts: string[] = [];
   if (opts.kiosk) parts.push("kiosk");
   if (opts.qr) parts.push("q");
+  if (opts.fabric) parts.push(`k=${encodeURIComponent(opts.fabric)}`);
   if (opts.tag) parts.push(`e=${opts.tag}`);
   return parts.length ? `${path}?${parts.join("&")}` : path;
 }

@@ -35,6 +35,7 @@ describe("markedPath", () => {
     expect(markedPath("/f/x", { qr: true })).toBe("/f/x?q");
     expect(markedPath("/f/x/berjer", { qr: true, tag: "ankara-1" })).toBe("/f/x/berjer?q&e=ankara-1");
     expect(markedPath("/f/x", { kiosk: true, tag: "fuar" })).toBe("/f/x?kiosk&e=fuar");
+    expect(markedPath("/f/x", { qr: true, fabric: "ŞÖNİL-01", tag: "aski" })).toBe("/f/x?q&k=%C5%9E%C3%96N%C4%B0L-01&e=aski");
     // round trip
     const p = markedPath("/f/x", { qr: true, tag: "ankara-1" });
     expect(detectSource(at(p.slice(p.indexOf("?"))))).toEqual({ source: "qr", tag: "ankara-1" });

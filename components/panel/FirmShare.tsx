@@ -83,6 +83,9 @@ export function FirmShare({ firmId, slug, base, models, finalDomain }: { firmId:
             <a href={card} target="_blank" rel="noopener" className={buttonClass.primary}>
               A6 kart (PDF)
             </a>
+            <a href={`/panel/aski/${firmId}${tag ? `?etiket=${tag}` : ""}`} target="_blank" rel="noopener" className={buttonClass.secondary}>
+              Askı etiketleri (A4)
+            </a>
           </div>
           <p className="text-[13px] text-antrasit-70">
             Showroom ekranı için:{" "}

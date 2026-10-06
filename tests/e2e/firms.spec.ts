@@ -87,6 +87,23 @@ test.describe("firma sayfaları", () => {
     await expect(page.getByRole("img", { name: new RegExp(`/f/${slug} için QR kod`) })).toBeVisible();
   });
 
+  test("askı etiketi: kumaş başına QR, okutunca o kumaş firmanın koltuğunda", async ({ page, browser }) => {
+    await login(page);
+    await page.goto("/panel/firmalar");
+    await page.getByRole("link", { name: /Örnek Mobilya/ }).first().click();
+    await page.goto((await page.getByRole("link", { name: "Askı etiketleri (A4)" }).getAttribute("href"))!);
+    const first = page.getByTestId("aski-etiketi").filter({ hasText: "SIENA-03" });
+    await expect(first).toBeVisible();
+    const url = new URL((await first.getByRole("img", { name: "SIENA-03 QR" }).getAttribute("data-href"))!);
+    expect(url.pathname).toBe("/f/ornek-mobilya");
+    expect(url.searchParams.get("k")).toBe("SIENA-03");
+    expect(url.searchParams.has("q")).toBe(true);
+    const visitor = await browser.newPage();
+    await visitor.goto(url.pathname + url.search);
+    await expect.poll(() => sceneFabrics(visitor), { timeout: 45_000 }).toEqual(["SIENA-03"]);
+    await visitor.close();
+  });
+
   test("firma sayfasından gelen numune talebi firmaya yazılır", async ({ page, request }) => {
     const name = `Firma Talebi ${Date.now().toString(36)}`;
     const res = await request.post("/api/samples", {
