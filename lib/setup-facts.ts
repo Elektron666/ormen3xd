@@ -45,7 +45,7 @@ export async function gatherSetupFacts(requestHost: string | null): Promise<Setu
       }
       migrations["20261008000000_storage_limits.sql"] = bucketLimited === true;
       migrations["20261009000000_visit_sources.sql"] = (await probe(() => db.from("events").select("source, tag").limit(1))).ok;
-      migrations["20261010000000_sample_flow.sql"] = (await probe(() => db.from("sample_requests").select("purpose, code, lot").limit(1))).ok;
+      migrations["20261010000000_cutting_table.sql"] = (await probe(() => db.from("sample_requests").select("purpose, code, lot").limit(1))).ok && (await probe(() => db.from("fabrics").select("pattern, cut_direction").limit(1))).ok;
     }
   }
 

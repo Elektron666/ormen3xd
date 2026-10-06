@@ -74,6 +74,8 @@ export const t = {
   martindale: "Martindale",
   width: "En",
   weight: "Gramaj",
+  pattern: "Desen",
+  cutDirection: "Kesim yönü",
   fireRating: "Yanmazlık",
   placeholder: "Yer tutucu",
   colorDisclaimer:

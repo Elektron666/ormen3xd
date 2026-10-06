@@ -49,6 +49,13 @@ Konfigüratördeki kumaşın gerçeğe benzemesi, büyük ölçüde fotoğrafa b
 
 Kompozisyon, gramaj, en, Martindale ve yanmazlık değerlerini **yalnızca teknik föyden** girin. Bilmediğiniz alanı boş bırakın; site boş alanı hiç göstermez. Tahmini değer girmeyin: müşteri bu bilgiyle karar verir.
 
+Usta föyündeki metraj için üç bilgi daha gerekiyor:
+- **en**
+- **desen:** düz mü desenli mi? Desenliyse desen raporunun eni ve boyu.
+- **kesim yönü:** tek yön mü (hav ya da desen bir yöne yatıyor, parçalar ters çevrilemez), çift yön mü?
+
+Bunlar da teknik föyden ya da topun etiketinden girilir. Biri boşsa o kumaşta metraj gösterilmez; ekranda "usta teyit eder" yazar. Toplu aktarım dosyasında bu bilgilerin sütunları `desen`, `desen_en_cm`, `desen_boy_cm` ve `kesim_yonu`.
+
 ## Sık yapılan hatalar
 
 | Görüntü | Sebep | Çözüm |

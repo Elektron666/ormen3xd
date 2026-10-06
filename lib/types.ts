@@ -62,6 +62,12 @@ export interface Fabric {
   type: FabricType;
   composition?: string;
   widthCm?: number;
+  /** Plain or patterned; missing = not known (then no metres are worked out). */
+  pattern?: "duz" | "desenli";
+  /** Pattern repeat of a patterned fabric, cm. */
+  patternRepeatCm?: { w: number; h: number };
+  /** "tek": pile or pattern runs one way, pieces cannot be turned; "cift": they can. */
+  cutDirection?: "cift" | "tek";
   weightGsm?: number;
   martindale?: number;
   fireRating?: string;

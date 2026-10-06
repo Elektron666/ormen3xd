@@ -12,6 +12,10 @@ export interface FabricFields {
   type: FabricType | "";
   composition?: string;
   widthCm?: number;
+  pattern?: "duz" | "desenli";
+  patternW?: number;
+  patternH?: number;
+  cutDirection?: "cift" | "tek";
   weightGsm?: number;
   martindale?: number;
   fireRating?: string;
@@ -67,6 +71,9 @@ export function validateFabricFields(v: FabricFields): FabricFieldErrors {
   if (!(v.repeatH > 0 && v.repeatH <= 300)) e.repeatH = "Fotoğraftaki alanın boyunu cm olarak yazın (0–300).";
   const positive = (n: number | undefined) => n === undefined || n > 0;
   if (!positive(v.widthCm)) e.widthCm = "En pozitif bir sayı olmalı.";
+  // a patterned fabric needs its repeat from the technical sheet; nothing is guessed
+  const repeatOk = (n: number | undefined) => n !== undefined && n > 0 && n <= 300;
+  if (v.pattern === "desenli" && !(repeatOk(v.patternW) && repeatOk(v.patternH))) e.patternW = "Desenli kumaşta desen raporunun enini ve boyunu teknik föyden yazın (cm).";
   if (!positive(v.weightGsm)) e.weightGsm = "Gramaj pozitif bir sayı olmalı.";
   if (!(v.martindale === undefined || (Number.isInteger(v.martindale) && v.martindale > 0))) e.martindale = "Martindale tam sayı olmalı.";
   return e;
@@ -85,6 +92,10 @@ export const CSV_COLUMNS = [
   "martindale",
   "yanmazlik",
   "aciklama",
+  "desen",
+  "desen_en_cm",
+  "desen_boy_cm",
+  "kesim_yonu",
   "tekrar_en_cm",
   "tekrar_boy_cm",
   "fotograf",
@@ -102,10 +113,30 @@ export const CSV_EXAMPLE = [
   "50000",
   "",
   "",
+  "düz",
+  "",
+  "",
+  "çift",
   "10",
   "",
   "SIENA-07.jpg",
 ];
+
+/** "düz", "duz", "desensiz" → "duz"; "desenli" → "desenli"; anything else → not known. */
+export function parsePattern(s: string | undefined): FabricFields["pattern"] {
+  const f = foldTr((s ?? "").trim());
+  if (f === "duz" || f === "desensiz") return "duz";
+  if (f === "desenli") return "desenli";
+  return undefined;
+}
+
+/** "tek", "tek yön" → "tek"; "çift", "cift yon" → "cift"; anything else → not known. */
+export function parseCutDirection(s: string | undefined): FabricFields["cutDirection"] {
+  const f = foldTr((s ?? "").trim()).split(/\s+/)[0];
+  if (f === "tek") return "tek";
+  if (f === "cift") return "cift";
+  return undefined;
+}
 
 /** One CSV row → form fields (+ the photo file name it refers to). */
 export function fieldsFromCsv(row: Record<string, string>): { fields: FabricFields; photo: string } {
@@ -120,6 +151,10 @@ export function fieldsFromCsv(row: Record<string, string>): { fields: FabricFiel
       type: parseFabricType(row.tip ?? ""),
       composition: row.kompozisyon || undefined,
       widthCm: parseNumber(row.en_cm),
+      pattern: parsePattern(row.desen),
+      patternW: parseNumber(row.desen_en_cm),
+      patternH: parseNumber(row.desen_boy_cm),
+      cutDirection: parseCutDirection(row.kesim_yonu),
       weightGsm: parseNumber(row.gramaj),
       martindale: parseNumber(row.martindale),
       fireRating: row.yanmazlik || undefined,

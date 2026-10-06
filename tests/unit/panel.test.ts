@@ -6,7 +6,9 @@ import {
   fieldsFromCsv,
   normaliseCode,
   parseColorFamily,
+  parseCutDirection,
   parseFabricType,
+  parsePattern,
   parseNumber,
   validateFabricFields,
 } from "@/lib/panel/fabric-form";
@@ -49,9 +51,28 @@ describe("fabric form", () => {
     const row = Object.fromEntries(CSV_COLUMNS.map((c, i) => [c, CSV_EXAMPLE[i]]));
     const { fields, photo } = fieldsFromCsv(row);
     expect(photo).toBe("SIENA-07.jpg");
-    expect(fields).toMatchObject({ code: "SIENA-07", colorFamily: "gri", type: "dokuma", widthCm: 140, martindale: 50000, repeatW: 10 });
+    expect(fields).toMatchObject({ code: "SIENA-07", colorFamily: "gri", type: "dokuma", widthCm: 140, martindale: 50000, repeatW: 10, pattern: "duz", cutDirection: "cift" });
     // height comes from the photo's aspect when left empty
     expect(validateFabricFields({ ...fields, repeatH: 10 })).toEqual({});
+  });
+});
+
+describe("pattern and cut direction (for metres)", () => {
+  it("reads the spellings people type and leaves the rest unknown", () => {
+    expect(parsePattern("Düz")).toBe("duz");
+    expect(parsePattern("desensiz")).toBe("duz");
+    expect(parsePattern("DESENLİ")).toBe("desenli");
+    expect(parsePattern("")).toBeUndefined();
+    expect(parsePattern("çizgili")).toBeUndefined();
+    expect(parseCutDirection("Tek yön")).toBe("tek");
+    expect(parseCutDirection("çift")).toBe("cift");
+    expect(parseCutDirection("?")).toBeUndefined();
+  });
+  it("asks for the repeat of a patterned fabric instead of guessing it", () => {
+    const base = { code: "SIENA-07", series: "SIENA", colorName: "Taş", colorFamily: "gri" as const, type: "dokuma" as const, repeatW: 10, repeatH: 10, isActive: true };
+    expect(validateFabricFields({ ...base, pattern: "desenli" }).patternW).toBeTruthy();
+    expect(validateFabricFields({ ...base, pattern: "desenli", patternW: 32, patternH: 28 })).toEqual({});
+    expect(validateFabricFields({ ...base, pattern: "duz" })).toEqual({});
   });
 });
 

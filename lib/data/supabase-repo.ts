@@ -21,6 +21,10 @@ interface FabricRow {
   type: FabricType;
   composition: string | null;
   width_cm: number | null;
+  pattern: "duz" | "desenli" | null;
+  pattern_repeat_w_cm: number | null;
+  pattern_repeat_h_cm: number | null;
+  cut_direction: "cift" | "tek" | null;
   weight_gsm: number | null;
   martindale: number | null;
   fire_rating: string | null;
@@ -89,6 +93,9 @@ function fabricFromRow(r: FabricRow): Fabric {
     type: r.type,
     composition: und(r.composition),
     widthCm: und(r.width_cm),
+    pattern: und(r.pattern),
+    patternRepeatCm: r.pattern_repeat_w_cm != null && r.pattern_repeat_h_cm != null ? { w: Number(r.pattern_repeat_w_cm), h: Number(r.pattern_repeat_h_cm) } : undefined,
+    cutDirection: und(r.cut_direction),
     weightGsm: und(r.weight_gsm),
     martindale: und(r.martindale),
     fireRating: und(r.fire_rating),
@@ -198,6 +205,10 @@ export class SupabaseRepository implements Repository {
       type: input.type,
       composition: input.composition ?? null,
       width_cm: input.widthCm ?? null,
+      pattern: input.pattern ?? null,
+      pattern_repeat_w_cm: input.pattern === "desenli" ? (input.patternRepeatCm?.w ?? null) : null,
+      pattern_repeat_h_cm: input.pattern === "desenli" ? (input.patternRepeatCm?.h ?? null) : null,
+      cut_direction: input.cutDirection ?? null,
       weight_gsm: input.weightGsm ?? null,
       martindale: input.martindale ?? null,
       fire_rating: input.fireRating ?? null,

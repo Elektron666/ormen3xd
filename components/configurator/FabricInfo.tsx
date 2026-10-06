@@ -35,6 +35,11 @@ export function FabricSpecs({ fabric }: { fabric: Fabric }) {
     [t.composition, fabric.composition],
     [t.martindale, fabric.martindale ? `${fabric.martindale.toLocaleString("tr-TR")} tur` : undefined],
     [t.width, fabric.widthCm ? `${fabric.widthCm} cm` : undefined],
+    [
+      t.pattern,
+      fabric.pattern === "duz" ? "Düz" : fabric.pattern === "desenli" && fabric.patternRepeatCm ? `Desenli, rapor ${fabric.patternRepeatCm.w} × ${fabric.patternRepeatCm.h} cm` : undefined,
+    ],
+    [t.cutDirection, fabric.cutDirection === "tek" ? "Tek yön" : fabric.cutDirection === "cift" ? "Çift yön" : undefined],
     [t.weight, fabric.weightGsm ? `${fabric.weightGsm} g/m²` : undefined],
     [t.fireRating, fabric.fireRating],
   ];

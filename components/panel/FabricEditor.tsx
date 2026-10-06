@@ -21,6 +21,10 @@ interface Draft {
   type: FabricType | "";
   composition: string;
   widthCm: string;
+  pattern: "" | "duz" | "desenli";
+  patternW: string;
+  patternH: string;
+  cutDirection: "" | "cift" | "tek";
   weightGsm: string;
   martindale: string;
   fireRating: string;
@@ -39,6 +43,10 @@ function draftFrom(f?: Fabric | null): Draft {
     type: f?.type ?? "",
     composition: f?.composition ?? "",
     widthCm: f?.widthCm?.toString() ?? "",
+    pattern: f?.pattern ?? "",
+    patternW: f?.patternRepeatCm?.w.toString() ?? "",
+    patternH: f?.patternRepeatCm?.h.toString() ?? "",
+    cutDirection: f?.cutDirection ?? "",
     weightGsm: f?.weightGsm?.toString() ?? "",
     martindale: f?.martindale?.toString() ?? "",
     fireRating: f?.fireRating ?? "",
@@ -58,6 +66,10 @@ function fieldsFrom(d: Draft): FabricFields {
     type: d.type,
     composition: d.composition.trim() || undefined,
     widthCm: parseNumber(d.widthCm),
+    pattern: d.pattern || undefined,
+    patternW: d.pattern === "desenli" ? parseNumber(d.patternW) : undefined,
+    patternH: d.pattern === "desenli" ? parseNumber(d.patternH) : undefined,
+    cutDirection: d.cutDirection || undefined,
     weightGsm: parseNumber(d.weightGsm),
     martindale: parseNumber(d.martindale),
     fireRating: d.fireRating.trim() || undefined,
@@ -330,6 +342,33 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
             <Field label="En (cm)" error={errors.widthCm}>
               <input inputMode="decimal" value={draft.widthCm} onChange={(e) => set("widthCm", e.target.value)} className={inputClass} />
             </Field>
+            <Field label="Desen">
+              <select value={draft.pattern} onChange={(e) => set("pattern", e.target.value as Draft["pattern"])} className={inputClass}>
+                <option value="">Bilinmiyor</option>
+                <option value="duz">Düz (desensiz)</option>
+                <option value="desenli">Desenli</option>
+              </select>
+            </Field>
+            {draft.pattern === "desenli" && (
+              <>
+                <Field label="Desen raporu eni (cm)" error={errors.patternW}>
+                  <input inputMode="decimal" value={draft.patternW} onChange={(e) => set("patternW", e.target.value)} className={inputClass} />
+                </Field>
+                <Field label="Desen raporu boyu (cm)">
+                  <input inputMode="decimal" value={draft.patternH} onChange={(e) => set("patternH", e.target.value)} className={inputClass} />
+                </Field>
+              </>
+            )}
+            <Field label="Kesim yönü" className="col-span-2">
+              <select value={draft.cutDirection} onChange={(e) => set("cutDirection", e.target.value as Draft["cutDirection"])} className={inputClass}>
+                <option value="">Bilinmiyor</option>
+                <option value="cift">Çift yön: parçalar ters çevrilebilir</option>
+                <option value="tek">Tek yön: hav ya da desen bir yöne yatıyor</option>
+              </select>
+            </Field>
+            <p className="col-span-2 -mt-1 text-[12px] text-antrasit-50">
+              En, desen ve kesim yönü usta föyündeki metraj için kullanılır. Teknik föyde yoksa boş bırakın; o kumaşta metraj gösterilmez.
+            </p>
             <Field label="Gramaj (g/m²)" error={errors.weightGsm}>
               <input inputMode="decimal" value={draft.weightGsm} onChange={(e) => set("weightGsm", e.target.value)} className={inputClass} />
             </Field>

@@ -209,6 +209,15 @@ describe("sample flow", () => {
   });
 });
 
+describe("fabric cutting data", () => {
+  it("keeps a repeat only on patterned fabrics", async () => {
+    await db.query("insert into fabrics (code, series, color_name, color_family, type, pattern, pattern_repeat_w_cm, pattern_repeat_h_cm, cut_direction) values ('DESEN-01', 'DESEN', 'Lacivert', 'mavi', 'dokuma', 'desenli', 32, 28, 'tek')");
+    await db.query("insert into fabrics (code, series, color_name, color_family, type, pattern, cut_direction) values ('DUZ-01', 'DUZ', 'Bej', 'bej-kum', 'dokuma', 'duz', 'cift')");
+    await expect(db.query("insert into fabrics (code, series, color_name, color_family, type, pattern, pattern_repeat_w_cm) values ('DUZ-02', 'DUZ', 'Bej', 'bej-kum', 'dokuma', 'duz', 30)")).rejects.toThrow();
+    await expect(db.query("insert into fabrics (code, series, color_name, color_family, type, cut_direction) values ('DUZ-03', 'DUZ', 'Bej', 'bej-kum', 'dokuma', 'yan')")).rejects.toThrow();
+  });
+});
+
 describe("visit sources", () => {
   it("accepts only known sources, clean labels and event types", async () => {
     await db.query("insert into events (type, session_id, source, tag) values ('ar_acilamadi', 'ziyaret0001', 'qr', 'ankara-1')");

@@ -1,4 +1,7 @@
--- ORMEN Atelier: sample requests after the 5 Oct meetings.
+-- ORMEN Atelier: the "cutting table" (2nd meeting, 5 Oct): everything the
+-- database needs for samples, lots and fabric metres, in one file.
+--
+-- Sample requests:
 --   * The free-text note goes: a customer could type an address or ID number
 --     there, and the brief allows only name and phone. Three fixed choices
 --     replace it (none of them personal data).
@@ -23,3 +26,16 @@ alter table public.sample_requests
   add column if not exists code text unique check (code ~ '^N-[0-9A-HJ-NP-Z]{6}$'),
   add column if not exists lot text check (char_length(lot) between 1 and 40),
   add column if not exists status_at timestamptz;
+
+-- Fabrics: what the cutter needs besides the width (already there). Empty =
+-- not known, and then no metres are worked out for it (nothing is invented).
+--   pattern:        'duz' (plain) or 'desenli' (has a repeating pattern)
+--   pattern_repeat: the repeat of a patterned fabric, width × height in cm
+--   cut_direction:  'cift' (pieces may be turned) or 'tek' (pile or pattern runs one way)
+alter table public.fabrics
+  add column if not exists pattern text check (pattern in ('duz', 'desenli')),
+  add column if not exists pattern_repeat_w_cm numeric check (pattern_repeat_w_cm > 0 and pattern_repeat_w_cm <= 300),
+  add column if not exists pattern_repeat_h_cm numeric check (pattern_repeat_h_cm > 0 and pattern_repeat_h_cm <= 300),
+  add column if not exists cut_direction text check (cut_direction in ('cift', 'tek'));
+alter table public.fabrics add constraint fabrics_repeat_only_when_patterned
+  check (pattern = 'desenli' or (pattern_repeat_w_cm is null and pattern_repeat_h_cm is null));

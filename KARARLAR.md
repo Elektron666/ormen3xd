@@ -390,7 +390,7 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 
     Bu sorular kişisel veri taşımıyor ve geri arayan satış elemanına notun verdiğinden daha düzenli bilgi veriyor (Selin, Zeynep, Ece).
   - **Sunucu tarafı:** `validateSample` bilinmeyen alanları atıyor. Eski bir tarayıcı sekmesi hâlâ `note` gönderse bile kaydedilmiyor.
-  - **Veritabanı:** `20261010000000_sample_flow.sql` dosyası `note` sütununu siliyor, seçenekleri sabit listeyle denetliyor. Aynı dosya bir sonraki adım için şunları da hazırlıyor:
+  - **Veritabanı:** `20261010000000_cutting_table.sql` dosyası `note` sütununu siliyor, seçenekleri sabit listeyle denetliyor. Aynı dosya bir sonraki adım için şunları da hazırlıyor:
     - talep adımları (yeni → hazırlanıyor → mağazaya gönderildi → siparişe döndü / dönmedi),
     - numune kodu,
     - lot,
@@ -415,3 +415,18 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
   - **Neden giriş yok:** Kodu yalnızca etiketi elinde tutan biliyor; tahmin edilmesi pratikte imkânsız (34⁶ ≈ 1,5 milyar). Yanlış basılırsa ORMEN panelden geri alıyor. Firewall hız sınırına `/n/` de eklendi.
   - **Aynı sayfadaki "ORMEN'e metraj ve lot için yaz" bağlantısı:** ORMEN'in WhatsApp'ına hazır mesaj açıyor (numune, kumaş, lot, mağaza). Bu, 8. maddenin ("ORMEN'e ön bildirim") ilk hâli. "24 saatte teyit" sözü sayfaya yazılmadı; bu bir operasyon kararı ve Fatih Bey onaylamadı.
 - **Teknik not:** Panelde talep kartını her kayıttan sonra `key` ile baştan kurmak, React'te bekleyen işlemin bitmemiş görünmesine yol açtı ve "Kaydet" düğmesi kilitli kaldı. Kart artık yalnızca talep kimliğiyle anahtarlanıyor.
+
+## Kesim masası, 4. adım: kumaşta desen ve kesim yönü
+
+- **Yeni alanlar:**
+  - desen: düz / desenli,
+  - desenliyse rapor ölçüsü (en × boy, cm),
+  - kesim yönü: tek yön (hav ya da desen bir yöne yatıyor, parçalar ters çevrilemez) / çift yön.
+- **Neden üç ayrı değer:** Hepsinin "bilinmiyor" hâli var. "Düz" ile "girilmemiş" aynı şey değil: düz kumaşta metraj verilebilir, girilmemişte verilmez (Rıza Usta: "teknik föyde desen tekrarı yoksa hesap yapılmayacak").
+- **Örnek veri:** Örnek kumaşlarda bu alanlar bilerek boş. Gerçek değer teknik föyden girilecek.
+- **Doğrulama:**
+  - Panel, desenli işaretlenmiş bir kumaşta rapor ölçüsünü zorunlu tutuyor.
+  - Veritabanı, desensiz bir kumaşa rapor ölçüsü girilmesini reddediyor.
+  - Toplu aktarımda "düz/desensiz/desenli" ve "tek/çift (yön)" yazımlarının hepsi kabul ediliyor; anlaşılmayan yazım "bilinmiyor" sayılıyor.
+- **Künye:** Değerler girildiyse künyede görünüyor ("Desenli, rapor 32 × 28 cm", "Tek yön").
+- **Tek tablo dosyası:** Kesim masasının bütün veritabanı değişiklikleri tek dosyada toplandı: `20261010000000_cutting_table.sql`. Önceki adı `…_sample_flow.sql` idi. Bu dosya henüz hiçbir veritabanında çalıştırılmadığı için yeniden adlandırmak güvenli; Fatih Bey'in kurulumda çalıştıracağı dosya sayısı da artmamış oldu.
