@@ -7,6 +7,7 @@ import { prefetchFabric, preferredTextureSize } from "@/lib/three/fabric-materia
 import { t } from "@/lib/i18n/tr";
 import { CopyCodeButton, FabricHeadline, FabricSpecs } from "./FabricInfo";
 import { QuickStrip } from "./QuickStrip";
+import { KioskCodeEntry } from "@/components/kiosk/KioskCodeEntry";
 import { useMedia } from "@/lib/use-media";
 import { FabricPicker } from "./FabricPicker";
 import { BrandMark } from "./BrandMark";
@@ -298,7 +299,7 @@ export function Configurator({
   const style = accentStyle(firm) as React.CSSProperties | undefined;
 
   return (
-    <div style={style} className="relative h-dvh w-full overflow-hidden bg-kirik-beyaz md:grid md:grid-cols-[minmax(0,1fr)_380px] lg:grid-cols-[minmax(0,1fr)_420px]">
+    <div style={style} className="kiosk-grid relative h-dvh w-full overflow-hidden bg-kirik-beyaz md:grid md:grid-cols-[minmax(0,1fr)_380px] lg:grid-cols-[minmax(0,1fr)_420px]">
       {/* ---------------------------------------------------------------- scene */}
       <section className="studio-backdrop relative h-[60dvh] md:h-dvh" aria-label="3B sahne">
         <div className={`absolute inset-0 transition-opacity duration-150 ${fading ? "opacity-0" : "opacity-100"}`}>
@@ -323,7 +324,7 @@ export function Configurator({
           />
         </div>
 
-        <header className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-4 p-4 pt-[max(1rem,env(safe-area-inset-top))] md:p-7">
+        <header className="kiosk-zoom pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-4 p-4 pt-[max(1rem,env(safe-area-inset-top))] md:p-7">
           <div
             className={`pointer-events-auto rounded-xl transition-colors duration-300 ${room.shape !== "yok" ? "-m-2.5 bg-kagit/85 p-2.5 backdrop-blur-[2px]" : ""}`}
           >
@@ -366,7 +367,7 @@ export function Configurator({
         )}
 
         {ready && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+2.75rem)] flex justify-center px-4 md:bottom-12">
+          <div className="kiosk-zoom-wide pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+2.75rem)] flex justify-center px-4 md:bottom-12">
             <div className="pointer-events-auto">
               <SceneTools
                 models={models}
@@ -401,7 +402,7 @@ export function Configurator({
           )}
         </div>
 
-        <p className="pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+0.75rem)] flex justify-center px-6 md:bottom-4">
+        <p className="kiosk-zoom pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+0.75rem)] flex justify-center px-6 md:bottom-4">
           <span
             className={`rounded-full text-center text-[11px] leading-snug transition-colors duration-300 ${
               room.shape !== "yok" ? "bg-kagit/85 px-3 py-1 text-antrasit-70" : "text-antrasit-50"
@@ -416,6 +417,7 @@ export function Configurator({
       <FabricSheet
         header={
           <>
+            {kiosk && <KioskCodeEntry fabrics={modelFabrics} selectedCode={selected.code} onSelect={select} />}
             <div className="flex items-start justify-between gap-3">
               <FabricHeadline fabric={shownFabric} loading={loading && ready && shownFabric === selected} />
               <div className="-mr-2 mt-3 flex shrink-0 items-center">
@@ -647,7 +649,7 @@ function FabricSheet({ header, children }: { header: React.ReactNode; children: 
       aria-label={t.fabrics}
       data-expanded={expanded}
       style={{ "--sheet-h": height } as React.CSSProperties}
-      className={`group/sheet fixed inset-x-0 bottom-0 z-10 flex h-[var(--sheet-h)] max-h-[92dvh] min-h-[30dvh] flex-col rounded-t-[22px] border-t border-cizgi bg-kagit shadow-[0_-12px_40px_-12px_rgba(42,42,40,0.18)] ${
+      className={`kiosk-zoom group/sheet fixed inset-x-0 bottom-0 z-10 flex h-[var(--sheet-h)] max-h-[92dvh] min-h-[30dvh] flex-col rounded-t-[22px] border-t border-cizgi bg-kagit shadow-[0_-12px_40px_-12px_rgba(42,42,40,0.18)] ${
         drag === 0 ? "transition-[height] duration-300 ease-out-soft" : ""
       } md:static md:z-auto md:h-dvh md:max-h-none md:min-h-0 md:rounded-none md:border-l md:border-t-0 md:shadow-none`}
     >

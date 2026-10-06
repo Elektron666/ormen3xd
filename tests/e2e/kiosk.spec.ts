@@ -37,3 +37,18 @@ test("kiosk: karşılama, telefona al, uyarı ve ziyaretçi değişince sıfırl
   await page.getByRole("button", { name: "Başlamak için dokunun" }).click();
   await expect.poll(() => sceneFabrics(page), { timeout: 60_000 }).toEqual([first]);
 });
+
+test("kiosk: elimdeki kartelanın kodu yazılınca kumaş koltuğa giyer", async ({ page, isMobile }) => {
+  test.skip(isMobile, "showroom ekranı");
+  await page.goto("/f/ornek-mobilya?kiosk");
+  await page.getByRole("button", { name: "Başlamak için dokunun" }).click();
+  await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).not.toEqual([]);
+  const box = page.getByLabel("Elinizdeki kartelanın kodu");
+  // a partial code offers the matches, a full one applies at once, however it is typed
+  await box.fill("sie");
+  await expect(page.getByTestId("kiosk-kod").getByRole("button", { name: /SIENA-0/ })).not.toHaveCount(0);
+  await box.fill("siena 04");
+  await expect.poll(() => sceneFabrics(page)).toEqual(["SIENA-04"]);
+  await box.fill("XYZ-99");
+  await expect(page.getByTestId("kiosk-kod")).toContainText("bulunamadı");
+});

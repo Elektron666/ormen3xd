@@ -73,6 +73,28 @@ body {
   100% { transform: translateX(300%); }
 }
 
+/* Showroom kiosk (5 Oct meeting, D4): read standing, at arm's length. Everything
+   around the 3D scene is enlarged (13 px text becomes 16 px); the canvas itself
+   is not zoomed, so picking and dragging keep their exact coordinates. The
+   fabric column is wider to make room. */
+[data-kiosk] .kiosk-zoom {
+  zoom: 1.25;
+}
+@media (min-width: 768px) {
+  [data-kiosk] .kiosk-grid {
+    grid-template-columns: minmax(0, 1fr) 460px;
+  }
+}
+/* the scene toolbar only grows where the scene is wide enough for it */
+@media (min-width: 1600px) {
+  [data-kiosk] .kiosk-grid {
+    grid-template-columns: minmax(0, 1fr) 540px;
+  }
+  [data-kiosk] .kiosk-zoom-wide {
+    zoom: 1.25;
+  }
+}
+
 /* Teklif föyü: hidden on screen, the only thing on paper when printing. */
 #foy-root {
   display: none;

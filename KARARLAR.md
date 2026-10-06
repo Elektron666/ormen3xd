@@ -492,3 +492,16 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 - **Araç şeridi:** Telefonda yalnızca "Daha fazla" ve "Ekle" kalıyor. "Daha fazla" menüsünde Plan görünümü, Yakından bak, Ölçüler ve Karşılaştır var. Masaüstünde değişiklik yok.
 - **Koltuk araç çubuğu:** Telefonda ancak koltuğa dokununca ya da birden fazla parça olunca çıkıyor.
 - **Oda kurucu** donmuş durumda (2. toplantı). Telefonda Plan artık menünün içinde; "Oda" sekmesi yerinde duruyor.
+
+## Kiosk paketi (1. toplantı, Deniz ve Selin)
+
+- **"Elinizdeki kartelanın kodu" (`lib/fabric/code-match.ts`):** Kiosk modunda kumaş panelinin en üstünde duran büyük bir kod kutusu.
+  - Eşleştirme büyük-küçük harfe, Türkçe harflere, boşluğa ve tireye bakmıyor: "siena04", "SİENA 04" ve "SIENA-04" aynı kumaş.
+  - Tam kod yazılınca, ve o koddan uzun başka bir kod yoksa, kumaş hemen giyiyor. Bu kural "SIENA-1" yazılırken "SIENA-10"un yerine geçmesini önlüyor. Enter tuşu da uygular.
+  - Kodun bir parçası yazılınca uyan kumaşlar büyük düğmeler olarak çıkıyor: önce o parçayla başlayanlar, sonra içinde geçenler. Bu sayede kartelada büyük yazan "04" de yeterli.
+  - Kutuya CSS ile büyük harf uygulanmıyor. Türkçe kuralla "sie" yazısı "SİE" görünürdü, kodlar ise "SIENA" diye yazılıyor.
+- **Büyük yazı:**
+  - Kioskta sahne dışındaki her şey CSS `zoom` ile 1,25 kat büyütülüyor: üst düğmeler, renk ibaresi, kumaş paneli. Böylece 13 px'lik yazı 16 px oluyor.
+  - Kumaş sütunu genişletildi: 1600 px'ten dar ekranda 460 px, daha genişte 540 px.
+  - Sahne araç şeridi yalnızca 1600 px'ten geniş ekranda büyüyor; 1280 px'lik tablette büyütülmüş hâli sahneye sığmıyordu.
+  - 3B tuvalin kendisi büyütülmüyor; dokunma ve sürükleme koordinatları kaymasın diye.

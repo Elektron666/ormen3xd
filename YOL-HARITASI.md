@@ -72,7 +72,7 @@ Ayrıntı ve gerekçeler `TOPLANTI-2026-10-05.md` dosyasında. Fotoğraf ve avuk
 2. ✅ Ziyaretlere kaynak (kiosk, QR, paylaşım, site, doğrudan) ve şube/kampanya etiketi; "AR açılamadı" sayacı. Kurulumda 6. tablo dosyası.
 3. ✅ Cihaza göre kademeli görüntü kalitesi (gerçek telefonda ölçülmedi).
 4. ✅ Telefonda sade ilk ekran: kumaş şeridi ve "Numune iste" ilk ekranda; görünüm araçları "Daha fazla" altında; koltuk araç çubuğu dokununca.
-5. Kiosk: kartela kodu arama kutusu ve büyük yazı.
+5. ✅ Kiosk: "Elinizdeki kartelanın kodu" kutusu (kod nasıl yazılırsa yazılsın bulur, tam kodda kumaşı hemen giydirir) ve sahne dışındaki her şeyde büyük yazı.
 6. Talepleri silme (elle ve süreli).
 7. Talep durumu ve "siparişe döndü" (numuneyi kimin gönderdiği kararından sonra).
 

@@ -87,6 +87,8 @@ Numuneyi ORMEN keser ve **firmanın mağazasına** gönderir; müşteriye doğru
 
 Mağazadaki dokunmatik ekran ya da tablet için firma bağlantısının sonuna `?kiosk` ekleyin (panelde firma sayfasında hazır yazıyor), ör. `https://atelier.ormentekstil.com.tr/f/firma-adi?kiosk`. Ekran bir karşılama sayfasıyla açılır; 90 saniye dokunulmazsa bir sonraki müşteri için baştan başlar ve önceki kişinin seçimleri silinir. Ziyaretçi “Telefona al” ile seçtiği kombinasyonu QR'la telefonuna alır.
 
+Kumaş panelinin en üstünde **“Elinizdeki kartelanın kodu”** kutusu var. Satış elemanı askıdaki kartelanın kodunu yazar (ör. “siena 04”; büyük-küçük harf, boşluk ve tire fark etmez) ve kumaş hemen koltuğa giyer. Kodun bir kısmı yazıldığında uyan kumaşlar büyük düğmeler olarak çıkar. Kiosk ekranında yazılar ve düğmeler ayakta, bir kol mesafesinden okunacak büyüklüktedir.
+
 Cihazda: tarayıcıyı tam ekran açın (Chrome'da F11 ya da cihazın “kiosk/ekran sabitleme” ayarı) ve ekranın kendiliğinden kararmasını kapatın.
 
 ## Telefonda AR denemesi (5 dakika)
