@@ -471,3 +471,12 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
     Kumaşın yetmediği satırlar kırmızıyla işaretli.
   - Hesaplama motoru (Mert) ancak bu veriyle, işlerin en az %80'inde tutarsa açılacak.
 - **Kötüye kullanım:** QR'ın içeriği tahmin edilebilir. Biri sahte "gerçek metre" yazabilir; zararı kalibrasyon verisinin kirlenmesiyle sınırlı. Bu yol da firewall hız sınırı kuralına eklendi. Veri azken panelde gözle ayıklanabilir.
+
+## Müşteri telefonu ORMEN'de kalıyor (Fatih Bey, 6 Ekim)
+
+- Hakan'ın "son müşterinin telefonu ORMEN'e hiç gelmesin" önerisi kabul edilmedi. Numune talepleri ad ve telefonla birlikte ORMEN'in kendi veritabanına (Supabase) yazılmaya devam ediyor; bugünkü düzen değişmedi.
+- **Dikkat edilecek nokta:** Formdaki onay metni bu bilgileri "yalnızca numune talebi için" kullanma iznini kapsıyor. Aynı numaralara ileride kampanya ya da yenilik mesajı gönderilecekse iki şey gerekir:
+  - formda ayrı ve isteğe bağlı bir onay kutusu,
+  - ticari ileti kuralları gereği İYS kaydı.
+
+  İstenirse onay kutusu eklenir; metin avukat paketine girmeli.

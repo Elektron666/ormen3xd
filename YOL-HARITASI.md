@@ -62,7 +62,7 @@ Ayrıntı: `TOPLANTI-2026-10-05-2.md`. Araç showroomdaki deneme ekranından, **
 
 **Fatih Bey'e sorular:**
 - Yeniden döşeme / döşemeci kanalı açılsın mı?
-- Son müşterinin telefonu ORMEN'e hiç gelmesin mi? (brief değişikliği)
+- ~~Son müşterinin telefonu ORMEN'e hiç gelmesin mi?~~ **Karar (6 Ekim, Fatih Bey): gelsin.** Talepler ORMEN'in kendi veritabanında tutulur.
 
 ## Pilot hazırlığı (5 Ekim toplantısı)
 
