@@ -42,6 +42,17 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 7. ✅ **Rapor veritabanında:** `atelier_report` fonksiyonu; olay sınırı yok.
 8. Kadife ve şönil için hav yönü görünümü: rafa kalktı (2. toplantı); ölçü doğruluğu görüntüden önce geliyor.
 
+## Pilot öncesi (6 Ekim acil toplantısı, `TOPLANTI-2026-10-06-acil.md`)
+
+Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 Ekim, şartlar tamamlanınca.
+
+- [ ] Pilot firmanın 6–8 kumaşı gerçek fotoğraf, kod, en, desen ve yönle; gerçek ORMEN logosu; yer tutucular gizli.
+- [ ] Vercel Pro, alan adı (CNAME), Supabase yedeği ve "uyumama". Alan adından önce hiçbir QR basılmaz.
+- [ ] Avukat: saklama süresi, yurt dışı aktarım (Frankfurt), firma protokolü (müşteri telefonu sözü dahil).
+- [ ] Pilot firmanın 2 modeli parametrik olarak, metrajıyla.
+- [ ] 3 gerçek cihazda test (Samsung, iPhone, kiosk tableti).
+- [ ] Talep sahibi (Selin), firmayla 30 dakikalık kurulum, panelde test kayıtlarının temizliği, ölçüm tablosu.
+
 ## Yön değişikliği: Kesim masası (5 Ekim, 2. toplantı)
 
 Ayrıntı: `TOPLANTI-2026-10-05-2.md`. Araç showroomdaki deneme ekranından, **siparişin ORMEN koduyla, doğru metreyle ve doğru partiden verildiği yere** dönüşüyor. Fiyat, sepet ve üyelik yine yok; metrajı biz uydurmuyoruz.
