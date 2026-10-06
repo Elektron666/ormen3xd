@@ -11,12 +11,12 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 | Plan | Tepeden 2D plan, ölçüler ve duvara mesafeler |
 | Yerleşim | Mobilya ekleme, sürükleme, döndürme, çoğaltma, kaldırma |
 | Paylaşım | Kalıcı link, WhatsApp önizlemesi, paylaşım görseli, A4 teklif föyü |
-| Numune | Ad + telefon + KVKK onayı; panele düşer, WhatsApp'a da iletilebilir |
+| Numune | Ad + telefon + KVKK onayı ve üç seçmeli soru (serbest metin yok); panele düşer, WhatsApp'a da iletilebilir |
 | AR | "Odamda gör": telefonda gerçek boyutta; bilgisayarda QR ile telefona geçiş |
 | Firma sayfaları | `/f/firma` logolu ve renkli sayfa, firmaya özel modeller, QR (SVG/PNG), A6 tezgâh kartı |
 | Panel | Kumaş (fotoğraftan), toplu ekleme (CSV), model (GLB), firma, talepler, rapor |
 | Rapor | Ziyaret, kumaş denemesi, AR, paylaşım, numune; en çok denenen kumaşlar; firma bazında |
-| Hazırlık | Faz 3 "kendi koltuğunda gör" için arayüz ve "yakında" yeri (gerçek AI çağrısı yok) |
+| Hazırlık | Faz 3 "kendi koltuğunda gör" için kod arayüzü (ekranda gösterilmiyor; gerçek AI çağrısı yok) |
 
 ## Yayından önce (ORMEN tarafı)
 
@@ -46,8 +46,8 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 
 Ayrıntı: `TOPLANTI-2026-10-05-2.md`. Araç showroomdaki deneme ekranından, **siparişin ORMEN koduyla, doğru metreyle ve doğru partiden verildiği yere** dönüşüyor. Fiyat, sepet ve üyelik yine yok; metrajı biz uydurmuyoruz.
 
-1. Numune formunda "Not" alanı yerine seçmeli düğmeler.
-2. "Yakında: kendi koltuğunda gör" vitrininin kaldırılması.
+1. ✅ Numune formunda "Not" alanı yerine seçmeli düğmeler (ne için, kaç parça, ne zaman).
+2. ✅ "Yakında: kendi koltuğunda gör" vitrininin kaldırılması.
 3. Talep durumları ve panelden basılan numune etiketi (kod, numune no, lot kutusu, QR).
 4. Kumaşa desen raporu ve hav yönü alanları.
 5. Model başına firmanın kendi metrajı (referans kumaş eniyle).

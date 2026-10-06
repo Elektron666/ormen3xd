@@ -2,7 +2,7 @@ import "server-only";
 import { codeUpper } from "@/lib/i18n/tr";
 import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel, ModelSource } from "@/lib/types";
 import { normaliseParams } from "@/lib/parametric/spec";
-import type { SampleRequestInput } from "@/lib/samples";
+import type { SampleChoices, SampleRequestInput } from "@/lib/samples";
 import { reportFromJson, type Device, type EventType, type Source, type StoredEvent, type UsageEvent } from "@/lib/events";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
@@ -407,7 +407,9 @@ export class SupabaseRepository implements Repository {
           model_slugs: input.modelSlugs ?? [],
           name: input.name,
           phone: input.phone,
-          note: input.note ?? null,
+          purpose: input.choices?.purpose ?? null,
+          scope: input.choices?.scope ?? null,
+          timing: input.choices?.timing ?? null,
           link: input.link ?? null,
         })
         .select("id, created_at")
@@ -426,7 +428,9 @@ export class SupabaseRepository implements Repository {
       model_slugs: string[];
       name: string;
       phone: string;
-      note: string | null;
+      purpose: SampleChoices["purpose"] | null;
+      scope: SampleChoices["scope"] | null;
+      timing: SampleChoices["timing"] | null;
       link: string | null;
       created_at: string;
     }[];
@@ -437,7 +441,7 @@ export class SupabaseRepository implements Repository {
       modelSlugs: r.model_slugs,
       name: r.name,
       phone: r.phone,
-      note: und(r.note),
+      choices: { purpose: und(r.purpose), scope: und(r.scope), timing: und(r.timing) },
       link: und(r.link),
       createdAt: r.created_at,
     }));

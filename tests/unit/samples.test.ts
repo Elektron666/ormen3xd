@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalisePhone, sampleWhatsappText, prettyPhone, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
+import { describeChoices, normalisePhone, sampleWhatsappText, prettyPhone, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
 
 describe("phone numbers", () => {
   it.each([
@@ -63,5 +63,25 @@ describe("prettyPhone", () => {
   it("formats stored Turkish numbers", () => {
     expect(prettyPhone("+905321234567")).toBe("0532 123 45 67");
     expect(prettyPhone("+4915112345678")).toBe("+4915112345678");
+  });
+});
+
+describe("fixed choices instead of a note", () => {
+  const base = { name: "Ali Veli", phone: "0532 123 45 67", consent: true, fabricCodes: ["LUMA-02"] };
+
+  it("keeps only known answers and drops any free text", () => {
+    const r = validateSample({ ...base, choices: { purpose: "yeniden", scope: "takim", timing: "uydurma" as never }, note: "Adres: Çankaya ..." } as never);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.choices).toEqual({ purpose: "yeniden", scope: "takim" });
+    expect(JSON.stringify(r.value)).not.toContain("Adres");
+  });
+
+  it("describes the answers for the panel and WhatsApp", () => {
+    expect(describeChoices({ purpose: "yeni", timing: "yakin" })).toBe("Yeni koltuk · 1 ay içinde");
+    expect(describeChoices({})).toBe("");
+    const text = sampleWhatsappText({ name: "Ali", phone: "+905321234567", fabricCodes: ["LUMA-02"], choices: { scope: "takim" } });
+    expect(text).toContain("Takım");
+    expect(text).not.toContain("Not:");
   });
 });

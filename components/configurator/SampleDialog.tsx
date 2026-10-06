@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Fabric } from "@/lib/types";
 import { Dialog } from "@/components/ui/Dialog";
-import { sampleWhatsappText, validateSample, whatsappUrl, type SampleErrors, type SampleRequestInput } from "@/lib/samples";
+import { CHOICE_KEYS, SAMPLE_CHOICES, sampleWhatsappText, validateSample, whatsappUrl, type SampleChoices, type SampleErrors, type SampleRequestInput } from "@/lib/samples";
 
 export interface SampleDialogProps {
   open: boolean;
@@ -26,7 +26,7 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
   const [picked, setPicked] = useState<string[]>(() => fabrics.slice(0, 1).map((f) => f.code));
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [note, setNote] = useState("");
+  const [choices, setChoices] = useState<SampleChoices>({});
   const [consent, setConsent] = useState(false);
   const [web, setWeb] = useState(""); // honeypot: hidden from people, bots fill it
   const [errors, setErrors] = useState<SampleErrors>({});
@@ -34,7 +34,7 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const input = { name, phone, note, consent, fabricCodes: picked, firmSlug, modelSlugs, link: link() };
+    const input = { name, phone, choices, consent, fabricCodes: picked, firmSlug, modelSlugs, link: link() };
     const check = validateSample(input);
     if (!check.ok) {
       setErrors(check.errors);
@@ -64,7 +64,7 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
       setStage({ kind: "form" });
       setName("");
       setPhone("");
-      setNote("");
+      setChoices({});
       setConsent(false);
     }
   };
@@ -148,12 +148,41 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
             />
             {errors.phone && <span className="text-[13px] text-[#9a3b31]">{errors.phone}</span>}
           </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] text-antrasit-70">
-              Not <span className="text-antrasit-50">(isteğe bağlı)</span>
-            </span>
-            <textarea className={`${field} h-20 py-2`} value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
-          </label>
+          {/* fixed choices instead of a free-text note: no room for an address or ID number */}
+          {CHOICE_KEYS.map((key) => {
+            const group = SAMPLE_CHOICES[key];
+            return (
+              <fieldset key={key} className="flex flex-col gap-1.5">
+                <legend className="mb-1.5 text-[13px] text-antrasit-70">
+                  {group.label} <span className="text-antrasit-50">(isteğe bağlı)</span>
+                </legend>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(group.options).map(([value, label]) => {
+                    const on = choices[key] === value;
+                    return (
+                      <label
+                        key={value}
+                        className={`flex h-10 cursor-pointer items-center rounded-full border px-4 text-[14px] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-antrasit ${
+                          on ? "border-antrasit bg-antrasit text-kagit" : "border-cizgi bg-white/80 hover:border-cizgi-koyu"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name={`numune-${key}`}
+                          className="sr-only"
+                          checked={on}
+                          // a second tap clears the choice
+                          onClick={() => on && setChoices((c) => ({ ...c, [key]: undefined }))}
+                          onChange={() => setChoices((c) => ({ ...c, [key]: value }))}
+                        />
+                        {label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            );
+          })}
 
           <label className="flex items-start gap-2.5 text-[13px] leading-snug text-antrasit-70">
             <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#2a2a28]" />

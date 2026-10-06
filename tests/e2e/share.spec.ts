@@ -68,12 +68,19 @@ test.describe("paylaşım ve numune", () => {
 
     await page.getByRole("textbox", { name: /^Ad soyad/ }).fill("Ayşe Yılmaz");
     await page.getByRole("textbox", { name: /^Telefon/ }).fill("0532 123 45 67");
+    // fixed choices, no free-text field anywhere in the form
+    await expect(page.getByRole("dialog").getByRole("textbox")).toHaveCount(2);
+    // the chips are labels around visually hidden radios, tapped like people do
+    await page.getByText("Yeniden döşeme", { exact: true }).click();
+    await page.getByText("Takım", { exact: true }).click();
+    await expect(page.getByRole("radio", { name: "Takım" })).toBeChecked();
     await page.getByRole("checkbox", { name: /kabul ediyorum/ }).check();
     const [resp] = await Promise.all([
       page.waitForResponse((r) => r.url().endsWith("/api/samples")),
       page.getByRole("button", { name: "Talebi gönder" }).click(),
     ]);
     expect(resp.status()).toBe(201);
+    expect(resp.request().postDataJSON().choices).toEqual({ purpose: "yeniden", scope: "takim" });
     await expect(page.getByText("Talebiniz alındı.")).toBeVisible();
   });
 

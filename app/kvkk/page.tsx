@@ -17,7 +17,7 @@ export default function KvkkPage() {
           <strong className="text-antrasit">Veri sorumlusu:</strong> ORMEN TEKSTİL, Siteler, Ankara.
         </p>
         <p>
-          <strong className="text-antrasit">Hangi veriler:</strong> Numune talep formunda yazdığınız ad, telefon numarası ve isteğe bağlı not ile seçtiğiniz kumaş kodları.
+          <strong className="text-antrasit">Hangi veriler:</strong> Numune talep formunda yazdığınız ad ve telefon numarası, seçtiğiniz kumaş kodları ve isteğe bağlı üç seçim (ne için, kaç parça, ne zaman). Formda serbest metin alanı yoktur.
           Bu araç; adınızı ve telefonunuzu yalnızca numune talebiyle birlikte saklar. Kumaş denemeleri gibi kullanım kayıtları kimliğinizle ilişkilendirilmez,
           IP adresi ve tarayıcı bilgisi tutulmaz. Ziyaretleri saymak için tarayıcı sekmesinde, sekme kapanınca silinen rastgele bir numara kullanılır; çerez
           kullanılmaz.

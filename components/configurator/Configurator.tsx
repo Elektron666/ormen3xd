@@ -25,7 +25,6 @@ import { QrDialog } from "@/components/ui/QrDialog";
 import { arPath } from "@/lib/ar/device";
 import { track } from "@/lib/track";
 import { fabricsForModel, seriesOf, startFabric } from "@/lib/fabric/allowed";
-import { reupholsterService } from "@/lib/ai/reupholster";
 import { ShareDialog } from "./ShareDialog";
 import { PrintSheet, type PrintData } from "./PrintSheet";
 
@@ -546,16 +545,8 @@ export function Configurator({
             </p>
           )}
           <FabricPicker fabrics={modelFabrics} selectedCode={shownFabric.code} onSelect={select} onIntent={intent} />
-          {/* Faz 3 placeholder (lib/ai/reupholster.ts is a mock; no AI service is called) */}
-          {!reupholsterService.available && (
-            <div className="mt-8 flex items-start gap-3 rounded-2xl border border-dashed border-cizgi-koyu p-4" aria-disabled="true">
-              <span className="mt-0.5 rounded-full bg-cizgi/70 px-2 py-0.5 text-[11px] tracking-wide text-antrasit-70">Yakında</span>
-              <p className="text-[13px] leading-snug text-antrasit-70">
-                <span className="block font-medium text-antrasit">Kendi koltuğunuzda görün</span>
-                Evdeki koltuğunuzun fotoğrafını çekin, ORMEN kumaşıyla kaplandığında nasıl duracağını görün.
-              </p>
-            </div>
-          )}
+          {/* the "Kendi koltuğunuzda görün — yakında" card was removed (2nd meeting, 5 Oct): the brief
+              rules out real AI, so it was a promise we could not keep. lib/ai/reupholster.ts stays for Faz 3. */}
         </div>
         <div id="bolum-oda" role="tabpanel" aria-labelledby="sekme-oda" hidden={tab !== "oda"}>
           <RoomPanel spec={room} onChange={changeRoom} furnitureCm={selectedModel.dimensionsCm} />

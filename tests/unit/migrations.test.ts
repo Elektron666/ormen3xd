@@ -196,6 +196,19 @@ describe("report function", () => {
   }, 60_000);
 });
 
+describe("sample flow", () => {
+  it("has no free-text note, only fixed choices, steps, a sample code and a lot", async () => {
+    const cols = await db.query<{ column_name: string }>("select column_name from information_schema.columns where table_name = 'sample_requests'");
+    const names = cols.rows.map((c) => c.column_name);
+    expect(names).not.toContain("note");
+    expect(names).toEqual(expect.arrayContaining(["purpose", "scope", "timing", "code", "lot", "status_at"]));
+    await db.query("insert into sample_requests (fabric_codes, name, phone, purpose, scope, timing, code, status) values ('{LUMA-02}', 'Ali Veli', '+905321234567', 'yeniden', 'takim', 'yakin', 'N-7K3P9Q', 'hazirlaniyor')");
+    await expect(db.query("insert into sample_requests (fabric_codes, name, phone, purpose) values ('{LUMA-02}', 'Ali Veli', '+905321234567', 'adresim: ...')")).rejects.toThrow();
+    await expect(db.query("insert into sample_requests (fabric_codes, name, phone, status) values ('{LUMA-02}', 'Ali Veli', '+905321234567', 'iletildi')")).rejects.toThrow();
+    await expect(db.query("insert into sample_requests (fabric_codes, name, phone, code) values ('{LUMA-02}', 'Ali Veli', '+905321234567', 'N-7K3P9Q')")).rejects.toThrow();
+  });
+});
+
 describe("visit sources", () => {
   it("accepts only known sources, clean labels and event types", async () => {
     await db.query("insert into events (type, session_id, source, tag) values ('ar_acilamadi', 'ziyaret0001', 'qr', 'ankara-1')");

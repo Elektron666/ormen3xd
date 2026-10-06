@@ -35,6 +35,7 @@ export const MIGRATIONS = [
   ["20261007000000_report_function.sql", "Rapor fonksiyonu"],
   ["20261008000000_storage_limits.sql", "Dosya klasörü sınırları"],
   ["20261009000000_visit_sources.sql", "Ziyaret kaynağı ve etiketler"],
+  ["20261010000000_sample_flow.sql", "Numune adımları (not alanı yerine seçenekler)"],
 ] as const;
 
 export function evaluateSetup(f: SetupFacts): Check[] {

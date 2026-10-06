@@ -1,6 +1,6 @@
 import { requirePanelUser } from "@/lib/auth/panel";
 import { getRepository } from "@/lib/data";
-import { prettyPhone, whatsappUrl } from "@/lib/samples";
+import { describeChoices, prettyPhone, whatsappUrl } from "@/lib/samples";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
 
 export const metadata = { title: "Numune talepleri" };
@@ -46,7 +46,7 @@ export default async function RequestsPage() {
                   {r.modelSlugs?.length ? ` · ${r.modelSlugs.join(", ")}` : ""}
                 </p>
               )}
-              {r.note && <p className="mt-2 rounded-lg bg-white px-3 py-2 text-[14px] text-antrasit-70">{r.note}</p>}
+              {r.choices && describeChoices(r.choices) && <p className="mt-2 text-[14px] text-antrasit-70">{describeChoices(r.choices)}</p>}
               <div className="mt-3 flex flex-wrap gap-2">
                 <a href={`tel:${r.phone}`} className={buttonClass.quiet}>
                   {prettyPhone(r.phone)}

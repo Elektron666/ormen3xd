@@ -3,10 +3,41 @@
 
 import { codeUpper } from "@/lib/i18n/tr";
 
+/**
+ * Three fixed choices instead of a free-text note (5 Oct meeting): the firm
+ * gets what it needs to call back, and nobody can type an address or ID number.
+ */
+export const SAMPLE_CHOICES = {
+  purpose: { label: "Ne için", options: { yeni: "Yeni koltuk", yeniden: "Yeniden döşeme" } },
+  scope: { label: "Kaç parça", options: { tek: "Tek parça", takim: "Takım" } },
+  timing: { label: "Ne zaman", options: { yakin: "1 ay içinde", arastiriyor: "Araştırıyorum" } },
+} as const;
+export type SampleChoiceKey = keyof typeof SAMPLE_CHOICES;
+export type SampleChoices = { [K in SampleChoiceKey]?: keyof (typeof SAMPLE_CHOICES)[K]["options"] };
+export const CHOICE_KEYS = Object.keys(SAMPLE_CHOICES) as SampleChoiceKey[];
+
+/** "Yeni koltuk · Takım · 1 ay içinde" (only the answered ones). */
+export function describeChoices(c: SampleChoices): string {
+  return CHOICE_KEYS.flatMap((k) => {
+    const v = c[k];
+    return v ? [(SAMPLE_CHOICES[k].options as Record<string, string>)[v]] : [];
+  }).join(" · ");
+}
+
+function cleanChoices(raw: unknown): SampleChoices {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const out: Record<string, string> = {};
+  for (const k of CHOICE_KEYS) {
+    const v = r[k];
+    if (typeof v === "string" && v in SAMPLE_CHOICES[k].options) out[k] = v;
+  }
+  return out as SampleChoices;
+}
+
 export interface SampleRequestInput {
   name: string;
   phone: string;
-  note?: string;
+  choices?: SampleChoices;
   consent: boolean;
   fabricCodes: string[];
   firmSlug?: string | null;
@@ -20,7 +51,7 @@ export interface SampleRequest extends Omit<SampleRequestInput, "consent"> {
   createdAt: string;
 }
 
-export type SampleErrors = Partial<Record<"name" | "phone" | "consent" | "fabricCodes" | "note", string>>;
+export type SampleErrors = Partial<Record<"name" | "phone" | "consent" | "fabricCodes", string>>;
 
 /**
  * Turkish mobile numbers in any common spelling (0532 123 45 67,
@@ -66,8 +97,6 @@ export function validateSample(input: Partial<SampleRequestInput>): { ok: true; 
   else if (name.length > 80) errors.name = "Ad çok uzun.";
   const phone = normalisePhone(input.phone ?? "");
   if (!phone) errors.phone = "Geçerli bir telefon numarası yazın (ör. 0532 123 45 67).";
-  const note = (input.note ?? "").trim();
-  if (note.length > 500) errors.note = "Not en fazla 500 karakter olabilir.";
   if (input.consent !== true) errors.consent = "Devam etmek için aydınlatma metnini onaylayın.";
   const codes = [...new Set((input.fabricCodes ?? []).map((c) => codeUpper(String(c).trim())).filter(Boolean))];
   if (codes.length === 0) errors.fabricCodes = "En az bir kumaş seçin.";
@@ -78,7 +107,8 @@ export function validateSample(input: Partial<SampleRequestInput>): { ok: true; 
     value: {
       name,
       phone: phone!,
-      note: note || undefined,
+      // anything else sent along (an old client's "note") is dropped here
+      choices: cleanChoices(input.choices),
       consent: true,
       fabricCodes: codes,
       firmSlug: typeof input.firmSlug === "string" && SLUG.test(input.firmSlug) ? input.firmSlug : null,
@@ -89,14 +119,15 @@ export function validateSample(input: Partial<SampleRequestInput>): { ok: true; 
 }
 
 /** Ready-made WhatsApp text for the firm (or ORMEN). */
-export function sampleWhatsappText(v: Pick<SampleRequestInput, "name" | "phone" | "fabricCodes" | "note" | "link">): string {
+export function sampleWhatsappText(v: Pick<SampleRequestInput, "name" | "phone" | "fabricCodes" | "choices" | "link">): string {
   const lines = [
     "Merhaba, ORMEN Atelier üzerinden numune talebim:",
     `Kumaş: ${v.fabricCodes.join(", ")}`,
     `Ad: ${v.name}`,
     `Telefon: ${v.phone}`,
   ];
-  if (v.note) lines.push(`Not: ${v.note}`);
+  const about = describeChoices(v.choices ?? {});
+  if (about) lines.push(about);
   if (v.link) lines.push(`Kombinasyon: ${v.link}`);
   return lines.join("\n");
 }

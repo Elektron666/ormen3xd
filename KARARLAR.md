@@ -378,3 +378,24 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 - **Neden drei'nin `PerformanceMonitor`'ı değil:** O bileşen sürekli çizim varsayıyor. İsteğe bağlı çizimde iki kare arasındaki bekleme süresini yavaşlık sanıp kaliteyi gereksiz yere düşürürdü.
 - **Ölçülmedi:** Gerçek orta sınıf Android'de denenmedi (sunucuda GPU yok). Eşikler gerçek cihaz testinde (toplantı M5) ayarlanacak.
 - **Test notu:** Playwright, `sendBeacon` ile giden isteğin gövdesini okuyamıyor. Rapor testinde `sendBeacon` kapatılıyor; sayfa `fetch` yedeğini kullanıyor ve gönderilen olayın içeriği (kaynak, etiket, IP olmaması) böylece gerçekten denetleniyor.
+
+## Kesim masası, 1–2. adım: numune formu ve "yakında" vitrini (2. toplantı)
+
+- **"Not" alanı kalktı.** Toplantıda 9 oyun 9'u bu yöndeydi; Fatih Bey kararı toplantıya bırakmıştı.
+  - **Neden:** Serbest metne adres ya da TC kimlik no yazılabilir. Brief'te ise tek kişisel veri ad ve telefon.
+  - **Yerine üç seçmeli soru geldi.** Hepsi isteğe bağlı:
+    - Ne için: yeni koltuk / yeniden döşeme
+    - Kaç parça: tek parça / takım
+    - Ne zaman: 1 ay içinde / araştırıyorum
+
+    Bu sorular kişisel veri taşımıyor ve geri arayan satış elemanına notun verdiğinden daha düzenli bilgi veriyor (Selin, Zeynep, Ece).
+  - **Sunucu tarafı:** `validateSample` bilinmeyen alanları atıyor. Eski bir tarayıcı sekmesi hâlâ `note` gönderse bile kaydedilmiyor.
+  - **Veritabanı:** `20261010000000_sample_flow.sql` dosyası `note` sütununu siliyor, seçenekleri sabit listeyle denetliyor. Aynı dosya bir sonraki adım için şunları da hazırlıyor:
+    - talep adımları (yeni → hazırlanıyor → mağazaya gönderildi → siparişe döndü / dönmedi),
+    - numune kodu,
+    - lot,
+    - adım tarihi.
+  - **KVKK metni** buna göre güncellendi: "Formda serbest metin alanı yoktur." Avukat onayı hâlâ bekliyor.
+- **"Kendi koltuğunuzda görün: yakında" kartı ekrandan kalktı.**
+  - **Neden:** Brief gerçek yapay zekâyı yasaklıyor. Bu kart tutamayacağımız bir söz vermiş oluyordu. Defne: "Her 'yakında', markadan küçük bir yalan."
+  - `lib/ai/reupholster.ts` arayüzü Faz 3 için duruyor, ama ekranda gösterilmiyor.
