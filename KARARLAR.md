@@ -540,3 +540,7 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 - **Eşik:** 30 ziyaretin altında sıralama gösterilmiyor; az veriyle "en çok denenen" yanıltıcı olur (Ece).
 - **"Siparişe dönen":** Numune sayfasında mağazanın "Bu numuneyle sipariş verildi" işaretinden geliyor.
 - **Neden ayrı sayfa, neden e-posta değil:** Mert'in itirazı geçerli. E-posta dış servis ve anahtar gerektirir. Bu sayfa ise elden verilen kâğıt; satışçı ziyarete somut bir gerekçeyle gidiyor (Selin).
+
+## Kalite düşürme sürüklemeyi beklemeli
+
+Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir kez kırmızı verdi: berjer hedefin gerisinde bırakılmıştı. Tek başına çalıştırıldığında 3/3 geçti. Muhtemel sebep kademeli kalite ayarı: kareler yavaşlayınca piksel oranı sürükleme sırasında düşürülüyor, tuval yeniden çiziliyor ve araya giren işaretçi hareketleri kayboluyordu. Yavaş bir telefonda gerçekten yaşanabilecek bir durum. Artık sürükleme sürerken düşürme bekletiliyor ve sürükleme bitince uygulanıyor.

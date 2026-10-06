@@ -199,10 +199,23 @@ export function Stage({
     },
     [onFabricShown],
   );
+  // A lower pixel ratio re-renders the canvas; doing that in the middle of a
+  // drag loses pointer moves on a slow device, so it waits for the drag to end.
+  const draggingRef = useRef(false);
+  const pendingDpr = useRef<number | null>(null);
+  const lowerDpr = useCallback((d: number) => {
+    if (draggingRef.current) pendingDpr.current = d;
+    else setMaxDpr(d);
+  }, []);
   const handleDrag = useCallback(
     (on: boolean) => {
+      draggingRef.current = on;
       setDragging(on);
-      if (!on) actions.onDragEnd?.();
+      if (!on) {
+        if (pendingDpr.current !== null) setMaxDpr(pendingDpr.current);
+        pendingDpr.current = null;
+        actions.onDragEnd?.();
+      }
     },
     [actions],
   );
@@ -252,7 +265,7 @@ export function Stage({
       role="group"
     >
       <StudioLights ambient={ambient} shadowMap={quality.shadowMap} />
-      <AdaptiveDpr onLower={setMaxDpr} />
+      <AdaptiveDpr onLower={lowerDpr} />
       {items.map((p) => {
         const model = models.get(p.modelSlug);
         const fabric = fabrics.get(p.fabricCode);
