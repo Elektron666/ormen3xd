@@ -66,6 +66,13 @@ Numuneyi ORMEN keser ve **firmanın mağazasına** gönderir; müşteriye doğru
    - Mağaza aynı sayfadan ORMEN'e metraj ve lot için WhatsApp yazabilir.
    - Yanlışlıkla basılırsa adımı panelden geri alın.
 
+### Talepleri silme
+
+- **Bir kişi verisinin silinmesini isterse:** Panel → Talepler → o talep → **Sil** → **Evet, sil**. Talep adı ve telefonuyla birlikte kalıcı olarak silinir.
+- **Saklama süresi:** Avukatla belirlendikten sonra Vercel → Settings → Environment Variables bölümüne `SAMPLE_RETENTION_DAYS` = gün sayısını girin (ör. 730) ve yeniden yayınlayın. O süreden eski talepler kendiliğinden silinir.
+  - Aynı süreyi /kvkk metnindeki “[Avukat onayıyla belirlenecek süre]” yerine yazın.
+  - Ayar girilmezse talepler elle silinene kadar saklanır; /panel/durum bunu hatırlatır.
+
 ## Usta föyü ve metraj
 
 "Föyü yazdır" iki sayfa çıkarır. Birinci sayfa müşteri içindir. İkinci sayfa **usta föyü**dür ve atölyeye gider. Siyah beyazdır; renk kâğıttan değil, zımbalanan numuneden onaylanır.

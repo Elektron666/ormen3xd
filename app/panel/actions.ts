@@ -307,3 +307,13 @@ export async function updateSampleAction(id: string, patch: { status?: string; l
   revalidatePath("/panel/talepler");
   return { ok: true };
 }
+
+export async function deleteSampleAction(id: string): Promise<{ ok: boolean; error?: string }> {
+  await guard();
+  const repo = getRepository();
+  if (!(await repo.getSampleRequest(id))) return { ok: false, error: "Talep bulunamadı." };
+  await repo.deleteSampleRequest(id);
+  revalidatePath("/panel/talepler");
+  revalidatePath("/panel");
+  return { ok: true };
+}

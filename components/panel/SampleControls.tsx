@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateSampleAction } from "@/app/panel/actions";
+import { deleteSampleAction, updateSampleAction } from "@/app/panel/actions";
 import { SAMPLE_STEPS, STEP_KEYS, type SampleStep } from "@/lib/samples";
 // own sizes here: the shared input/button classes are full-height and full-width
 const field = "h-9 rounded-lg border border-cizgi bg-white px-3 text-[14px] text-antrasit placeholder:text-antrasit-50 focus:border-antrasit-50 focus:outline-none";
@@ -15,6 +15,7 @@ export function SampleControls({ id, status, lot, code }: { id: string; status: 
   const [saved, setSaved] = useState(lot ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const [confirming, setConfirming] = useState(false);
 
   const save = (patch: { status?: SampleStep; lot?: string }) =>
     start(async () => {
@@ -67,6 +68,33 @@ export function SampleControls({ id, status, lot, code }: { id: string; status: 
           Numune etiketi
         </a>
       )}
+      <span className="ml-auto flex items-center gap-2">
+        {confirming ? (
+          <>
+            <span className="text-[13px] text-antrasit-70">Ad ve telefonla birlikte kalıcı olarak silinsin mi?</span>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() =>
+                start(async () => {
+                  const res = await deleteSampleAction(id);
+                  if (!res.ok) setError(res.error ?? "Silinemedi.");
+                })
+              }
+              className={`${small} border-[#b4483c] text-[#9a3b31]`}
+            >
+              Evet, sil
+            </button>
+            <button type="button" onClick={() => setConfirming(false)} className={small}>
+              Vazgeç
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={() => setConfirming(true)} className={`${small} text-antrasit-70`}>
+            Sil
+          </button>
+        )}
+      </span>
       {error && (
         <p role="alert" className="text-[13px] text-[#9a3b31]">
           {error}

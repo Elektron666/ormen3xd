@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SAMPLE_CODE, STEP_KEYS, canMarkOrdered, cleanLot, cleanSampleCode, describeChoices, newSampleCode, normalisePhone, sampleWhatsappText, prettyPhone, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
+import { SAMPLE_CODE, retentionDays, STEP_KEYS, canMarkOrdered, cleanLot, cleanSampleCode, describeChoices, newSampleCode, normalisePhone, sampleWhatsappText, prettyPhone, shareLink, validateSample, whatsappUrl } from "@/lib/samples";
 
 describe("phone numbers", () => {
   it.each([
@@ -119,5 +119,26 @@ describe("sample flow", () => {
     expect(after?.statusAt).toBeTruthy();
     await repo.updateSampleRequest(r.id, { lot: "" });
     expect((await repo.getSampleRequest(r.id))?.lot).toBeUndefined();
+  });
+});
+
+describe("retention", () => {
+  it("reads a sensible number of days, or none", () => {
+    expect(retentionDays("730")).toBe(730);
+    expect(retentionDays(undefined)).toBeNull();
+    expect(retentionDays("7")).toBeNull();
+    expect(retentionDays("iki yıl")).toBeNull();
+  });
+
+  it("deletes one request, or all older than a date (memory store)", async () => {
+    const { MemoryRepository } = await import("@/lib/data/memory-repo");
+    const repo = new MemoryRepository();
+    const a = await repo.createSampleRequest({ name: "Ali Veli", phone: "+905321234567", consent: true, fabricCodes: ["LUMA-02"] });
+    const b = await repo.createSampleRequest({ name: "Ayşe Kaya", phone: "+905321234568", consent: true, fabricCodes: ["LUMA-02"] });
+    await repo.deleteSampleRequest(a.id);
+    expect((await repo.listSampleRequests()).map((r) => r.id)).toEqual([b.id]);
+    expect(await repo.purgeSampleRequests(new Date(Date.now() - 1000))).toBe(0);
+    expect(await repo.purgeSampleRequests(new Date(Date.now() + 1000))).toBe(1);
+    expect(await repo.listSampleRequests()).toEqual([]);
   });
 });

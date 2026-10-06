@@ -30,7 +30,7 @@ export default function KvkkPage() {
           Başka amaçla üçüncü kişilere aktarılmaz.
         </p>
         <p>
-          <strong className="text-antrasit">Saklama süresi:</strong> Talep tamamlandıktan sonra makul süre içinde silinir.
+          <strong className="text-antrasit">Saklama süresi:</strong> [Avukat onayıyla belirlenecek süre] boyunca saklanır, sonra kendiliğinden silinir. Daha önce silinmesini isterseniz bize yazmanız yeterli; talebiniz adınız ve telefonunuzla birlikte kalıcı olarak silinir.
         </p>
         <p>
           <strong className="text-antrasit">Haklarınız:</strong> 6698 sayılı Kanun’un 11. maddesi kapsamındaki haklarınız için ORMEN TEKSTİL’e başvurabilirsiniz.

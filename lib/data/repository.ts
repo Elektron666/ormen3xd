@@ -47,6 +47,10 @@ export interface Repository {
   getSampleByCode(code: string): Promise<SampleRequest | null>;
   /** Moves a request to another step (stamps the time) and/or records the lot ("" clears it). */
   updateSampleRequest(id: string, patch: { status?: SampleStep; lot?: string }): Promise<void>;
+  /** Removes a request for good (KVKK deletion request, or a test entry). */
+  deleteSampleRequest(id: string): Promise<void>;
+  /** Removes requests created before the date; returns how many went. */
+  purgeSampleRequests(before: Date): Promise<number>;
 
   /** Short link → long share id; null when unknown. */
   getShare(code: string): Promise<string | null>;

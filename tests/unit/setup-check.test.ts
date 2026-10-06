@@ -13,6 +13,7 @@ const ready: SetupFacts = {
   requestHost: "atelier.ormentekstil.com.tr",
   whatsapp: "+90 532 000 00 00",
   sessionSecretOk: false,
+  retentionDays: null,
   production: true,
 };
 const byId = (f: SetupFacts) => Object.fromEntries(evaluateSetup(f).map((c) => [c.id, c]));
@@ -21,7 +22,8 @@ describe("setup checklist", () => {
   it("a finished installation is green apart from the manual items", () => {
     const checks = evaluateSetup(ready);
     expect(overall(checks)).toBe("ok");
-    expect(checks.filter((c) => c.status !== "ok").map((c) => c.id)).toEqual(["kvkk", "ar", "firewall"]);
+    expect(checks.filter((c) => c.status !== "ok").map((c) => c.id)).toEqual(["retention", "kvkk", "ar", "firewall"]);
+    expect(evaluateSetup({ ...ready, retentionDays: 730 }).find((c) => c.id === "retention")?.status).toBe("ok");
   });
 
   it("names the SQL files still to run", () => {

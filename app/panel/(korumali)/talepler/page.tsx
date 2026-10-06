@@ -1,6 +1,6 @@
 import { requirePanelUser } from "@/lib/auth/panel";
 import { getRepository } from "@/lib/data";
-import { SAMPLE_STEPS, describeChoices, prettyPhone, whatsappUrl } from "@/lib/samples";
+import { SAMPLE_STEPS, describeChoices, prettyPhone, retentionDays, whatsappUrl } from "@/lib/samples";
 import { SampleControls } from "@/components/panel/SampleControls";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
 
@@ -12,6 +12,9 @@ export default async function RequestsPage() {
   // checked here, not only in the layout: a layout check does not stop the page from rendering
   await requirePanelUser();
   const repo = getRepository();
+  // the retention period, when set, is applied whenever the list is opened
+  const keep = retentionDays();
+  if (keep) await repo.purgeSampleRequests(new Date(Date.now() - keep * 86_400_000));
   const [requests, firms] = await Promise.all([repo.listSampleRequests(), repo.listFirms()]);
   const firmName = new Map(firms.map((f) => [f.slug, f.name]));
   return (
@@ -28,6 +31,12 @@ export default async function RequestsPage() {
           Demo modundasınız: talepler sunucu yeniden başlayınca silinir. Supabase bağlanınca kalıcı olur.
         </p>
       )}
+      <p className="mb-2 text-[13px] text-antrasit-50">
+        {keep
+          ? `Talepler ${keep} gün sonra kendiliğinden silinir.`
+          : "Talepler elle silinene kadar saklanır. Saklama süresi avukatla belirlenince SAMPLE_RETENTION_DAYS ayarıyla kendiliğinden silinir."}{" "}
+        Bir kişi verisinin silinmesini isterse talebini “Sil” ile kaldırın.
+      </p>
       <p className="mb-4 text-[13px] text-antrasit-50">
         Numuneyi ORMEN keser ve firmanın mağazasına gönderir; müşteriye doğrudan gönderilmez. Etiketteki QR’ı firma siparişte okutunca talep kendiliğinden “Siparişe döndü” olur.
       </p>

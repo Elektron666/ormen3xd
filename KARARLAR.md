@@ -505,3 +505,12 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
   - Kumaş sütunu genişletildi: 1600 px'ten dar ekranda 460 px, daha genişte 540 px.
   - Sahne araç şeridi yalnızca 1600 px'ten geniş ekranda büyüyor; 1280 px'lik tablette büyütülmüş hâli sahneye sığmıyordu.
   - 3B tuvalin kendisi büyütülmüyor; dokunma ve sürükleme koordinatları kaymasın diye.
+
+## Talepleri silme ve saklama süresi (1. toplantı, Hakan)
+
+- **Elle silme:** Paneldeki her talepte iki adımlı bir "Sil" var: "Sil" → "Evet, sil". KVKK'da bir kişi verisinin silinmesini isteyebilir; Fatih Bey telefonların ORMEN'de kalmasını istese de bu yol açık olmalı.
+- **Süreli silme:** `SAMPLE_RETENTION_DAYS` ayarı (30–3650 gün) girilirse, o süreden eski talepler panelde talep listesi her açıldığında siliniyor.
+  - Ayar bilerek varsayılan olarak kapalı. Süreyi avukat belirleyecek; o zamana kadar talepler elle silinene kadar saklanıyor.
+  - /panel/durum bunu "yapılacak" olarak gösteriyor.
+  - /kvkk metninde süre için görünür bir yer tutucu var: "[Avukat onayıyla belirlenecek süre]". Metin zaten avukat onayı bekliyor; yayından önce doldurulacak.
+- **Neden pg_cron değil:** Supabase'de ayrıca açılması ve izlenmesi gereken bir zamanlayıcı yerine silme, talepleri gören tek yerde, listenin açılışında yapılıyor. Panel kullanılmadığı sürece süresi geçmiş talepler bir süre daha durabilir; bu, pilot ölçeği için kabul edildi.

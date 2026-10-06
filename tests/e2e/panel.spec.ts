@@ -114,6 +114,12 @@ test.describe("panel", () => {
 
     await page.reload();
     await expect(page.getByRole("listitem").filter({ hasText: name }).getByTestId("talep-adim")).toHaveText("Siparişe döndü");
+
+    // a KVKK deletion request: gone for good after a confirmation
+    const done = page.getByRole("listitem").filter({ hasText: name });
+    await done.getByRole("button", { name: "Sil", exact: true }).click();
+    await done.getByRole("button", { name: "Evet, sil" }).click();
+    await expect(page.getByRole("listitem").filter({ hasText: name })).toHaveCount(0);
     expect((await request.get("/n/N-0000000")).status()).toBe(404);
   });
 

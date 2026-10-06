@@ -136,6 +136,17 @@ export class MemoryRepository implements Repository {
     return r ? { ...r } : null;
   }
 
+  async deleteSampleRequest(id: string) {
+    this.samples = this.samples.filter((x) => x.id !== id);
+  }
+
+  async purgeSampleRequests(before: Date) {
+    const t = before.toISOString();
+    const n = this.samples.length;
+    this.samples = this.samples.filter((x) => x.createdAt >= t);
+    return n - this.samples.length;
+  }
+
   async updateSampleRequest(id: string, patch: { status?: SampleStep; lot?: string }) {
     const r = this.samples.find((x) => x.id === id);
     if (!r) return;

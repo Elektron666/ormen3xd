@@ -3,6 +3,7 @@ import { getRepository } from "@/lib/data";
 import { supabaseEnabled } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
 import { MIGRATIONS, type SetupFacts } from "@/lib/setup-check";
+import { retentionDays } from "@/lib/samples";
 
 // Collects what /panel/durum shows. Each migration is detected by something it
 // creates (a table, a column, a function, a bucket limit), so the page tells
@@ -76,6 +77,7 @@ export async function gatherSetupFacts(requestHost: string | null): Promise<Setu
     requestHost,
     whatsapp: process.env.NEXT_PUBLIC_ORMEN_WHATSAPP || null,
     sessionSecretOk: !!secret && secret.length >= 32,
+    retentionDays: retentionDays(),
     production: process.env.NODE_ENV === "production",
   };
 }

@@ -26,6 +26,8 @@ export interface SetupFacts {
   whatsapp: string | null;
   sessionSecretOk: boolean;
   production: boolean;
+  /** Days sample requests are kept (SAMPLE_RETENTION_DAYS), null = until deleted by hand. */
+  retentionDays: number | null;
 }
 
 export const MIGRATIONS = [
@@ -146,6 +148,18 @@ export function evaluateSetup(f: SetupFacts): Check[] {
         },
   );
 
+  checks.push(
+    f.retentionDays
+      ? { id: "retention", title: "Talep saklama süresi", status: "ok", detail: `Numune talepleri ${f.retentionDays} gün sonra kendiliğinden siliniyor.` }
+      : {
+          id: "retention",
+          title: "Talep saklama süresi",
+          status: "todo",
+          detail: "Talepler elle silinene kadar saklanıyor.",
+          fix: "Saklama süresini avukatla belirleyin, Vercel’de SAMPLE_RETENTION_DAYS (gün, ör. 730) olarak girin ve aynı süreyi KVKK metnine yazın.",
+        },
+  );
+
   // things only a person can confirm
   checks.push(
     { id: "kvkk", title: "KVKK aydınlatma metni", status: "todo", detail: "/kvkk sayfasındaki metin taslak.", fix: "Hukuk danışmanına onaylatın." },
@@ -158,5 +172,5 @@ export function evaluateSetup(f: SetupFacts): Check[] {
 /** Overall state for the page header: the worst automatic check. */
 export function overall(checks: Check[]): CheckStatus {
   const order: CheckStatus[] = ["error", "warn", "todo", "ok"];
-  return order.find((s) => checks.some((c) => c.status === s && !["kvkk", "ar", "firewall"].includes(c.id))) ?? "ok";
+  return order.find((s) => checks.some((c) => c.status === s && !["kvkk", "ar", "firewall", "retention"].includes(c.id))) ?? "ok";
 }

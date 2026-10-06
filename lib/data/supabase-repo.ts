@@ -487,6 +487,15 @@ export class SupabaseRepository implements Repository {
     return row ? sampleFromRow(row) : null;
   }
 
+  async deleteSampleRequest(id: string) {
+    check(await this.db.from("sample_requests").delete().eq("id", id));
+  }
+
+  async purgeSampleRequests(before: Date) {
+    const rows = check(await this.db.from("sample_requests").delete().lt("created_at", before.toISOString()).select("id")) as { id: string }[];
+    return rows.length;
+  }
+
   async updateSampleRequest(id: string, patch: { status?: SampleStep; lot?: string }) {
     const update: Record<string, unknown> = {};
     if (patch.status) {

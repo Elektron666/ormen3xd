@@ -183,3 +183,13 @@ export function whatsappUrl(number: string | null | undefined, text: string): st
   const n = (number ?? "").replace(/\D/g, "");
   return `https://wa.me/${n}?text=${encodeURIComponent(text)}`;
 }
+
+/**
+ * How long sample requests are kept, from SAMPLE_RETENTION_DAYS (30–3650).
+ * Unset = kept until deleted by hand; the period is for the lawyer to set
+ * (KVKK) and is shown on /panel/durum.
+ */
+export function retentionDays(raw: string | undefined = process.env.SAMPLE_RETENTION_DAYS): number | null {
+  const n = Number(raw);
+  return raw && Number.isInteger(n) && n >= 30 && n <= 3650 ? n : null;
+}
