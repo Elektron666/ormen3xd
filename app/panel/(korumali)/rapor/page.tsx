@@ -53,6 +53,8 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
     ["Kumaş denemesi", report.counts.kumas_denendi, `ziyaret başına ${per(report.counts.kumas_denendi)} (hedef 5)`],
     ["AR", report.counts.ar_acildi, report.counts.ar_acilamadi ? `telefonda odada görme · ${nf.format(report.counts.ar_acilamadi)} kez açılamadı` : "telefonda odada görme"],
     ["Paylaşım", report.counts.paylasildi, "kombinasyon paylaşma"],
+    // the room tools are frozen (2nd meeting); below 10% they are a candidate to simplify
+    ["Oda / plan", report.roomSessions, `ziyaretlerin %${per(report.roomSessions, 100)}’i kullandı (ölçüt %10)`],
     ["Numune talebi", report.counts.numune_istendi, `100 ziyarette ${per(report.counts.numune_istendi, 100)} (hedef 3)`],
   ] as const;
 
@@ -91,7 +93,7 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
         Kişisel veri tutulmaz: yalnızca rastgele bir ziyaret numarası, cihaz türü ve denenen kumaş. Panel kullanıcılarının ve otomatik testlerin ziyaretleri sayılmaz.
       </p>
 
-      <dl className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" data-testid="rapor-ozet">
+      <dl className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" data-testid="rapor-ozet">
         {tiles.map(([label, value, note]) => (
           <div key={label} className="rounded-2xl border border-cizgi bg-kagit p-4">
             <dt className="text-[13px] text-antrasit-70">{label}</dt>

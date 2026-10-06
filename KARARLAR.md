@@ -552,3 +552,9 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 - **Nasıl eklenir:** Sahne için ayrı bir düzenleyici yazılmadı. Sahne konfigüratörde kuruluyor ve "Paylaş" bağlantısı panelde bir adla yapıştırılıyor. Sahne aslında paylaşım kimliğinin kendisi, bu yüzden veritabanında yalnızca ad ve kimlik tutuluyor (`firms.presets`). Kısa bağlantılar kayıt sırasında uzun kimliğe çevriliyor.
 - **Kart görseli:** İlk denemede paylaşım önizleme görseli (`/p/<id>/opengraph-image`) kullanıldı. Ama sunucu 3B çizmediği için kartta yalnızca bir kumaş yuvarlağı ve yazı çıkıyordu. Kart artık sahnedeki kumaşları büyük, üst üste binen yuvarlaklar olarak gösteriyor; ayrıca görsel indirmesi de gerekmiyor.
 - **ORMEN'in varsayılan sahneleri yok:** Deniz "firma girmezse ORMEN'in varsayılanları olsun" dedi. Ama hangi kumaşın hangi firmada iyi duracağına ORMEN satışçısı karar vermeli; rastgele seçilmiş varsayılanlar firmanın vitrinini temsil etmez. Sahnesi olmayan firmada bölüm hiç görünmüyor.
+
+## Oda kurucunun kaderi için ölçüm (2. toplantı)
+
+- Oda kurucu donduruldu ve karar veriyle verilecek. Deniz'in ölçütü: pilotta ziyaretlerin %10'undan azı odaya ya da plana dokunuyorsa sadeleştirme önerisiyle Fatih Bey'e rakamla gidilecek.
+- **Yeni olay:** `plan_acildi` (2D plan açıldı). Mevcut `oda_degisti` olayıyla birlikte raporda yeni bir "Oda / plan" kutusu oluşturuyor: odayı değiştiren ya da planı açan ziyaret sayısı ve tüm ziyaretlere oranı.
+- **Tablo dosyaları:** Olay listesi ve SQL rapor fonksiyonu, henüz çalıştırılmamış `20261009000000_visit_sources.sql` içinde güncellendi. SQL raporun uygulamadaki hesapla aynı sonucu verdiğini denetleyen test bu alanı da kapsıyor.

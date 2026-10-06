@@ -139,6 +139,7 @@ export function Configurator({
     window.setTimeout(() => {
       const next = !plan;
       setPlan(next);
+      if (next) track("plan_acildi", { firmSlug: firm?.slug });
       setQuery({ g: next ? "plan" : "3b" });
       setCloseUp(false);
       window.setTimeout(() => setFading(false), 60);

@@ -1,7 +1,7 @@
 // Anonymous usage events. No IP, no user agent, no personal data: a random
 // per-tab id (to count visits), a coarse device class and what was tried.
 
-export const EVENT_TYPES = ["sayfa_acildi", "kumas_denendi", "oda_degisti", "ar_acildi", "ar_acilamadi", "paylasildi", "numune_istendi"] as const;
+export const EVENT_TYPES = ["sayfa_acildi", "kumas_denendi", "oda_degisti", "ar_acildi", "ar_acilamadi", "paylasildi", "numune_istendi", "plan_acildi"] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 export const DEVICES = ["telefon", "tablet", "masaustu"] as const;
 export type Device = (typeof DEVICES)[number];
@@ -62,6 +62,8 @@ export interface Report {
   sources: { source: string; sessions: number; samples: number }[];
   /** The same by branch/campaign label (labelled visits only). */
   tags: { tag: string; sessions: number; samples: number }[];
+  /** Visits that changed the room or opened the plan (the frozen room tools, 2nd meeting). */
+  roomSessions: number;
 }
 
 type Tally = Map<string, { sessions: Set<string>; samples: number }>;
@@ -85,6 +87,7 @@ export function buildReport(events: StoredEvent[], opts: { from: Date; to: Date 
   const dayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" });
   const daySessions = new Map<string, Set<string>>();
   const bySource: Tally = new Map();
+  const roomUsers = new Set<string>();
   const byTag: Tally = new Map();
 
   for (const e of events) {
@@ -103,6 +106,7 @@ export function buildReport(events: StoredEvent[], opts: { from: Date; to: Date 
     if (e.type === "paylasildi") fr.shares++;
     if (e.type === "numune_istendi") fr.samples++;
     tally(bySource, e.source ?? "bilinmiyor", e);
+    if (e.type === "oda_degisti" || e.type === "plan_acildi") roomUsers.add(e.sessionId);
     if (e.tag) tally(byTag, e.tag, e);
     if (e.type === "kumas_denendi" && e.fabricCode) {
       if (!fabric.has(e.fabricCode)) fabric.set(e.fabricCode, { tries: 0, sessions: new Set() });
@@ -133,6 +137,7 @@ export function buildReport(events: StoredEvent[], opts: { from: Date; to: Date 
     days,
     sources: ranked(bySource).map(({ key, ...x }) => ({ source: key, ...x })),
     tags: ranked(byTag).map(({ key, ...x }) => ({ tag: key, ...x })),
+    roomSessions: roomUsers.size,
   };
 }
 
@@ -160,5 +165,6 @@ export function reportFromJson(raw: unknown): Report {
     days: list(r.days).map((d) => ({ day: String(d.day), sessions: num(d.sessions) })),
     sources: list(r.sources).map((x) => ({ source: String(x.source), sessions: num(x.sessions), samples: num(x.samples) })),
     tags: list(r.tags).map((x) => ({ tag: String(x.tag), sessions: num(x.sessions), samples: num(x.samples) })),
+    roomSessions: num(r.roomSessions),
   };
 }

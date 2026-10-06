@@ -4,12 +4,14 @@
 --   tag:    a branch or campaign label ORMEN puts on a link (?e=ankara-1); never a person
 --   type 'ar_acilamadi': AR could not start on the phone (decides whether the
 --                        GLB must be built on the server)
+--   type 'plan_acildi':  the 2D plan was opened (with room changes, the
+--                        measure for the frozen room tools)
 -- and the two breakdowns to the report function. Still no IP, no identity.
 -- Run after the earlier migrations.
 
 alter table public.events drop constraint if exists events_type_check;
 alter table public.events add constraint events_type_check
-  check (type in ('sayfa_acildi', 'kumas_denendi', 'oda_degisti', 'ar_acildi', 'ar_acilamadi', 'paylasildi', 'numune_istendi'));
+  check (type in ('sayfa_acildi', 'kumas_denendi', 'oda_degisti', 'ar_acildi', 'ar_acilamadi', 'paylasildi', 'numune_istendi', 'plan_acildi'));
 alter table public.events add column if not exists source text check (source in ('kiosk', 'qr', 'paylasim', 'site', 'dogrudan'));
 alter table public.events add column if not exists tag text check (tag ~ '^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$');
 
@@ -78,6 +80,7 @@ as $$
     'firms', coalesce((select jsonb_agg(jsonb_build_object('slug', slug, 'sessions', sessions, 'tries', tries, 'ar', ar, 'shares', shares, 'samples', samples) order by sessions desc, slug) from firms), '[]'::jsonb),
     'days', coalesce((select jsonb_agg(jsonb_build_object('day', to_char(day, 'YYYY-MM-DD'), 'sessions', sessions) order by day) from days), '[]'::jsonb),
     'sources', coalesce((select jsonb_agg(jsonb_build_object('source', key, 'sessions', sessions, 'samples', samples) order by sessions desc, key collate "C") from by_source), '[]'::jsonb),
+    'roomSessions', (select count(distinct session_id) from e where type in ('oda_degisti', 'plan_acildi')),
     'tags', coalesce((select jsonb_agg(jsonb_build_object('tag', key, 'sessions', sessions, 'samples', samples) order by sessions desc, key collate "C") from by_tag), '[]'::jsonb)
   );
 $$;
