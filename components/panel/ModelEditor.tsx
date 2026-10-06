@@ -9,6 +9,7 @@ import { saveModelAction } from "@/app/panel/actions";
 import { buttonClass, Field, inputClass } from "./ui";
 import { FabricPreview } from "./FabricPreview";
 import { SeriesPicker } from "./SeriesPicker";
+import { MeterageFields, meterageDraft, meterageValue } from "./MeterageFields";
 import { seriesOf } from "@/lib/fabric/allowed";
 
 // Adding a furniture model: drop a .glb, tick the materials that take the
@@ -31,6 +32,7 @@ export function ModelEditor({ model, fabrics, firmId = null }: { model?: Furnitu
   const [defaultFabric, setDefaultFabric] = useState(model?.defaultFabricCode ?? fabrics[0]?.code ?? "");
   const [isActive, setIsActive] = useState(model?.isActive ?? true);
   const [series, setSeries] = useState<string[]>(model?.fabricSeries ?? []);
+  const [meterage, setMeterage] = useState(() => meterageDraft(model?.meterage));
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -135,6 +137,7 @@ export function ModelEditor({ model, fabrics, firmId = null }: { model?: Furnitu
         isActive,
         firmId,
         fabricSeries: series,
+        meterage: meterageValue(meterage),
       });
       if (!res.ok) return setError(res.error);
       const owner = model ? model.firmId : firmId;
@@ -266,6 +269,7 @@ export function ModelEditor({ model, fabrics, firmId = null }: { model?: Furnitu
             </Field>
             <div className="col-span-2">
               <SeriesPicker all={seriesOf(fabrics)} value={series} onChange={setSeries} label="Bu modelde sunulan kumaş serileri" emptyHint="Hiçbiri seçilmezse bütün seriler sunulur." />
+            <MeterageFields value={meterage} onChange={setMeterage} />
             </div>
             <label className="col-span-2 flex items-center gap-2 text-[14px]">
               <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[#2a2a28]" />

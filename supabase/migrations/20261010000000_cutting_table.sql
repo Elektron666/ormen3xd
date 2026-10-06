@@ -39,3 +39,12 @@ alter table public.fabrics
   add column if not exists cut_direction text check (cut_direction in ('cift', 'tek'));
 alter table public.fabrics add constraint fabrics_repeat_only_when_patterned
   check (pattern = 'desenli' or (pattern_repeat_w_cm is null and pattern_repeat_h_cm is null));
+
+-- Models: the firm's own metres for one piece and the fabric width they are
+-- for. Repeated on the cutter's sheet only for a plain, two-way fabric of the
+-- same width (lib/metraj.ts); never calculated by us.
+alter table public.models
+  add column if not exists meterage_m numeric check (meterage_m >= 0.5 and meterage_m <= 60),
+  add column if not exists meterage_ref_width_cm numeric check (meterage_ref_width_cm >= 100 and meterage_ref_width_cm <= 340);
+alter table public.models add constraint models_meterage_complete
+  check ((meterage_m is null) = (meterage_ref_width_cm is null));

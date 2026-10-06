@@ -29,6 +29,7 @@ import { FABRIC_MATERIAL } from "@/lib/three/constants";
 import { buttonClass, Field, inputClass } from "./ui";
 import { FabricPreview } from "./FabricPreview";
 import { SeriesPicker } from "./SeriesPicker";
+import { MeterageFields, meterageDraft, meterageValue } from "./MeterageFields";
 import { seriesOf } from "@/lib/fabric/allowed";
 
 // "Seçerek oluştur": a workshop without a 3D file describes its model with a
@@ -82,6 +83,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
   const [defaultFabric, setDefaultFabric] = useState(model?.defaultFabricCode ?? fabrics[0]?.code ?? "");
   const [isActive, setIsActive] = useState(model?.isActive ?? true);
   const [series, setSeries] = useState<string[]>(model?.fabricSeries ?? []);
+  const [meterage, setMeterage] = useState(() => meterageDraft(model?.meterage));
   const [error, setError] = useState<string | null>(null);
   const [serverErrors, setServerErrors] = useState<ParamErrors>({});
   const [saving, setSaving] = useState(false);
@@ -142,7 +144,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
     if (!/^[a-z0-9-]{2,60}$/.test(effectiveSlug)) return setError("Bağlantı adı yalnızca küçük harf, rakam ve tire içerebilir.");
     setSaving(true);
     try {
-      const res = await saveParametricModelAction({ id: model?.id, name: effectiveName, slug: effectiveSlug, params, defaultFabricCode: defaultFabric || undefined, isActive, firmId, fabricSeries: series });
+      const res = await saveParametricModelAction({ id: model?.id, name: effectiveName, slug: effectiveSlug, params, defaultFabricCode: defaultFabric || undefined, isActive, firmId, fabricSeries: series, meterage: meterageValue(meterage) });
       if (!res.ok) {
         setError(res.error);
         setServerErrors(res.errors ?? {});
@@ -241,6 +243,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
           </Field>
           <div className="col-span-2">
             <SeriesPicker all={seriesOf(fabrics)} value={series} onChange={setSeries} label="Bu modelde sunulan kumaş serileri" emptyHint="Hiçbiri seçilmezse bütün seriler sunulur." />
+            <MeterageFields value={meterage} onChange={setMeterage} />
           </div>
           <label className="col-span-2 flex items-center gap-2 text-[14px]">
             <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 accent-[#2a2a28]" />

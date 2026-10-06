@@ -65,6 +65,8 @@ interface ModelRow {
   height_cm: number;
   default_fabric_code: string | null;
   fabric_series: string[] | null;
+  meterage_m: number | null;
+  meterage_ref_width_cm: number | null;
   cover_path: string | null;
   is_active: boolean;
   sort_order: number;
@@ -138,6 +140,7 @@ function modelFromRow(r: ModelRow): FurnitureModel {
     dimensionsCm: { w: Number(r.width_cm), d: Number(r.depth_cm), h: Number(r.height_cm) },
     defaultFabricCode: und(r.default_fabric_code),
     fabricSeries: r.fabric_series ?? [],
+    meterage: r.meterage_m != null && r.meterage_ref_width_cm != null ? { metres: Number(r.meterage_m), refWidthCm: Number(r.meterage_ref_width_cm) } : undefined,
     coverUrl: publicFileUrl(r.cover_path),
     isActive: r.is_active,
     sortOrder: r.sort_order,
@@ -282,6 +285,8 @@ export class SupabaseRepository implements Repository {
       height_cm: input.dimensionsCm.h,
       default_fabric_code: input.defaultFabricCode ?? null,
       fabric_series: input.fabricSeries ?? [],
+      meterage_m: input.meterage?.metres ?? null,
+      meterage_ref_width_cm: input.meterage?.refWidthCm ?? null,
       cover_path: toStored(input.coverUrl),
       is_active: input.isActive,
       sort_order: input.sortOrder,

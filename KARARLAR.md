@@ -430,3 +430,22 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
   - Toplu aktarımda "düz/desensiz/desenli" ve "tek/çift (yön)" yazımlarının hepsi kabul ediliyor; anlaşılmayan yazım "bilinmiyor" sayılıyor.
 - **Künye:** Değerler girildiyse künyede görünüyor ("Desenli, rapor 32 × 28 cm", "Tek yön").
 - **Tek tablo dosyası:** Kesim masasının bütün veritabanı değişiklikleri tek dosyada toplandı: `20261010000000_cutting_table.sql`. Önceki adı `…_sample_flow.sql` idi. Bu dosya henüz hiçbir veritabanında çalıştırılmadığı için yeniden adlandırmak güvenli; Fatih Bey'in kurulumda çalıştıracağı dosya sayısı da artmamış oldu.
+
+## Kesim masası, 5. adım: firmanın kendi metrajı (`lib/metraj.ts`)
+
+- **Ne:** Panelde her modele isteğe bağlı iki değer giriliyor:
+  - "bir adet için kumaş (m)",
+  - "hangi kumaş eninde (cm)".
+
+  Bu sayı firmanın ustasının sayısı, biz hesaplamıyoruz. Toplantıda Selin önerdi, Mert ve Rıza Usta destekledi.
+- **Sayı yalnızca birebir aynı durumda tekrarlanıyor:** kumaşın eni aynı olmalı, kumaş düz ve çift yönlü olmalı.
+- **Öteki her durumda sayı yok, yalnızca neden yazıyor:**
+  - en farklı,
+  - desenli,
+  - tek yönlü,
+  - bir bilgi eksik.
+
+  Örnek: "Kumaşın eni 280 cm; metraj 140 cm en için girilmiş." Enden ölçekleme ya da fire katsayısı uydurmuyoruz.
+- **Takımın toplamı:** Bir kumaş, ancak o kumaştaki her parçanın sayısı varsa toplanıyor. Kısmi toplam gösterilmiyor; "en az 8 m" gibi bir sayı cevap gibi okunur.
+- **Sonrası:** Usta föyündeki "gerçek metre" geri bildirimiyle veri toplanacak. Ustanın kesim reçetesinden hesaplayan motor (Mert'in önerisi) ancak bu gerçek işlerin en az %80'inde tutarsa açılacak.
+- **Veritabanı:** `models` tablosuna `meterage_m` ve `meterage_ref_width_cm` sütunları eklendi; ikisi birlikte dolu ya da birlikte boş olmak zorunda. Kesim masası tablo dosyasının içinde.

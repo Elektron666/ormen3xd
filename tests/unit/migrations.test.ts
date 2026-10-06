@@ -235,3 +235,11 @@ describe("hardening migrations", () => {
     await expect(as(null, () => db.query("select atelier_report(now() - interval '1 day', now(), null)"))).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("model metres", () => {
+  it("stores the firm's metres only together with the width they are for", async () => {
+    await expect(db.query("update models set meterage_m = 8 where slug = 'zzz-yok' or true")).rejects.toThrow();
+    await db.query("update models set meterage_m = 8, meterage_ref_width_cm = 140");
+    await expect(db.query("update models set meterage_m = 100")).rejects.toThrow();
+  });
+});

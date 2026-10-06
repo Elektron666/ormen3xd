@@ -13,6 +13,7 @@ import { validateFabricFields, type FabricFieldErrors, type FabricFields } from 
 import { STORAGE_BUCKET, SUPABASE_URL } from "@/lib/supabase/config";
 import type { FurnitureModel, TextureMapSet } from "@/lib/types";
 import { STEP_KEYS, type SampleStep } from "@/lib/samples";
+import { validateMeterage, type ModelMeterage } from "@/lib/metraj";
 
 // ------------------------------------------------------------------ session
 
@@ -142,6 +143,8 @@ export interface SaveModelPayload {
   firmId?: string | null;
   /** Fabric series offered on the model; empty = all. */
   fabricSeries?: string[];
+  /** The firm's own metres for one piece; null clears it. */
+  meterage?: ModelMeterage | null;
 }
 
 export async function saveModelAction(p: SaveModelPayload): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
@@ -152,6 +155,8 @@ export async function saveModelAction(p: SaveModelPayload): Promise<{ ok: true; 
   if (p.fabricMaterialNames.length === 0) return { ok: false, error: "Kumaş alacak en az bir malzeme işaretleyin." };
   const d = p.dimensionsCm;
   if (![d.w, d.d, d.h].every((v) => v > 0 && v < 2000)) return { ok: false, error: "Ölçüler geçersiz." };
+  const meterageError = validateMeterage(p.meterage);
+  if (meterageError) return { ok: false, error: meterageError };
 
   const repo = getRepository();
   const all = await repo.listAllModels();
@@ -170,6 +175,7 @@ export async function saveModelAction(p: SaveModelPayload): Promise<{ ok: true; 
     dimensionsCm: { w: Math.round(d.w), d: Math.round(d.d), h: Math.round(d.h) },
     defaultFabricCode: p.defaultFabricCode || undefined,
     fabricSeries: cleanSeries(p.fabricSeries, await knownSeries()),
+    meterage: p.meterage ?? undefined,
     isActive: p.isActive,
     sortOrder: existing?.sortOrder ?? all.length,
   };
@@ -248,6 +254,7 @@ export interface SaveParametricPayload {
   isActive: boolean;
   firmId?: string | null;
   fabricSeries?: string[];
+  meterage?: ModelMeterage | null;
 }
 
 export async function saveParametricModelAction(p: SaveParametricPayload): Promise<{ ok: true; id: string } | { ok: false; error: string; errors?: ParamErrors }> {
@@ -258,6 +265,8 @@ export async function saveParametricModelAction(p: SaveParametricPayload): Promi
   if (!params) return { ok: false, error: "Model tarifi geçersiz." };
   const errors = validateParams(params);
   if (Object.keys(errors).length) return { ok: false, error: "Ölçüler aralık dışında.", errors };
+  const meterageError = validateMeterage(p.meterage);
+  if (meterageError) return { ok: false, error: meterageError };
 
   const repo = getRepository();
   const all = await repo.listAllModels();
@@ -278,6 +287,7 @@ export async function saveParametricModelAction(p: SaveParametricPayload): Promi
     dimensionsCm: paramDimensions(params),
     defaultFabricCode: p.defaultFabricCode || undefined,
     fabricSeries: cleanSeries(p.fabricSeries, await knownSeries()),
+    meterage: p.meterage ?? undefined,
     isActive: p.isActive,
     sortOrder: existing?.sortOrder ?? all.length,
   });
