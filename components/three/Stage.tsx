@@ -72,6 +72,8 @@ export interface StageProps {
   onFabricShown?: (id: string, code: string, first: boolean) => void;
   onError?: (err: unknown) => void;
   onApi?: (api: StageApi) => void;
+  /** Show the selected piece's toolbar (turn, duplicate, remove). */
+  pieceToolbar?: boolean;
 }
 
 /**
@@ -174,6 +176,7 @@ export function Stage({
   onFabricShown,
   onError,
   onApi,
+  pieceToolbar = true,
 }: StageProps) {
   const [textureSize] = useState<TextureSize>(preferredTextureSize);
   const [quality] = useState<Quality>(() => QUALITY[browserTier()]);
@@ -266,7 +269,7 @@ export function Stage({
             selected={selected}
             overlapping={overlapIds.has(p.id)}
             showDimensions={showDimensions && !plan}
-            showToolbar={!dragging && !compareFabric}
+            showToolbar={pieceToolbar && !dragging && !compareFabric}
             plan={plan}
             canDelete={items.length > 1}
             actions={actions}

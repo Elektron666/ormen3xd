@@ -6,6 +6,8 @@ import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { prefetchFabric, preferredTextureSize } from "@/lib/three/fabric-material";
 import { t } from "@/lib/i18n/tr";
 import { CopyCodeButton, FabricHeadline, FabricSpecs } from "./FabricInfo";
+import { QuickStrip } from "./QuickStrip";
+import { useMedia } from "@/lib/use-media";
 import { FabricPicker } from "./FabricPicker";
 import { BrandMark } from "./BrandMark";
 import { RoomPanel } from "./RoomPanel";
@@ -159,6 +161,10 @@ export function Configurator({
 
   // fabrics offered on the selected piece's model (a model can be limited to some series)
   const modelFabrics = useMemo(() => fabricsForModel(fabrics, selectedModel), [fabrics, selectedModel]);
+  // phones: the piece toolbar (turn, duplicate) waits until a piece is tapped,
+  // so the first screen is the sofa and its fabrics, not tools
+  const phone = useMedia("(max-width: 767px)");
+  const [pieceTapped, setPieceTapped] = useState(false);
   const allowedOn = (slug: string) => {
     const m = bySlug.get(slug);
     return m ? fabricsForModel(fabrics, m) : fabrics;
@@ -176,7 +182,10 @@ export function Configurator({
     setSelectedId(piece.id);
   };
   const pieceActions = {
-    onSelect: (id: string) => setSelectedId(id),
+    onSelect: (id: string) => {
+      setSelectedId(id);
+      setPieceTapped(true);
+    },
     onMove: (id: string, x: number, z: number) =>
       setItems((list) => list.map((p) => (p.id === id ? constrain({ ...p, x, z }, dimsOf(p.modelSlug), room) : p))),
     onDragEnd: () => commit(items),
@@ -300,6 +309,7 @@ export function Configurator({
             selectedId={selectedItem.id}
             overlapIds={overlapIds}
             actions={pieceActions}
+            pieceToolbar={!phone || pieceTapped || items.length > 1}
             room={room}
             onApi={onStageApi}
             ambient={ambient}
@@ -423,6 +433,7 @@ export function Configurator({
                 <CopyCodeButton code={shownFabric.code} />
               </div>
             </div>
+            {phone && <QuickStrip fabrics={modelFabrics} selectedCode={selected.code} onSelect={select} />}
             <div role="tablist" aria-label="Panel" className="mt-4 grid grid-cols-2 border-b border-cizgi">
               {(
                 [
@@ -634,8 +645,9 @@ function FabricSheet({ header, children }: { header: React.ReactNode; children: 
   return (
     <aside
       aria-label={t.fabrics}
+      data-expanded={expanded}
       style={{ "--sheet-h": height } as React.CSSProperties}
-      className={`fixed inset-x-0 bottom-0 z-10 flex h-[var(--sheet-h)] max-h-[92dvh] min-h-[30dvh] flex-col rounded-t-[22px] border-t border-cizgi bg-kagit shadow-[0_-12px_40px_-12px_rgba(42,42,40,0.18)] ${
+      className={`group/sheet fixed inset-x-0 bottom-0 z-10 flex h-[var(--sheet-h)] max-h-[92dvh] min-h-[30dvh] flex-col rounded-t-[22px] border-t border-cizgi bg-kagit shadow-[0_-12px_40px_-12px_rgba(42,42,40,0.18)] ${
         drag === 0 ? "transition-[height] duration-300 ease-out-soft" : ""
       } md:static md:z-auto md:h-dvh md:max-h-none md:min-h-0 md:rounded-none md:border-l md:border-t-0 md:shadow-none`}
     >

@@ -1,8 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as RPointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent as RPointerEvent,
+} from "react";
 import type { FurnitureModel } from "@/lib/types";
-import { IconArrowsH, IconCompare, IconCube, IconPlan, IconRuler, IconZoom, IconZoomOut } from "@/components/ui/icons";
+import {
+  IconArrowsH,
+  IconCompare,
+  IconCube,
+  IconPlan,
+  IconRuler,
+  IconZoom,
+  IconZoomOut,
+} from "@/components/ui/icons";
 
 function ToolButton({
   pressed,
@@ -30,7 +44,8 @@ function ToolButton({
   );
 }
 
-function AddMenu({ models, onAdd }: { models: FurnitureModel[]; onAdd: (slug: string) => void }) {
+/** Open state of a small menu that closes on Escape or a press outside it. */
+function useMenu() {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -38,7 +53,8 @@ function AddMenu({ models, onAdd }: { models: FurnitureModel[]; onAdd: (slug: st
     const close = (e: PointerEvent) => {
       if (!root.current?.contains(e.target as Node)) setOpen(false);
     };
-    const esc = (e: globalThis.KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const esc = (e: globalThis.KeyboardEvent) =>
+      e.key === "Escape" && setOpen(false);
     window.addEventListener("pointerdown", close);
     window.addEventListener("keydown", esc);
     return () => {
@@ -46,20 +62,142 @@ function AddMenu({ models, onAdd }: { models: FurnitureModel[]; onAdd: (slug: st
       window.removeEventListener("keydown", esc);
     };
   }, [open]);
+  return { open, setOpen, root };
+}
+
+const menuPanel =
+  "absolute bottom-[calc(100%+10px)] min-w-56 overflow-hidden rounded-2xl border border-cizgi bg-kagit p-1.5 shadow-[0_16px_40px_-16px_rgba(42,42,40,0.45)]";
+const menuItem =
+  "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[14px] text-antrasit hover:bg-cizgi/60 focus-visible:outline-2 focus-visible:outline-antrasit";
+
+/** Phones: the view tools behind one button, so the scene and the fabrics come first. */
+function MoreMenu(props: {
+  plan: boolean;
+  onPlan: () => void;
+  closeUp: boolean;
+  onCloseUp: () => void;
+  dimensions: boolean;
+  onDimensions: () => void;
+  comparing: boolean;
+  onCompare: () => void;
+}) {
+  const { open, setOpen, root } = useMenu();
+  const items: [string, boolean, () => void, React.ReactNode, boolean][] = [
+    [
+      "Plan görünümü",
+      props.plan,
+      props.onPlan,
+      <IconPlan key="p" width={18} height={18} />,
+      true,
+    ],
+    [
+      "Yakından bak",
+      props.closeUp,
+      props.onCloseUp,
+      <IconZoom key="z" width={18} height={18} />,
+      !props.plan,
+    ],
+    [
+      "Ölçüler",
+      props.dimensions,
+      props.onDimensions,
+      <IconRuler key="r" width={18} height={18} />,
+      !props.plan,
+    ],
+    [
+      "Karşılaştır",
+      props.comparing,
+      props.onCompare,
+      <IconCompare key="c" width={18} height={18} />,
+      true,
+    ],
+  ];
+  const active = items.some(([, on, , , shown]) => on && shown);
+  return (
+    <div ref={root} className="relative md:hidden">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={`flex h-11 items-center gap-2 rounded-full px-4 text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit ${
+          active ? "bg-cizgi text-antrasit" : "text-antrasit hover:bg-cizgi/70"
+        }`}
+      >
+        <span
+          aria-hidden="true"
+          className="text-[17px] leading-none tracking-[0.1em]"
+        >
+          ···
+        </span>
+        Daha fazla
+      </button>
+      {open && (
+        <div
+          role="menu"
+          aria-label="Görünüm araçları"
+          className={`${menuPanel} left-0`}
+        >
+          {items
+            .filter(([, , , , shown]) => shown)
+            .map(([label, on, act, icon]) => (
+              <button
+                key={label}
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={on}
+                onClick={() => {
+                  act();
+                  setOpen(false);
+                }}
+                className={menuItem}
+              >
+                {icon}
+                <span className="flex-1">{label}</span>
+                <span
+                  aria-hidden="true"
+                  className={on ? "text-antrasit" : "text-transparent"}
+                >
+                  ✓
+                </span>
+              </button>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AddMenu({
+  models,
+  onAdd,
+}: {
+  models: FurnitureModel[];
+  onAdd: (slug: string) => void;
+}) {
+  const { open, setOpen, root } = useMenu();
   return (
     <div ref={root} className="relative">
       <button
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label="Mobilya ekle"
         onClick={() => setOpen((v) => !v)}
         className="flex h-11 items-center gap-2 rounded-full bg-antrasit px-4 text-[13px] text-kagit transition-colors hover:bg-ceviz focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit"
       >
-        <span aria-hidden="true" className="text-[17px] leading-none">+</span>
-        Mobilya ekle
+        <span aria-hidden="true" className="text-[17px] leading-none">
+          +
+        </span>
+        <span className="max-md:hidden">Mobilya ekle</span>
+        <span className="md:hidden">Ekle</span>
       </button>
       {open && (
-        <div role="menu" aria-label="Eklenecek mobilya" className="absolute bottom-[calc(100%+10px)] left-0 min-w-56 overflow-hidden rounded-2xl border border-cizgi bg-kagit p-1.5 shadow-[0_16px_40px_-16px_rgba(42,42,40,0.45)]">
+        <div
+          role="menu"
+          aria-label="Eklenecek mobilya"
+          className={`${menuPanel} right-0 md:left-0 md:right-auto`}
+        >
           {models.map((m) => (
             <button
               key={m.slug}
@@ -107,38 +245,78 @@ export function SceneTools({
   onCompare: () => void;
 }) {
   return (
-    <div role="toolbar" aria-label="Sahne araçları" className="flex items-center gap-0.5 rounded-full border border-cizgi bg-kagit/90 p-1 shadow-[0_6px_24px_-12px_rgba(42,42,40,0.35)] backdrop-blur-[2px]">
-      <div role="group" aria-label="Görünüm" className="mr-1 flex rounded-full bg-cizgi/60 p-0.5">
-        {(
-          [
-            [false, "3B", <IconCube key="c" width={17} height={17} />],
-            [true, "Plan", <IconPlan key="p" width={17} height={17} />],
-          ] as const
-        ).map(([isPlan, label, icon]) => (
-          <button
-            key={label}
-            type="button"
-            aria-pressed={plan === isPlan}
-            onClick={() => plan !== isPlan && onPlan()}
-            className={`flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[13px] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-antrasit ${
-              plan === isPlan ? "bg-kagit text-antrasit shadow-[0_1px_3px_rgba(0,0,0,0.1)]" : "text-antrasit-70 hover:text-antrasit"
-            }`}
-          >
-            {icon}
-            {label}
-          </button>
-        ))}
-      </div>
-      {!plan && (
+    <div
+      role="toolbar"
+      aria-label="Sahne araçları"
+      className="flex items-center gap-0.5 rounded-full border border-cizgi bg-kagit/90 p-1 shadow-[0_6px_24px_-12px_rgba(42,42,40,0.35)] backdrop-blur-[2px]"
+    >
+      <MoreMenu
+        plan={plan}
+        onPlan={onPlan}
+        closeUp={closeUp}
+        onCloseUp={onCloseUp}
+        dimensions={dimensions}
+        onDimensions={onDimensions}
+        comparing={comparing}
+        onCompare={onCompare}
+      />
+      <div className="hidden items-center gap-0.5 md:flex">
+        <div
+          role="group"
+          aria-label="Görünüm"
+          className="mr-1 flex rounded-full bg-cizgi/60 p-0.5"
+        >
+          {(
+            [
+              [false, "3B", <IconCube key="c" width={17} height={17} />],
+              [true, "Plan", <IconPlan key="p" width={17} height={17} />],
+            ] as const
+          ).map(([isPlan, label, icon]) => (
+            <button
+              key={label}
+              type="button"
+              aria-pressed={plan === isPlan}
+              onClick={() => plan !== isPlan && onPlan()}
+              className={`flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[13px] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-antrasit ${
+                plan === isPlan
+                  ? "bg-kagit text-antrasit shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
+                  : "text-antrasit-70 hover:text-antrasit"
+              }`}
+            >
+              {icon}
+              {label}
+            </button>
+          ))}
+        </div>
+        {!plan && (
+          <ToolButton
+            pressed={closeUp}
+            onClick={onCloseUp}
+            icon={
+              closeUp ? (
+                <IconZoomOut width={18} height={18} />
+              ) : (
+                <IconZoom width={18} height={18} />
+              )
+            }
+            label={closeUp ? "Uzaklaş" : "Yakından bak"}
+          />
+        )}
+        {!plan && (
+          <ToolButton
+            pressed={dimensions}
+            onClick={onDimensions}
+            icon={<IconRuler width={18} height={18} />}
+            label="Ölçüler"
+          />
+        )}
         <ToolButton
-          pressed={closeUp}
-          onClick={onCloseUp}
-          icon={closeUp ? <IconZoomOut width={18} height={18} /> : <IconZoom width={18} height={18} />}
-          label={closeUp ? "Uzaklaş" : "Yakından bak"}
+          pressed={comparing}
+          onClick={onCompare}
+          icon={<IconCompare width={18} height={18} />}
+          label="Karşılaştır"
         />
-      )}
-      {!plan && <ToolButton pressed={dimensions} onClick={onDimensions} icon={<IconRuler width={18} height={18} />} label="Ölçüler" />}
-      <ToolButton pressed={comparing} onClick={onCompare} icon={<IconCompare width={18} height={18} />} label="Karşılaştır" />
+      </div>
       <span className="mx-1 h-6 w-px bg-cizgi" aria-hidden="true" />
       <AddMenu models={models} onAdd={onAdd} />
     </div>
@@ -172,7 +350,10 @@ export function CompareDivider({
 
   return (
     <div ref={host} className="pointer-events-none absolute inset-0">
-      <div className="absolute inset-y-0 w-px bg-kagit shadow-[0_0_0_0.5px_rgba(42,42,40,0.25)]" style={{ left: `${split * 100}%` }} />
+      <div
+        className="absolute inset-y-0 w-px bg-kagit shadow-[0_0_0_0.5px_rgba(42,42,40,0.25)]"
+        style={{ left: `${split * 100}%` }}
+      />
       <button
         type="button"
         role="slider"

@@ -480,3 +480,15 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
   - ticari ileti kuralları gereği İYS kaydı.
 
   İstenirse onay kutusu eklenir; metin avukat paketine girmeli.
+
+## Telefonda ilk ekran (1. toplantı, Deniz)
+
+- **Sorun:** 360 px genişliğindeki bir telefonda ilk ekranda tek bir kumaş görünmüyordu; asıl iş olan kumaş değiştirmek aşağıda kalıyordu. Ayrıca:
+  - araç şeridi ekrana sığmıyordu ("Plan" kesikti, "Yakından bak" iki satıra kırılıyordu),
+  - açılışta koltuğun üstünde döndür/çoğalt araç çubuğu duruyordu.
+- **Kumaş şeridi (`QuickStrip`):** Telefonda alt panelin başına, kumaş adının hemen altına yatay kaydırılan bir şerit geldi. Panel yukarı çekilince şerit gizleniyor, çünkü tam liste zaten açık.
+  - Şerit panelin sürükleme alanının içinde durduğu için ilk sürümde her dokunuş paneli de açıyordu. Şerit artık dokunuşları ve kaydırmaları kendine alıyor.
+  - Düğmeler radyo değil, basılı düğme (`aria-pressed`). Böylece tam listedeki radyo grubu ikilenmiyor.
+- **Araç şeridi:** Telefonda yalnızca "Daha fazla" ve "Ekle" kalıyor. "Daha fazla" menüsünde Plan görünümü, Yakından bak, Ölçüler ve Karşılaştır var. Masaüstünde değişiklik yok.
+- **Koltuk araç çubuğu:** Telefonda ancak koltuğa dokununca ya da birden fazla parça olunca çıkıyor.
+- **Oda kurucu** donmuş durumda (2. toplantı). Telefonda Plan artık menünün içinde; "Oda" sekmesi yerinde duruyor.

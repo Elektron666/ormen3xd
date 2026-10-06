@@ -155,3 +155,25 @@ test("köşe takımının L içine konan berjer çakışma sayılmaz", async ({ 
   await expect.poll(async () => (await fabricOnModel(page)).sort()).toEqual(["LUMA-03", "SIENA-04"]);
   await expect(warning).toBeVisible();
 });
+
+test("telefonda ilk ekran: kumaş şeridi görünür, araçlar 'Daha fazla' altında", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "yalnızca telefon");
+  await page.goto("/f/ornek-mobilya");
+  await expect.poll(() => fabricOnModel(page), { timeout: 45_000 }).not.toEqual([]);
+  const strip = page.getByTestId("hizli-kumaslar");
+  await expect(strip).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Numune iste" })).toBeInViewport();
+  // no piece toolbar until the piece is tapped; the view tools sit behind one button
+  await expect(page.getByRole("button", { name: "Çoğalt" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Yakından bak" })).toBeHidden();
+
+  await strip.getByRole("button", { name: /SIENA-03/ }).click();
+  await expect.poll(() => fabricOnModel(page)).toEqual(["SIENA-03"]);
+  // tapping a swatch does not pull the sheet up
+  await expect(page.getByRole("complementary", { name: "Kumaşlar" })).toHaveAttribute("data-expanded", "false");
+
+  await page.getByRole("button", { name: "Daha fazla" }).click();
+  await expect(page.getByRole("menuitemcheckbox", { name: "Yakından bak" })).toBeVisible();
+  await page.getByRole("menuitemcheckbox", { name: "Ölçüler" }).click();
+  await expect(page.getByRole("menu")).toHaveCount(0);
+});
