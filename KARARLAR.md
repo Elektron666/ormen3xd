@@ -544,3 +544,11 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 ## Kalite düşürme sürüklemeyi beklemeli
 
 Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir kez kırmızı verdi: berjer hedefin gerisinde bırakılmıştı. Tek başına çalıştırıldığında 3/3 geçti. Muhtemel sebep kademeli kalite ayarı: kareler yavaşlayınca piksel oranı sürükleme sırasında düşürülüyor, tuval yeniden çiziliyor ve araya giren işaretçi hareketleri kayboluyordu. Yavaş bir telefonda gerçekten yaşanabilecek bir durum. Artık sürükleme sürerken düşürme bekletiliyor ve sürükleme bitince uygulanıyor.
+
+## Hazır sahneler (1. toplantı, Deniz)
+
+- **Ne:** Firma başına en fazla 6 hazır sahne. Kumaş panelinin başında kart olarak çıkıyor. Kartta sahnenin kumaşları, adı ve parça sayısı var; tıklanınca sahne aynı sayfada açılıyor.
+  - Kiosk işareti, QR işareti ve etiket korunuyor: ziyaretin kaynağı değişmiyor, kiosk kiosk olarak kalıyor.
+- **Nasıl eklenir:** Sahne için ayrı bir düzenleyici yazılmadı. Sahne konfigüratörde kuruluyor ve "Paylaş" bağlantısı panelde bir adla yapıştırılıyor. Sahne aslında paylaşım kimliğinin kendisi, bu yüzden veritabanında yalnızca ad ve kimlik tutuluyor (`firms.presets`). Kısa bağlantılar kayıt sırasında uzun kimliğe çevriliyor.
+- **Kart görseli:** İlk denemede paylaşım önizleme görseli (`/p/<id>/opengraph-image`) kullanıldı. Ama sunucu 3B çizmediği için kartta yalnızca bir kumaş yuvarlağı ve yazı çıkıyordu. Kart artık sahnedeki kumaşları büyük, üst üste binen yuvarlaklar olarak gösteriyor; ayrıca görsel indirmesi de gerekmiyor.
+- **ORMEN'in varsayılan sahneleri yok:** Deniz "firma girmezse ORMEN'in varsayılanları olsun" dedi. Ama hangi kumaşın hangi firmada iyi duracağına ORMEN satışçısı karar vermeli; rastgele seçilmiş varsayılanlar firmanın vitrinini temsil etmez. Sahnesi olmayan firmada bölüm hiç görünmüyor.

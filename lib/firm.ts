@@ -26,7 +26,7 @@ export interface FirmFields {
   whatsapp: string;
 }
 
-export type FirmErrors = Partial<Record<keyof FirmFields | "logo", string>>;
+export type FirmErrors = Partial<Record<keyof FirmFields | "logo" | "presets", string>>;
 
 export function validateFirm(f: FirmFields): { ok: true; value: { name: string; slug: string; accentColor: string; whatsapp?: string } } | { ok: false; errors: FirmErrors } {
   const errors: FirmErrors = {};

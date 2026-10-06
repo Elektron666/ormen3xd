@@ -63,3 +63,8 @@ create table if not exists public.cut_reports (
 );
 create index if not exists cut_reports_created on public.cut_reports (created_at desc);
 alter table public.cut_reports enable row level security;
+
+-- Firms: ready-made scenes for the firm's page ([{ "name": …, "id": share id }],
+-- at most six; checked by the app, the database only keeps it an array).
+alter table public.firms add column if not exists presets jsonb not null default '[]'::jsonb
+  check (jsonb_typeof(presets) = 'array' and jsonb_array_length(presets) <= 6);

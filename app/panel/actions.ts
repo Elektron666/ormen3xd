@@ -14,6 +14,7 @@ import { STORAGE_BUCKET, SUPABASE_URL } from "@/lib/supabase/config";
 import type { FurnitureModel, TextureMapSet } from "@/lib/types";
 import { STEP_KEYS, type SampleStep } from "@/lib/samples";
 import { validateMeterage, type ModelMeterage } from "@/lib/metraj";
+import { MAX_PRESETS, cleanPresets, parsePresetLink, type FirmPreset } from "@/lib/firm-presets";
 
 // ------------------------------------------------------------------ session
 
@@ -209,6 +210,8 @@ export interface SaveFirmPayload {
   showcaseIds: string[];
   /** Fabric series shown on the firm page; empty = all. */
   fabricSeries?: string[];
+  /** Ready-made scenes: a name and the share link as pasted. */
+  presets?: { name: string; link: string }[];
 }
 
 export async function saveFirmAction(p: SaveFirmPayload): Promise<{ ok: true; id: string } | { ok: false; errors?: FirmErrors; error?: string }> {
@@ -219,8 +222,25 @@ export async function saveFirmAction(p: SaveFirmPayload): Promise<{ ok: true; id
   const repo = getRepository();
   if (p.id && !(await repo.getFirmById(p.id))) return { ok: false, error: "Firma bulunamadı." };
   const showcase = new Set((await repo.listAllModels()).filter((m) => m.firmId === null).map((m) => m.id));
+  // scenes: every pasted link must be one of our share links (short ones are looked up)
+  const presets: FirmPreset[] = [];
+  for (const [i, row] of (p.presets ?? []).slice(0, MAX_PRESETS).entries()) {
+    if (!row.name.trim() && !row.link.trim()) continue;
+    const parsed = parsePresetLink(row.link);
+    const id = parsed && "id" in parsed ? parsed.id : parsed ? await repo.getShare(parsed.short) : null;
+    if (!id) return { ok: false, errors: { presets: `${i + 1}. sahnenin bağlantısı okunamadı. Konfigüratörde “Paylaş”tan kopyalanan bağlantıyı yapıştırın.` } };
+    if (row.name.trim().length < 2 || row.name.trim().length > 40) return { ok: false, errors: { presets: `${i + 1}. sahneye 2–40 harflik bir ad verin.` } };
+    presets.push({ name: row.name, id });
+  }
   try {
-    const firm = await repo.saveFirm({ id: p.id, ...v.value, logoUrl: p.logoUrl || undefined, fabricSeries: cleanSeries(p.fabricSeries, await knownSeries()), isActive: p.isActive });
+    const firm = await repo.saveFirm({
+      id: p.id,
+      ...v.value,
+      logoUrl: p.logoUrl || undefined,
+      fabricSeries: cleanSeries(p.fabricSeries, await knownSeries()),
+      presets: cleanPresets(presets),
+      isActive: p.isActive,
+    });
     await repo.setFirmShowcaseIds(
       firm.id,
       p.showcaseIds.filter((id) => showcase.has(id)),

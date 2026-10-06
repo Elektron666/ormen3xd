@@ -38,6 +38,16 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 
 Kumaş ya da model silinmez, **gizlenir** (listedeki anahtar). Gizlenen konfigüratörden kalkar; anahtarı tekrar açınca bilgileriyle geri gelir.
 
+## Hazır sahneler
+
+Firma sayfası açılınca kumaş panelinin başında en fazla 6 hazır sahne kartı çıkar. Satış elemanı tek dokunuşla iyi görünen bir sahneyle başlar. Sahne eklemek için:
+1. Sahneyi firma sayfasında kurun: mobilyalar, kumaşlar, oda.
+2. **Paylaş**'tan bağlantıyı kopyalayın.
+3. Panel → Firmalar → firma → **Hazır sahneler** → **+ Sahne ekle** deyip bir ad verin ve bağlantıyı yapıştırın.
+4. Kaydedin.
+
+Kısa (`/s/…`) ve uzun (`/p/…`) bağlantıların ikisi de olur.
+
 ## Firmaya aylık özet
 
 Panel → Firmalar → firma → **Aylık özet** sayfası tek sayfalık bir A4 verir. Raporda firmanın adının yanındaki “aylık özet” bağlantısı da aynı sayfayı açar. Sayfada şunlar var:

@@ -4,6 +4,7 @@ import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel, ModelSource
 import { normaliseParams } from "@/lib/parametric/spec";
 import { cleanLot, newSampleCode, type SampleChoices, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
 import type { CutReport } from "@/lib/cut-report";
+import { cleanPresets } from "@/lib/firm-presets";
 import { reportFromJson, type Device, type EventType, type Source, type StoredEvent, type UsageEvent } from "@/lib/events";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
@@ -156,6 +157,7 @@ interface FirmRow {
   accent_color: string;
   whatsapp: string | null;
   fabric_series: string[] | null;
+  presets: unknown;
   is_active: boolean;
 }
 
@@ -168,6 +170,7 @@ function firmFromRow(r: FirmRow): Firm {
     accentColor: r.accent_color,
     whatsapp: und(r.whatsapp),
     fabricSeries: r.fabric_series ?? [],
+    presets: cleanPresets(r.presets),
     isActive: r.is_active,
   };
 }
@@ -320,6 +323,7 @@ export class SupabaseRepository implements Repository {
       accent_color: input.accentColor,
       whatsapp: input.whatsapp ?? null,
       fabric_series: input.fabricSeries ?? [],
+      presets: input.presets ?? [],
       is_active: input.isActive,
     };
     const res = input.id

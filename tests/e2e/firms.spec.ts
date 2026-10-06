@@ -104,6 +104,32 @@ test.describe("firma sayfaları", () => {
     await visitor.close();
   });
 
+  test("hazır sahne: panelde bağlantıyla eklenir, firma sayfasında kart olur, tek dokunuşla açılır", async ({ page, browser }) => {
+    const scene = Buffer.from("y=berjer.SIENA-03.0.50.0&oda=acik-salon").toString("base64url");
+    await login(page);
+    await page.goto("/panel/firmalar");
+    await page.getByRole("link", { name: /Örnek Mobilya/ }).first().click();
+    await page.getByRole("button", { name: "+ Sahne ekle" }).click();
+    const n = await page.getByRole("textbox", { name: /sahnenin adı/ }).count();
+    await page.getByRole("textbox", { name: `${n}. sahnenin adı` }).fill("Zeytin berjer");
+    await page.getByRole("textbox", { name: `${n}. sahnenin bağlantısı` }).fill("https://example.com/baska");
+    await page.getByRole("button", { name: "Kaydet" }).click();
+    await expect(page.getByText(`${n}. sahnenin bağlantısı okunamadı`)).toBeVisible();
+    await page.getByRole("textbox", { name: `${n}. sahnenin bağlantısı` }).fill(`http://localhost/p/${scene}`);
+    await page.getByRole("button", { name: "Kaydet" }).click();
+    await expect(page).toHaveURL(/kaydedildi/);
+
+    const visitor = await browser.newPage();
+    await visitor.goto("/f/ornek-mobilya?kiosk");
+    await visitor.getByRole("button", { name: "Başlamak için dokunun" }).click();
+    const card = visitor.getByRole("region", { name: "Hazır sahneler" }).getByRole("button", { name: "Zeytin berjer" });
+    await expect(card).toBeVisible();
+    await card.click();
+    // the scene opens on the same page, kiosk kept
+    await expect(visitor).toHaveURL(/\/f\/ornek-mobilya\?kiosk&y=berjer\.SIENA-03/);
+    await visitor.close();
+  });
+
   test("firma sayfasından gelen numune talebi firmaya yazılır", async ({ page, request }) => {
     const name = `Firma Talebi ${Date.now().toString(36)}`;
     const res = await request.post("/api/samples", {

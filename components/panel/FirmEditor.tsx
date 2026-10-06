@@ -39,6 +39,8 @@ export function FirmEditor({
   const [isActive, setIsActive] = useState(firm?.isActive ?? true);
   const [picked, setPicked] = useState<string[]>(showcaseIds);
   const [series, setSeries] = useState<string[]>(firm?.fabricSeries ?? []);
+  // scenes are edited as name + link; the saved id is shown back as a /p/ link
+  const [presets, setPresets] = useState<{ name: string; link: string }[]>(() => (firm?.presets ?? []).map((p) => ({ name: p.name, link: `/p/${p.id}` })));
   const [logo, setLogo] = useState<{ file: File; preview: string } | null>(null);
   const [logoUrl, setLogoUrl] = useState(firm?.logoUrl);
   const [errors, setErrors] = useState<FirmErrors>({});
@@ -91,7 +93,7 @@ export function FirmEditor({
         setLogo(null);
       }
       setStatus("Kaydediliyor…");
-      const res = await saveFirmAction({ id: firm?.id, fields, logoUrl: url, isActive, showcaseIds: picked, fabricSeries: series });
+      const res = await saveFirmAction({ id: firm?.id, fields, logoUrl: url, isActive, showcaseIds: picked, fabricSeries: series, presets });
       if (!res.ok) {
         setErrors(res.errors ?? {});
         setStatus(res.error ?? "Kaydedilemedi; işaretli alanlara bakın.");
@@ -231,6 +233,43 @@ export function FirmEditor({
             label="Firma sayfasında gösterilecek ORMEN serileri"
             emptyHint="Hiçbiri seçilmezse yayındaki bütün ORMEN kumaşları gösterilir."
           />
+        </section>
+
+        <section>
+          <h2 className="eyebrow mb-2">5 · Hazır sahneler (isteğe bağlı)</h2>
+          <p className="mb-3 text-[13px] text-antrasit-70">
+            Sayfa açılınca büyük kartlar olarak görünür; satış elemanı tek dokunuşla hazır bir sahneyle başlar. Sahneyi firma sayfasında kurun, “Paylaş”tan bağlantıyı kopyalayıp buraya bir adla yapıştırın. En fazla 6.
+          </p>
+          <ul className="flex flex-col gap-2">
+            {presets.map((p, i) => (
+              <li key={i} className="grid grid-cols-[minmax(0,12rem)_minmax(0,1fr)_auto] items-center gap-2">
+                <input
+                  value={p.name}
+                  onChange={(e) => setPresets(presets.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                  placeholder="ör. Kadife salon"
+                  aria-label={`${i + 1}. sahnenin adı`}
+                  maxLength={40}
+                  className={inputClass}
+                />
+                <input
+                  value={p.link}
+                  onChange={(e) => setPresets(presets.map((x, j) => (j === i ? { ...x, link: e.target.value } : x)))}
+                  placeholder="Paylaş bağlantısı (…/p/… ya da …/s/…)"
+                  aria-label={`${i + 1}. sahnenin bağlantısı`}
+                  className={inputClass}
+                />
+                <button type="button" onClick={() => setPresets(presets.filter((_, j) => j !== i))} className={buttonClass.quiet} aria-label={`${i + 1}. sahneyi kaldır`}>
+                  Kaldır
+                </button>
+              </li>
+            ))}
+          </ul>
+          {presets.length < 6 && (
+            <button type="button" onClick={() => setPresets([...presets, { name: "", link: "" }])} className={`${buttonClass.secondary} mt-2`}>
+              + Sahne ekle
+            </button>
+          )}
+          {errors.presets && <p className="mt-2 text-[13px] text-[#9a3b31]">{errors.presets}</p>}
         </section>
 
         <label className="flex items-center gap-2 text-[14px]">

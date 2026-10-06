@@ -87,6 +87,8 @@ export interface Firm {
   whatsapp?: string;
   /** Fabric series shown on the firm's page; empty or missing = all. */
   fabricSeries?: string[];
+  /** Ready-made scenes shown when the page opens (lib/firm-presets.ts). */
+  presets?: { name: string; id: string }[];
   isActive: boolean;
 }
 

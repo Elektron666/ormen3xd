@@ -7,6 +7,7 @@ import { prefetchFabric, preferredTextureSize } from "@/lib/three/fabric-materia
 import { t } from "@/lib/i18n/tr";
 import { CopyCodeButton, FabricHeadline, FabricSpecs } from "./FabricInfo";
 import { QuickStrip } from "./QuickStrip";
+import { PresetStrip } from "./PresetStrip";
 import { KioskCodeEntry } from "@/components/kiosk/KioskCodeEntry";
 import { useMedia } from "@/lib/use-media";
 import { FabricPicker } from "./FabricPicker";
@@ -463,6 +464,7 @@ export function Configurator({
         }
       >
         <div id="bolum-kumas" role="tabpanel" aria-labelledby="sekme-kumas" hidden={tab !== "kumas"}>
+          <PresetStrip presets={firm?.presets ?? []} fabrics={byCode} />
           {compare && (
             <div className="mb-6 rounded-xl border border-cizgi p-3">
               <div className="mb-2 flex items-center justify-between">
