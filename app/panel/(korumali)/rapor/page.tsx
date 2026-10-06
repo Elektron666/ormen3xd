@@ -1,6 +1,8 @@
 import { requirePanelUser } from "@/lib/auth/panel";
 import { getRepository } from "@/lib/data";
 import { PageHeader, buttonClass, inputClass } from "@/components/panel/ui";
+import { calibration } from "@/lib/cut-report";
+import { formatMetres } from "@/lib/metraj";
 
 export const metadata = { title: "Rapor" };
 
@@ -35,7 +37,9 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
   from.setUTCHours(0, 0, 0, 0);
   const [firms, fabrics] = await Promise.all([repo.listFirms(), repo.listFabrics({ includeInactive: true })]);
   const scope = firmParam === "" ? undefined : firmParam === "ormen" ? "" : firmParam;
-  const report = await repo.eventReport(from, to, scope);
+  const [report, cutsAll] = await Promise.all([repo.eventReport(from, to, scope), repo.listCutReports()]);
+  const cuts = cutsAll.filter((c) => c.createdAt >= from.toISOString() && (scope === undefined || (c.firmSlug ?? "") === scope));
+  const cal = calibration(cuts);
   const fabricByCode = new Map(fabrics.map((f) => [f.code, f]));
   const firmName = new Map(firms.map((f) => [f.slug, f.name]));
   const maxTries = Math.max(1, ...report.topFabrics.map((f) => f.tries));
@@ -175,6 +179,41 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
           />
         </div>
         <p className="mt-2 text-[12px] text-antrasit-50">“100 ziyarette” oranı en az 30 ziyaret olunca gösterilir; daha azında yanıltıcı olur.</p>
+      </section>
+
+      <section aria-labelledby="kesim" className="mt-8" data-testid="rapor-kesim">
+        <h2 id="kesim" className="eyebrow mb-3">
+          Kesim geri bildirimi (usta föyü)
+        </h2>
+        <p className="mb-3 text-[13px] text-antrasit-70">
+          Ustaların föydeki QR’dan yazdığı gerçek metre. {cal.total === 0 ? "Bu dönemde geri bildirim yok." : `${cal.total} kayıt; ${cal.withEstimate} tanesinde föyde sayı vardı, ${cal.short} tanesinde kumaş yetmedi${cal.meanDiffPct !== null ? `, ortalama fark %${new Intl.NumberFormat("tr-TR").format(cal.meanDiffPct)}` : ""}.`} Hesaplama ancak bu kayıtların büyük çoğunluğunda tutarsa devreye alınır.
+        </p>
+        {cuts.length > 0 && (
+          <div className="overflow-x-auto rounded-2xl border border-cizgi bg-kagit">
+            <table className="w-full text-left text-[14px]">
+              <thead className="text-[12px] text-antrasit-50">
+                <tr className="border-b border-cizgi">
+                  <th className="px-4 py-2 font-normal">Tarih</th>
+                  <th className="px-4 py-2 font-normal">Kumaş</th>
+                  <th className="px-4 py-2 font-normal">Modeller</th>
+                  <th className="px-4 py-2 text-right font-normal">Föyde</th>
+                  <th className="px-4 py-2 text-right font-normal">Gerçek</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-cizgi tabular-nums">
+                {cuts.slice(0, 30).map((c, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-2">{new Date(c.createdAt).toLocaleDateString("tr-TR", { timeZone: "Europe/Istanbul" })}</td>
+                    <td className="px-4 py-2 tracking-wide">{c.fabricCode}</td>
+                    <td className="px-4 py-2 text-antrasit-70">{c.modelSlugs.join(", ")}</td>
+                    <td className="px-4 py-2 text-right">{c.estimatedM !== null ? formatMetres(c.estimatedM) : "–"}</td>
+                    <td className={`px-4 py-2 text-right ${c.estimatedM !== null && c.actualM > c.estimatedM ? "font-medium text-[#9a3b31]" : ""}`}>{formatMetres(c.actualM)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section aria-labelledby="firmalar" className="mt-8">

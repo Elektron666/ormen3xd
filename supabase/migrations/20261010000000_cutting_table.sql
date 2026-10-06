@@ -48,3 +48,18 @@ alter table public.models
   add column if not exists meterage_ref_width_cm numeric check (meterage_ref_width_cm >= 100 and meterage_ref_width_cm <= 340);
 alter table public.models add constraint models_meterage_complete
   check ((meterage_m is null) = (meterage_ref_width_cm is null));
+
+-- What a job really took, written by the upholsterer from the QR on the
+-- cutter's sheet. Calibration data; no personal data. Server only (no
+-- policies: anon and authenticated cannot read or write it).
+create table if not exists public.cut_reports (
+  id bigint generated always as identity primary key,
+  fabric_code text not null check (fabric_code ~ '^[A-ZÇĞİÖŞÜ0-9-]{2,24}$'),
+  firm_slug text check (firm_slug ~ '^[a-z0-9-]{1,60}$'),
+  model_slugs text[] not null default '{}' check (cardinality(model_slugs) <= 12),
+  estimated_m numeric check (estimated_m > 0 and estimated_m <= 200),
+  actual_m numeric not null check (actual_m >= 0.2 and actual_m <= 200),
+  created_at timestamptz not null default now()
+);
+create index if not exists cut_reports_created on public.cut_reports (created_at desc);
+alter table public.cut_reports enable row level security;

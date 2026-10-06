@@ -12,7 +12,7 @@ Hepsi tarayıcıdan yapılır, program kurmak gerekmez.
 2. **Supabase’i kurun:** aşağıdaki “Supabase kurulumu” 1–7. adımlar. Anahtarları 1. adımdaki Vercel projesine girersiniz.
 3. **WhatsApp numarası:** Vercel → **Settings → Environment Variables** → `NEXT_PUBLIC_ORMEN_WHATSAPP` = ORMEN’in numarası (ör. `+90 532 123 45 67`) → **Redeploy**.
 4. **Alan adı:** aşağıdaki “Alan adı ve QR kodları”. DNS’in yayılması birkaç saat sürebilir; o sırada diğer adımlara devam edebilirsiniz.
-5. **Form koruması (önerilir):** Vercel → proje → **Firewall** → **Add Rule**: yol `/api/samples`, `/api/olay`, `/api/paylas` ya da `/n/` ile başlıyorsa **Rate Limit** (ör. IP başına dakikada 30 istek). Vercel bunu IP'yi bizim veritabanımıza yazmadan yapar.
+5. **Form koruması (önerilir):** Vercel → proje → **Firewall** → **Add Rule**: yol `/api/samples`, `/api/olay`, `/api/paylas`, `/n/` ya da `/gercek-metre/` ile başlıyorsa **Rate Limit** (ör. IP başına dakikada 30 istek). Vercel bunu IP'yi bizim veritabanımıza yazmadan yapar.
 6. **Kontrol:** Panelde **Kurulum** sekmesini açın. Her adım yeşil, sarı ya da kırmızı görünür ve eksik olanın nasıl tamamlanacağı yazar; bir adımı bitirince sayfayı yenileyin.
 7. **Deneme:** `/panel`’e girin, bir kumaş fotoğrafı yükleyin, ana sayfada görün; bir numune talebi gönderip “Talepler”de görün; telefonla “Odamda gör”ü deneyin.
 
@@ -65,6 +65,23 @@ Numuneyi ORMEN keser ve **firmanın mağazasına** gönderir; müşteriye doğru
    - Açılan sayfada müşteri bilgisi yoktur.
    - Mağaza aynı sayfadan ORMEN'e metraj ve lot için WhatsApp yazabilir.
    - Yanlışlıkla basılırsa adımı panelden geri alın.
+
+## Usta föyü ve metraj
+
+"Föyü yazdır" iki sayfa çıkarır. Birinci sayfa müşteri içindir. İkinci sayfa **usta föyü**dür ve atölyeye gider. Siyah beyazdır; renk kâğıttan değil, zımbalanan numuneden onaylanır.
+
+- **Metraj:** Panel → Modeller → model → "Metraj" bölümüne firmanın ustasının o model için kullandığı metrajı ve hangi kumaş eni için geçerli olduğunu yazın.
+  - Föy bu sayıyı yalnızca aynı enli, **düz** ve **çift yönlü** ORMEN kumaşında tekrarlar.
+  - Diğer kumaşlarda sayı yerine nedeni yazar ("usta hesaplar").
+  - Bunun için kumaşın eni, desen bilgisi ve kesim yönü kumaş sayfasında girilmiş olmalı.
+- **Her kumaş için:**
+  - numunenin zımbalanacağı kutu,
+  - müşterinin "bu rengi onaylıyorum" imzası,
+  - elle yazılacak lot,
+  - "kesilen gerçek metre" satırı.
+- **Föydeki QR:** Usta kesimden sonra QR'ı okutup gerçekte kaç metre gittiğini yazar. Ad ya da telefon istenmez.
+  - Panel → Rapor → "Kesim geri bildirimi" bölümü föydeki sayıyla gerçeğini yan yana gösterir.
+  - Hesaplamaya geçip geçmeyeceğimize bu kayıtlara bakarak karar vereceğiz.
 
 ## Showroom ekranı (kiosk)
 

@@ -5,6 +5,7 @@ import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
 import { cleanLot, newSampleCode, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
 import { buildReport, type StoredEvent, type UsageEvent } from "@/lib/events";
+import type { CutReport } from "@/lib/cut-report";
 
 /**
  * In-memory repository backed by the seed catalogue; used when Supabase is
@@ -21,6 +22,7 @@ export class MemoryRepository implements Repository {
   private samples: SampleRequest[] = [];
   private events: StoredEvent[] = [];
   private shares = new Map<string, string>();
+  private cuts: CutReport[] = [];
   readonly files = new Map<string, { data: ArrayBuffer; type: string }>();
 
   async listFabrics(opts?: { includeInactive?: boolean }) {
@@ -153,6 +155,15 @@ export class MemoryRepository implements Repository {
     if (existing !== undefined) return existing === longId;
     this.shares.set(code, longId);
     return true;
+  }
+
+  async recordCutReport(r: Omit<CutReport, "createdAt">) {
+    this.cuts.unshift({ ...r, createdAt: new Date().toISOString() });
+    if (this.cuts.length > 5000) this.cuts.length = 5000;
+  }
+
+  async listCutReports() {
+    return this.cuts.slice(0, 1000);
   }
 
   async recordEvent(e: UsageEvent) {

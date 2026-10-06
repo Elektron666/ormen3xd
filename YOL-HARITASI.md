@@ -51,9 +51,9 @@ Ayrıntı: `TOPLANTI-2026-10-05-2.md`. Araç showroomdaki deneme ekranından, **
 3. ✅ Talep adımları ve panelden basılan numune etiketi (kumaş kodu, numune kodu, lot ya da lot kutusu, QR). QR'ı okutan mağaza "siparişe döndü" diyebiliyor ve ORMEN'e WhatsApp'tan ön bildirim gönderebiliyor (8. maddenin ilk hâli).
 4. ✅ Kumaşa desen (düz / desenli ve rapor ölçüsü) ve kesim yönü (tek / çift) alanları; panelde, toplu aktarımda ve künyede.
 5. ✅ Model başına firmanın kendi metrajı (hangi kumaş eni için olduğuyla); panelde model ekranında. Sayı yalnızca aynı enli, düz ve çift yönlü kumaşta tekrarlanır.
-6. Usta föyü: metraj ya da "hesap yok", lot kutusu, numune zımba kutusu ve imza, gerçek metre satırı.
-7. "Gerçek metre" geri bildirimi (kalibrasyon verisi).
-8. "ORMEN'e ön bildirim" WhatsApp düğmesi.
+6. ✅ Usta föyü (föyün ikinci sayfası): firmanın metrajı ya da "usta hesaplar" ve nedeni, lot, numune zımba kutusu ve imza, gerçek metre satırı.
+7. ✅ "Gerçek metre" geri bildirimi: föydeki QR → `/gercek-metre/…`; panel raporunda föydeki sayıyla yan yana.
+8. ✅ (ilk hâli) "ORMEN'e metraj ve lot için yaz": numune sayfasında (`/n/<kod>`), siparişe dönüşle birlikte.
 
 **Kararlar:**
 - Numuneyi ORMEN gönderir, firmanın mağazasına; son müşterinin adresi alınmaz.

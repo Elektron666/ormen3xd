@@ -1,6 +1,7 @@
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import type { SampleRequest, SampleRequestInput, SampleStep } from "@/lib/samples";
 import type { Report, StoredEvent, UsageEvent } from "@/lib/events";
+import type { CutReport } from "@/lib/cut-report";
 
 export type FabricInput = Omit<Fabric, "id"> & { id?: string; derivedMaps?: boolean };
 export type ModelInput = Omit<FurnitureModel, "id"> & { id?: string };
@@ -51,6 +52,11 @@ export interface Repository {
   getShare(code: string): Promise<string | null>;
   /** Stores a short link. False when the code is already taken by another combination. */
   saveShare(code: string, longId: string, firmSlug?: string | null): Promise<boolean>;
+
+  /** "Gerçek metre" from the cutter's sheet. */
+  recordCutReport(r: Omit<CutReport, "createdAt">): Promise<void>;
+  /** Newest first, capped. */
+  listCutReports(): Promise<CutReport[]>;
 
   recordEvent(e: UsageEvent): Promise<void>;
   /** Events since a date (newest first, capped), optionally of one firm ("" = ORMEN's own pages). */

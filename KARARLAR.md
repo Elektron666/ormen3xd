@@ -449,3 +449,25 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 - **Takımın toplamı:** Bir kumaş, ancak o kumaştaki her parçanın sayısı varsa toplanıyor. Kısmi toplam gösterilmiyor; "en az 8 m" gibi bir sayı cevap gibi okunur.
 - **Sonrası:** Usta föyündeki "gerçek metre" geri bildirimiyle veri toplanacak. Ustanın kesim reçetesinden hesaplayan motor (Mert'in önerisi) ancak bu gerçek işlerin en az %80'inde tutarsa açılacak.
 - **Veritabanı:** `models` tablosuna `meterage_m` ve `meterage_ref_width_cm` sütunları eklendi; ikisi birlikte dolu ya da birlikte boş olmak zorunda. Kesim masası tablo dosyasının içinde.
+
+## Kesim masası, 6–7. adım: usta föyü ve gerçek metre
+
+- **Usta föyü** teklif föyünün ikinci sayfası; aynı "Föyü yazdır" düğmesinden çıkıyor.
+  - Önerenler: Rıza Usta ve Kerem. Kerem'in pahalı "silüet pencereli onay kartı" bu sayfadaki zımba kutusuna dönüştü: bıçak yok, matbaa yok.
+  - Başlıkta büyük harfle "METRAJ TAHMİNİDİR, USTA TEYİT EDER" yazıyor.
+  - Her parça için firmanın metrajı ya da yokluğunun nedeni gösteriliyor.
+  - Her kumaş için bir kutu var: numune zımba kutusu, en / desen / yön bilgisi, toplam (yalnızca her parçanın sayısı varsa), lot satırı, "kesilen gerçek metre" satırı ve müşterinin onay imzası.
+- **Siyah beyaz:** Renk kâğıtta değil, zımbalı numunede onaylanıyor (Kerem). İlk denemede CSS `filter: grayscale` kullanıldı; bu, Chromium'un PDF çıktısında sayfanın sağını kırptı. Sayfa zaten renksiz tasarlandığı için filtre kaldırıldı.
+- **Gerçek metre (`/gercek-metre/<iş>`):**
+  - Föydeki QR'ın taşıdığı iş bilgisi: kumaş kodu, modeller, föyde basılan sayı. Firma adı ve ayrıntılar QR'ın içinde duruyor, sunucuda föy kaydı tutulmuyor.
+  - Usta, kumaş başına kesilen metreyi yazıyor. Ad ya da telefon istenmiyor.
+  - Kayıtlar `cut_reports` tablosuna gidiyor. Bu tablo yalnızca sunucudan okunup yazılıyor (RLS açık, politika yok).
+  - Panel raporundaki "Kesim geri bildirimi" bölümü şunları gösteriyor:
+    - kayıt sayısı,
+    - föyde sayı olanlar,
+    - kumaşın yetmediği işler,
+    - ortalama fark.
+
+    Kumaşın yetmediği satırlar kırmızıyla işaretli.
+  - Hesaplama motoru (Mert) ancak bu veriyle, işlerin en az %80'inde tutarsa açılacak.
+- **Kötüye kullanım:** QR'ın içeriği tahmin edilebilir. Biri sahte "gerçek metre" yazabilir; zararı kalibrasyon verisinin kirlenmesiyle sınırlı. Bu yol da firewall hız sınırı kuralına eklendi. Veri azken panelde gözle ayıklanabilir.

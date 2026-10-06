@@ -7,9 +7,12 @@ import type { Firm, FurnitureModel } from "@/lib/types";
 import type { RoomSpec } from "@/lib/room/spec";
 import { FABRIC_TYPE_LABELS } from "@/lib/i18n/tr";
 import { PlanSvg, type PlanSvgPiece } from "./PlanSvg";
+import { estimate, formatMetres, meterageByFabric } from "@/lib/metraj";
+import { encodeCutJob } from "@/lib/cut-report";
 import { BrandMark } from "./BrandMark";
 
-// "Teklif föyü": a one-page A4 the furniture shop hands to the customer.
+// "Teklif föyü": an A4 the furniture shop hands to the customer, plus a
+// second, grey page for the workshop ("usta föyü", 2nd meeting).
 // Rendered off-screen and shown only when printing; the browser's
 // "Save as PDF" turns it into a PDF with correct Turkish typography.
 
@@ -109,6 +112,122 @@ function Sheet({ data }: { data: PrintData }) {
   );
 }
 
+/**
+ * Page 2, for the workshop: per fabric the firm's metres (or why there is no
+ * number), a box for the lot, a box the shop staples the approved sample into
+ * with the customer's signature, and a line for the metres really cut. The QR
+ * opens /gercek-metre/<job>, where the upholsterer types that figure in.
+ * Black on white on purpose: colour is judged on the stapled sample, not on paper.
+ */
+function CutterSheet({ data }: { data: PrintData }) {
+  const groups = meterageByFabric(data.pieces.map(({ model, fabric }) => ({ model, fabric })));
+  const job = encodeCutJob({
+    firm: data.firm?.slug ?? null,
+    rows: groups.map((g) => ({ code: g.fabric.code, models: data.pieces.filter((x) => x.fabric.code === g.fabric.code).map((x) => x.model.slug), estimate: g.total })),
+  });
+  const feedbackUrl = `${new URL(data.url).origin}/gercek-metre/${job}`;
+  const qr = useQr(feedbackUrl);
+  const today = new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+  const fabricLine = (f: (typeof groups)[number]["fabric"]) =>
+    [
+      f.widthCm ? `En ${f.widthCm} cm` : "En ?",
+      f.pattern === "duz" ? "düz" : f.pattern === "desenli" ? `desenli${f.patternRepeatCm ? ` (rapor ${f.patternRepeatCm.w} × ${f.patternRepeatCm.h} cm)` : ""}` : "desen ?",
+      f.cutDirection === "tek" ? "tek yön" : f.cutDirection === "cift" ? "çift yön" : "yön ?",
+    ].join(" · ");
+
+  return (
+    <article className="foy-sheet foy-usta mx-auto flex flex-col bg-white text-black" data-testid="usta-foyu">
+      <header className="flex items-end justify-between border-b-2 border-black pb-3">
+        <div>
+          <p className="text-[10px] tracking-[0.2em]">USTA FÖYÜ · ATÖLYE İÇİN</p>
+          <p className="font-display text-[20px]">{data.firm?.name ?? "ORMEN TEKSTİL"}</p>
+        </div>
+        <p className="text-[11px]">{today}</p>
+      </header>
+      <p className="mt-3 border-2 border-black px-3 py-2 text-center text-[13px] font-medium tracking-[0.08em]">METRAJ TAHMİNİDİR, USTA TEYİT EDER</p>
+
+      <table className="mt-4 w-full text-left text-[11px]">
+        <thead>
+          <tr className="border-b border-black text-[9.5px] uppercase tracking-[0.12em]">
+            <th className="py-1.5 font-normal">Mobilya</th>
+            <th className="py-1.5 font-normal">Kumaş</th>
+            <th className="py-1.5 text-right font-normal">Firmanın metrajı</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.pieces.map(({ p, model, fabric }) => {
+            const e = estimate(model, fabric);
+            return (
+              <tr key={p.id} className="border-b border-black/30 align-top">
+                <td className="py-1.5 pr-3">
+                  {model.name}
+                  <span className="block text-[10px]">
+                    {model.dimensionsCm.w} × {model.dimensionsCm.d} × {model.dimensionsCm.h} cm
+                  </span>
+                </td>
+                <td className="py-1.5 pr-3" translate="no">
+                  {fabric.code}
+                </td>
+                <td className="py-1.5 text-right">{e.kind === "metre" ? formatMetres(e.metres) : <span className="text-[10px]">— {e.reason}</span>}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <section className="mt-5 flex flex-col gap-4">
+        {groups.map((g) => (
+          <div key={g.fabric.code} className="grid grid-cols-[42mm_1fr] gap-4 border border-black p-3" style={{ breakInside: "avoid" }}>
+            <div className="flex h-[42mm] items-center justify-center border-2 border-dashed border-black text-center text-[9px] leading-snug">
+              NUMUNE
+              <br />
+              BURAYA
+              <br />
+              ZIMBALANIR
+            </div>
+            <div className="flex flex-col gap-2 text-[11px]">
+              <p className="font-display text-[22px] leading-none" translate="no">
+                {g.fabric.code}
+              </p>
+              <p className="text-[10px]">
+                {g.fabric.series} · {g.fabric.colorName} · {fabricLine(g.fabric)}
+              </p>
+              <p>
+                Toplam ({g.pieces} parça): <strong className="text-[14px]">{g.total !== null ? formatMetres(g.total) : "usta hesaplar"}</strong>
+                {g.reasons.length > 0 && <span className="block text-[9.5px]">{g.reasons.join(" · ")}</span>}
+              </p>
+              <div className="mt-1 grid grid-cols-2 gap-3">
+                <p className="flex items-end gap-2">
+                  Lot <span className="inline-block h-[6mm] flex-1 border-b border-black" />
+                </p>
+                <p className="flex items-end gap-2">
+                  Kesilen gerçek metre <span className="inline-block h-[6mm] flex-1 border-b border-black" />
+                </p>
+              </div>
+              <p className="mt-1 flex items-end gap-2">
+                Bu rengi ve kumaşı onaylıyorum. İmza / tarih <span className="inline-block h-[7mm] flex-1 border-b border-black" />
+              </p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <footer className="mt-auto flex items-end justify-between gap-6 border-t-2 border-black pt-3">
+        <div className="flex items-center gap-4">
+          <div className="h-[24mm] w-[24mm]" data-href={feedbackUrl} data-testid="gercek-metre-qr" dangerouslySetInnerHTML={{ __html: qr }} />
+          <div className="text-[11px] leading-snug">
+            <p className="text-[13px]">Kesimden sonra okutun</p>
+            <p>Gerçekte kaç metre gittiğini yazın. Sonraki föyler daha doğru olur.</p>
+          </div>
+        </div>
+        <p className="max-w-[70mm] text-right text-[9.5px] leading-snug">
+          Sipariş aynı lottan istenmeli. Metraj firmanın kendi verisidir; ORMEN hesaplamaz. Renk onayı zımbalı numune üzerinden verilir.
+        </p>
+      </footer>
+    </article>
+  );
+}
+
 /** Mounts the sheet for printing, prints once images are in, then calls onDone. */
 export function PrintSheet({ data, onDone }: { data: PrintData; onDone: () => void }) {
   useEffect(() => {
@@ -125,6 +244,7 @@ export function PrintSheet({ data, onDone }: { data: PrintData; onDone: () => vo
   return createPortal(
     <div id="foy-root">
       <Sheet data={data} />
+      <CutterSheet data={data} />
     </div>,
     document.body,
   );

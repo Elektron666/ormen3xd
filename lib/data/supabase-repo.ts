@@ -3,6 +3,7 @@ import { codeUpper } from "@/lib/i18n/tr";
 import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel, ModelSource } from "@/lib/types";
 import { normaliseParams } from "@/lib/parametric/spec";
 import { cleanLot, newSampleCode, type SampleChoices, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
+import type { CutReport } from "@/lib/cut-report";
 import { reportFromJson, type Device, type EventType, type Source, type StoredEvent, type UsageEvent } from "@/lib/events";
 import { STORAGE_BUCKET, SUPABASE_URL, publicFileUrl } from "@/lib/supabase/config";
 import { serviceClient } from "@/lib/supabase/server";
@@ -353,6 +354,39 @@ export class SupabaseRepository implements Repository {
     if (res.error?.code === "23505") return (await this.getShare(code)) === longId;
     check(res);
     return true;
+  }
+
+  async recordCutReport(r: Omit<CutReport, "createdAt">) {
+    check(
+      await this.db.from("cut_reports").insert({
+        fabric_code: r.fabricCode,
+        firm_slug: r.firmSlug,
+        model_slugs: r.modelSlugs,
+        estimated_m: r.estimatedM,
+        actual_m: r.actualM,
+      }),
+    );
+  }
+
+  async listCutReports() {
+    const rows = check(await this.db.from("cut_reports").select("*").order("created_at", { ascending: false }).limit(1000)) as {
+      fabric_code: string;
+      firm_slug: string | null;
+      model_slugs: string[];
+      estimated_m: number | null;
+      actual_m: number;
+      created_at: string;
+    }[];
+    return rows.map(
+      (r): CutReport => ({
+        fabricCode: r.fabric_code,
+        firmSlug: r.firm_slug,
+        modelSlugs: r.model_slugs,
+        estimatedM: r.estimated_m === null ? null : Number(r.estimated_m),
+        actualM: Number(r.actual_m),
+        createdAt: r.created_at,
+      }),
+    );
   }
 
   async recordEvent(e: UsageEvent) {

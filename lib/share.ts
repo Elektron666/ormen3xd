@@ -6,14 +6,14 @@
 const KEYS = ["y", "oda", "g", "f"] as const;
 export type ShareState = Partial<Record<(typeof KEYS)[number], string>>;
 
-function toBase64Url(s: string): string {
+export function toBase64Url(s: string): string {
   const bytes = new TextEncoder().encode(s);
   let bin = "";
   for (const b of bytes) bin += String.fromCharCode(b);
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function fromBase64Url(s: string): string {
+export function fromBase64Url(s: string): string {
   const b64 = s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4);
   const bin = atob(b64);
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));

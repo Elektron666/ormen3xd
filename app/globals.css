@@ -106,4 +106,8 @@ body {
   .foy-plan {
     max-height: 82mm;
   }
+  /* the workshop page: its own sheet, black on white (colour is judged on the stapled sample) */
+  .foy-usta {
+    break-before: page;
+  }
 }
