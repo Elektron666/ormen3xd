@@ -580,3 +580,10 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - AR sonucu.
 - **Yeni özellik değil:** Müşteri bu ekranı görmez. Yalnızca adrese `?olcum` yazılınca çıkar, hiçbir yere veri göndermez, yeni paket gerektirmez. Sonuç "Kopyala" ile WhatsApp'a yapıştırılır.
 - **Ölçüt:** Geçme sınırları `CIHAZ-TESTI.md`'de (ilk kumaş mobil veride 6 saniyeyi, kare hızı 25'in altını geçerse pilot bekler).
+
+## Yer tutucuları toplu yayından kaldırma (pilot şartı 1)
+
+- **Ne:** Panelde Kumaşlar sayfasındaki yer tutucu uyarısının altında "Yer tutucuları yayından kaldır" düğmesi var. İki adımla soruyor ve yayındaki bütün örnek kumaşları gizliyor. Kumaşlar silinmiyor; panelde duruyorlar ve tek tek geri açılabiliyorlar.
+- **Ne zaman reddeder:**
+  - Sitede hiç gerçek kumaş yoksa. Örnek katalog tek başınayken düğme hiçbir şeyi gizlemez.
+  - Yayındaki bir firmanın sayfasında gerçek kumaş kalmayacaksa. Kumaşsız firma sayfası "bulunamadı" der ve o firmanın basılı QR'ları boşa düşer. Mesaj bu firmaların adını sayar.

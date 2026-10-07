@@ -46,7 +46,7 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 
 Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 Ekim, şartlar tamamlanınca.
 
-- [ ] Pilot firmanın 6–8 kumaşı gerçek fotoğraf, kod, en, desen ve yönle; gerçek ORMEN logosu; yer tutucular gizli.
+- [ ] Pilot firmanın 6–8 kumaşı gerçek fotoğraf, kod, en, desen ve yönle; gerçek ORMEN logosu; yer tutucular gizli (Kumaşlar sayfasında "Yer tutucuları yayından kaldır" düğmesi hazır).
 - [ ] Vercel Pro, alan adı (CNAME), Supabase yedeği ve "uyumama". Alan adından önce hiçbir QR basılmaz.
 - [ ] Avukat: saklama süresi, yurt dışı aktarım (Frankfurt), firma protokolü (müşteri telefonu sözü dahil).
 - [ ] Pilot firmanın 2 modeli parametrik olarak, metrajıyla.
