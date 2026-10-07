@@ -28,6 +28,16 @@ test.describe("panel", () => {
     }
   });
 
+  test("yer tutucuları toplu kaldırma iki adımla sorulur", async ({ page }) => {
+    await login(page);
+    await page.goto("/panel/kumaslar");
+    // only the confirmation is exercised: actually hiding would empty the shared demo catalogue for other tests
+    await page.getByRole("button", { name: "Yer tutucuları yayından kaldır" }).click();
+    await expect(page.getByText(/kumaş sitede görünmez olacak/)).toBeVisible();
+    await page.getByRole("button", { name: "Vazgeç" }).click();
+    await expect(page.getByRole("button", { name: "Yer tutucuları yayından kaldır" })).toBeVisible();
+  });
+
   test("fotoğraftan yeni kumaş eklenir ve konfigüratörde görünür", async ({ page }) => {
     test.setTimeout(120_000);
     const errors: string[] = [];

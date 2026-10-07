@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { placeholderHidePlan } from "@/lib/fabric/placeholders";
 import { getRepository } from "@/lib/data";
 import { isDuplicateCode, isDuplicateSlug } from "@/lib/data/repository";
 import { validateFirm, type FirmErrors, type FirmFields } from "@/lib/firm";
@@ -127,6 +128,17 @@ export async function setFabricActiveAction(id: string, active: boolean): Promis
   await guard();
   await getRepository().setFabricActive(id, active);
   refresh();
+}
+
+/** Hides every published placeholder fabric at once, unless that would empty the site or a firm page. */
+export async function hidePlaceholdersAction(): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
+  await guard();
+  const repo = getRepository();
+  const plan = placeholderHidePlan(await repo.listFabrics({ includeInactive: true }), await repo.listFirms());
+  if (!plan.ok) return plan;
+  for (const id of plan.ids) await repo.setFabricActive(id, false);
+  refresh();
+  return { ok: true, count: plan.ids.length };
 }
 
 // ------------------------------------------------------------------ models

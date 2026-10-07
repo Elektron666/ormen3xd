@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getRepository } from "@/lib/data";
 import { FABRIC_TYPE_LABELS, codeUpper } from "@/lib/i18n/tr";
 import { ActiveToggle } from "@/components/panel/ActiveToggle";
+import { HidePlaceholders } from "@/components/panel/HidePlaceholders";
 import { Badge, PageHeader, buttonClass } from "@/components/panel/ui";
 
 export const metadata = { title: "Kumaşlar" };
@@ -15,6 +16,7 @@ export default async function FabricsPage({ searchParams }: PageProps<"/panel/ku
   const imported = typeof sp.aktarildi === "string" ? Number(sp.aktarildi) : null;
   const fabrics = await getRepository().listFabrics({ includeInactive: true });
   const placeholders = fabrics.filter((f) => f.isPlaceholder).length;
+  const livePlaceholders = fabrics.filter((f) => f.isPlaceholder && f.isActive).length;
 
   return (
     <>
@@ -38,10 +40,11 @@ export default async function FabricsPage({ searchParams }: PageProps<"/panel/ku
         </p>
       )}
       {placeholders > 0 && (
-        <p className="mb-4 rounded-xl bg-[#F4E9DD] px-4 py-3 text-[14px] text-ceviz">
+        <div className="mb-4 rounded-xl bg-[#F4E9DD] px-4 py-3 text-[14px] text-ceviz">
           {placeholders} kumaş hâlâ <strong>yer tutucu</strong>: görselleri bilgisayarda üretilmiş örneklerdir. Gerçek kumaş fotoğrafını yükleyince bu
           işaret kalkar.
-        </p>
+          {livePlaceholders > 0 && <HidePlaceholders count={livePlaceholders} />}
+        </div>
       )}
 
       <ul className="divide-y divide-cizgi rounded-2xl border border-cizgi bg-kagit">
