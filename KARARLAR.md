@@ -558,3 +558,14 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 - Oda kurucu donduruldu ve karar veriyle verilecek. Deniz'in ölçütü: pilotta ziyaretlerin %10'undan azı odaya ya da plana dokunuyorsa sadeleştirme önerisiyle Fatih Bey'e rakamla gidilecek.
 - **Yeni olay:** `plan_acildi` (2D plan açıldı). Mevcut `oda_degisti` olayıyla birlikte raporda yeni bir "Oda / plan" kutusu oluşturuyor: odayı değiştiren ya da planı açan ziyaret sayısı ve tüm ziyaretlere oranı.
 - **Tablo dosyaları:** Olay listesi ve SQL rapor fonksiyonu, henüz çalıştırılmamış `20261009000000_visit_sources.sql` içinde güncellendi. SQL raporun uygulamadaki hesapla aynı sonucu verdiğini denetleyen test bu alanı da kapsıyor.
+
+## Müşterinin telefonu ORMEN'de kalıyor (6 Ekim, Fatih Bey)
+
+- Acil toplantıda Murat Bey "telefon yalnızca firmaya gitsin" dedi. Fatih Bey'in kararı: telefon ORMEN'in veritabanında kalıyor. Akış değişmedi.
+- Firmanın kaygısına cevap kâğıtta verilecek: pilot protokolüne "ORMEN, firma sayfasından gelen müşteriyi kendi satışı için aramaz; talebi firmaya iletir" sözü ve formdaki onay cümlesinin yeni hâli. Metin avukatta.
+
+## Kiosk yalnızca kumaş denetir; ana sayfada "Yönetim" bağlantısı (acil toplantı)
+
+- **Kiosk:** Showroom ekranında "Mobilya ekle", 3B / Plan düğmesi, menüdeki "Plan görünümü" ve parça araç çubuğu ("Çoğalt", döndürme) gizli. Ekran gün boyu açık duruyor; bir ziyaretçinin eklediği parça ya da açtığı plan bir sonrakine kalmasın (Mert). Hazır sahneler kioskta duruyor; sahne değiştirmek için yol bu.
+- **Yönetim bağlantısı:** Fatih Bey siteyi ilk açtığında "giriş yok" diye şaşırdı. ORMEN ana sayfasının altına küçük bir "Yönetim" bağlantısı kondu. Firma sayfalarında ve kioskta yok; firmanın müşterisi panel bağlantısı görmüyor.
+- **Sürükleme testi:** Berjer sürüklenince hedefin birkaç santim gerisine düşebiliyor; parça 0,5 m yükseklikten tutuluyor ve kamera açılış hareketi sürerken perspektif kayması oluşuyor. Test artık tam nokta yerine hedefe 0,35 m yakınlık, aynı model, kumaş ve açı arıyor.

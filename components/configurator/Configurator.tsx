@@ -312,7 +312,7 @@ export function Configurator({
             selectedId={selectedItem.id}
             overlapIds={overlapIds}
             actions={pieceActions}
-            pieceToolbar={!phone || pieceTapped || items.length > 1}
+            pieceToolbar={!kiosk && (!phone || pieceTapped || items.length > 1)}
             room={room}
             onApi={onStageApi}
             ambient={ambient}
@@ -382,6 +382,7 @@ export function Configurator({
                 onDimensions={() => setShowDims((v) => !v)}
                 comparing={Boolean(compare)}
                 onCompare={toggleCompare}
+                kiosk={kiosk}
               />
             </div>
           </div>
@@ -568,7 +569,22 @@ export function Configurator({
           <RoomPanel spec={room} onChange={changeRoom} furnitureCm={selectedModel.dimensionsCm} />
         </div>
         <p className="mt-10 border-t border-cizgi pt-4 text-center text-[11px] tracking-[0.12em] text-antrasit-50 uppercase">
-          {firm ? t.signature : "ORMEN TEKSTİL · Ankara"}
+          {firm ? (
+            t.signature
+          ) : (
+            <>
+              ORMEN TEKSTİL · Ankara
+              {!kiosk && (
+                <>
+                  {" · "}
+                  {/* ORMEN staff only; the site itself needs no sign-in (acil toplantı, 6 Oct) */}
+                  <a href="/panel" className="underline-offset-2 hover:underline">
+                    Yönetim
+                  </a>
+                </>
+              )}
+            </>
+          )}
         </p>
       </FabricSheet>
       {sampleOpen && (

@@ -40,16 +40,18 @@ Fatih Bey'in kararı (6 Ekim) telefonun ORMEN'de kalması. **Uzlaşma önerisi:*
 - Pilot firmayla imzalanacak protokole şu söz yazılır: "ORMEN, firma sayfasından gelen müşteriyi kendi satışı ya da kampanyası için aramaz; talebi firmaya iletir, numuneyi firmanın mağazasına gönderir." Mevcut akış zaten böyle çalışıyor.
 - Formdaki onay cümlesi buna göre yeniden yazılır, ör. "Talebim {firma}'ya iletilsin; numuneyi ORMEN TEKSTİL hazırlasın." Metni avukat onaylar.
 
+**Son karar (Fatih Bey, 6 Ekim akşamı): "Telefon bizde kalıyor."** Akış değişmiyor; telefon ORMEN'in veritabanında tutulmaya devam ediyor. Protokoldeki söz ve formdaki onay cümlesinin son hâli avukatla Fatih Bey arasında netleşecek.
+
 ## Şimdilik bırakılanlar
 
 - Yeni özellik (herkes).
 - Aylık özet ve rapor cilası (Selin): pilotun ilk ayında 30 ziyaret eşiği dolmaz.
 - AR ve oda tarafı (Murat Bey: "Telefonda sehpa döndürmek satış getirmez").
 
-## Küçük düzeltme önerileri (yeni özellik değil)
+## Küçük düzeltmeler (yeni özellik değil) — ✅ yapıldı
 
-- **Kioskta müşterinin sahneyi bozmasını engelleme** (Mert): "Çoğalt", "Mobilya ekle" ve "Plan" kioskta gizlensin; showroom ekranı yalnızca kumaş denesin.
-- **Ana sayfada küçük bir "Firma girişi" bağlantısı** (Elif): Fatih Bey'in "giriş yok" şaşkınlığına cevap.
+- ✅ **Kioskta müşterinin sahneyi bozmasını engelleme** (Mert): kioskta "Mobilya ekle", 3B / Plan düğmesi, menüdeki "Plan görünümü" ve parça araç çubuğu ("Çoğalt", döndürme) gizli. Showroom ekranında yalnızca kumaş deneniyor.
+- ✅ **Ana sayfada küçük bir giriş bağlantısı** (Elif): ORMEN ana sayfasının altında küçük bir "Yönetim" bağlantısı `/panel`'e gidiyor. Firma sayfalarında ve kioskta yok; firmanın müşterisi panel bağlantısı görmez.
 
 ## Pilot ne zaman?
 

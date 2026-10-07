@@ -72,6 +72,7 @@ const menuItem =
 
 /** Phones: the view tools behind one button, so the scene and the fabrics come first. */
 function MoreMenu(props: {
+  kiosk: boolean;
   plan: boolean;
   onPlan: () => void;
   closeUp: boolean;
@@ -88,7 +89,7 @@ function MoreMenu(props: {
       props.plan,
       props.onPlan,
       <IconPlan key="p" width={18} height={18} />,
-      true,
+      !props.kiosk,
     ],
     [
       "Yakından bak",
@@ -232,7 +233,10 @@ export function SceneTools({
   onDimensions,
   comparing,
   onCompare,
+  kiosk = false,
 }: {
+  /** Showroom screen: visitors only try fabrics; no adding pieces, no plan (acil toplantı, 6 Oct). */
+  kiosk?: boolean;
   models: FurnitureModel[];
   onAdd: (slug: string) => void;
   plan: boolean;
@@ -251,6 +255,7 @@ export function SceneTools({
       className="flex items-center gap-0.5 rounded-full border border-cizgi bg-kagit/90 p-1 shadow-[0_6px_24px_-12px_rgba(42,42,40,0.35)] backdrop-blur-[2px]"
     >
       <MoreMenu
+        kiosk={kiosk}
         plan={plan}
         onPlan={onPlan}
         closeUp={closeUp}
@@ -261,33 +266,35 @@ export function SceneTools({
         onCompare={onCompare}
       />
       <div className="hidden items-center gap-0.5 md:flex">
-        <div
-          role="group"
-          aria-label="Görünüm"
-          className="mr-1 flex rounded-full bg-cizgi/60 p-0.5"
-        >
-          {(
-            [
-              [false, "3B", <IconCube key="c" width={17} height={17} />],
-              [true, "Plan", <IconPlan key="p" width={17} height={17} />],
-            ] as const
-          ).map(([isPlan, label, icon]) => (
-            <button
-              key={label}
-              type="button"
-              aria-pressed={plan === isPlan}
-              onClick={() => plan !== isPlan && onPlan()}
-              className={`flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[13px] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-antrasit ${
-                plan === isPlan
-                  ? "bg-kagit text-antrasit shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
-                  : "text-antrasit-70 hover:text-antrasit"
-              }`}
-            >
-              {icon}
-              {label}
-            </button>
-          ))}
-        </div>
+        {!kiosk && (
+          <div
+            role="group"
+            aria-label="Görünüm"
+            className="mr-1 flex rounded-full bg-cizgi/60 p-0.5"
+          >
+            {(
+              [
+                [false, "3B", <IconCube key="c" width={17} height={17} />],
+                [true, "Plan", <IconPlan key="p" width={17} height={17} />],
+              ] as const
+            ).map(([isPlan, label, icon]) => (
+              <button
+                key={label}
+                type="button"
+                aria-pressed={plan === isPlan}
+                onClick={() => plan !== isPlan && onPlan()}
+                className={`flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[13px] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-antrasit ${
+                  plan === isPlan
+                    ? "bg-kagit text-antrasit shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
+                    : "text-antrasit-70 hover:text-antrasit"
+                }`}
+              >
+                {icon}
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         {!plan && (
           <ToolButton
             pressed={closeUp}
@@ -317,8 +324,12 @@ export function SceneTools({
           label="Karşılaştır"
         />
       </div>
-      <span className="mx-1 h-6 w-px bg-cizgi" aria-hidden="true" />
-      <AddMenu models={models} onAdd={onAdd} />
+      {!kiosk && (
+        <>
+          <span className="mx-1 h-6 w-px bg-cizgi" aria-hidden="true" />
+          <AddMenu models={models} onAdd={onAdd} />
+        </>
+      )}
     </div>
   );
 }

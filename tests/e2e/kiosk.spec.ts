@@ -43,6 +43,11 @@ test("kiosk: elimdeki kartelanın kodu yazılınca kumaş koltuğa giyer", async
   await page.goto("/f/ornek-mobilya?kiosk");
   await page.getByRole("button", { name: "Başlamak için dokunun" }).click();
   await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).not.toEqual([]);
+  // visitors only try fabrics: no adding or duplicating pieces, no plan
+  await expect(page.getByRole("button", { name: "Mobilya ekle" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Plan", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Çoğalt" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Yönetim" })).toHaveCount(0);
   const box = page.getByLabel("Elinizdeki kartelanın kodu");
   // a partial code offers the matches, a full one applies at once, however it is typed
   await box.fill("sie");
