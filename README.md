@@ -125,6 +125,10 @@ Kumaş panelinin en üstünde **“Elinizdeki kartelanın kodu”** kutusu var. 
 
 Cihazda: tarayıcıyı tam ekran açın (Chrome'da F11 ya da cihazın “kiosk/ekran sabitleme” ayarı) ve ekranın kendiliğinden kararmasını kapatın.
 
+## Gerçek cihaz testi
+
+Pilottan önce site 3 gerçek cihazda denenir. Adresin sonuna `?olcum` yazılınca sayfanın altında bir ölçüm kutusu çıkar; kutu kare hızını, ilk kumaşın kaç saniyede geldiğini ve AR'ın açılıp açılmadığını gösterir. Adımlar ve geçme ölçütleri `CIHAZ-TESTI.md` dosyasında.
+
 ## Telefonda AR denemesi (5 dakika)
 
 Bu denemeler gerçek telefon gerektirdiği için geliştirme ortamında yapılamadı. Kurulumdan sonra bir iPhone ve bir Android telefonla:

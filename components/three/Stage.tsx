@@ -7,7 +7,8 @@ import * as THREE from "three";
 import type { Fabric, FurnitureModel, TextureSize } from "@/lib/types";
 import type { PreparedModel } from "@/lib/three/prepare-model";
 import { preferredTextureSize } from "@/lib/three/fabric-material";
-import { QUALITY, browserTier, nextDpr, type Quality } from "@/lib/three/quality";
+import { QUALITY, browserTier, nextDpr, type Tier } from "@/lib/three/quality";
+import { record, recordFrame, snapshot as measured } from "@/lib/olcum";
 import { encodeRoom, type RoomSpec } from "@/lib/room/spec";
 import { encodeLayout, footprint, footprintParts, modelDims, type Placement } from "@/lib/room/layout";
 import { Room } from "./Room";
@@ -83,6 +84,7 @@ export interface StageProps {
 function AdaptiveDpr({ onLower }: { onLower: (dpr: number) => void }) {
   const intervals = useRef<number[]>([]);
   useFrame((state, delta) => {
+    recordFrame(delta);
     const buf = intervals.current;
     buf.push(delta);
     if (buf.length < 45) return;
@@ -179,7 +181,8 @@ export function Stage({
   pieceToolbar = true,
 }: StageProps) {
   const [textureSize] = useState<TextureSize>(preferredTextureSize);
-  const [quality] = useState<Quality>(() => QUALITY[browserTier()]);
+  const [tier] = useState<Tier>(browserTier);
+  const quality = QUALITY[tier];
   // lowered by AdaptiveDpr when frames are slow; passed to the canvas, which re-applies it on every render
   const [maxDpr, setMaxDpr] = useState(quality.maxDpr);
   const [prepared, setPrepared] = useState<Record<string, PreparedModel>>({});
@@ -191,10 +194,18 @@ export function Stage({
   // the orbit camera; the plan view swaps in its own camera without touching this one
   const [orbitCamera, setOrbitCamera] = useState<THREE.Camera | null>(null);
 
+  useEffect(() => {
+    const start = Math.min(window.devicePixelRatio || 1, quality.maxDpr);
+    record({ tier, textureSize, startDpr: start, dpr: start });
+  }, [tier, textureSize, quality.maxDpr]);
+
   const handlePrepared = useCallback((id: string, p: PreparedModel) => setPrepared((m) => ({ ...m, [id]: p })), []);
   const handleShown = useCallback(
     (id: string, code: string, first: boolean) => {
-      if (first) setVisible(true);
+      if (first) {
+        setVisible(true);
+        if (measured().firstFabricMs === null) record({ firstFabricMs: Math.round(performance.now()) });
+      }
       onFabricShown?.(id, code, first);
     },
     [onFabricShown],
@@ -204,6 +215,7 @@ export function Stage({
   const draggingRef = useRef(false);
   const pendingDpr = useRef<number | null>(null);
   const lowerDpr = useCallback((d: number) => {
+    record({ dpr: d, lowered: measured().lowered + 1 });
     if (draggingRef.current) pendingDpr.current = d;
     else setMaxDpr(d);
   }, []);

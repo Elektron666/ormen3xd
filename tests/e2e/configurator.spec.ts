@@ -53,6 +53,18 @@ test("ana sayfanın altında yönetim paneline giden küçük bağlantı var", a
   await expect(link).toHaveAttribute("href", "/panel");
 });
 
+test("?olcum gerçek cihaz testi için ölçüm panelini açar; normal ziyarette görünmez", async ({ page }) => {
+  await page.goto("/");
+  await expect.poll(() => fabricOnModel(page)).toEqual(["LUMA-02"]);
+  await expect(page.getByRole("region", { name: "Cihaz ölçümü" })).toHaveCount(0);
+
+  await page.goto("/?olcum");
+  const panel = page.getByRole("region", { name: "Cihaz ölçümü" });
+  await expect(panel).toContainText(/İlk kumaş: \d+,\d sn/);
+  await expect(panel).toContainText(/Kalite: (yuksek|orta|dusuk)/);
+  await expect(panel.getByRole("button", { name: "Kopyala" })).toBeVisible();
+});
+
 test("arama Türkçe karakterlere duyarsız çalışır", async ({ page }) => {
   await page.goto("/");
   const sheetHandle = page.getByRole("button", { name: "Kumaşları göster" });

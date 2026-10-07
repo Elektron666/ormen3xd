@@ -9,6 +9,7 @@ import { CopyCodeButton, FabricHeadline, FabricSpecs } from "./FabricInfo";
 import { QuickStrip } from "./QuickStrip";
 import { PresetStrip } from "./PresetStrip";
 import { KioskCodeEntry } from "@/components/kiosk/KioskCodeEntry";
+import { MeasurePanel } from "./MeasurePanel";
 import { useMedia } from "@/lib/use-media";
 import { FabricPicker } from "./FabricPicker";
 import { BrandMark } from "./BrandMark";
@@ -302,6 +303,7 @@ export function Configurator({
 
   return (
     <div style={style} className="kiosk-grid relative h-dvh w-full overflow-hidden bg-kirik-beyaz md:grid md:grid-cols-[minmax(0,1fr)_380px] lg:grid-cols-[minmax(0,1fr)_420px]">
+      <MeasurePanel />
       {/* ---------------------------------------------------------------- scene */}
       <section className="studio-backdrop relative h-[60dvh] md:h-dvh" aria-label="3B sahne">
         <div className={`absolute inset-0 transition-opacity duration-150 ${fading ? "opacity-0" : "opacity-100"}`}>

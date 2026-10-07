@@ -569,3 +569,14 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 - **Kiosk:** Showroom ekranında "Mobilya ekle", 3B / Plan düğmesi, menüdeki "Plan görünümü" ve parça araç çubuğu ("Çoğalt", döndürme) gizli. Ekran gün boyu açık duruyor; bir ziyaretçinin eklediği parça ya da açtığı plan bir sonrakine kalmasın (Mert). Hazır sahneler kioskta duruyor; sahne değiştirmek için yol bu.
 - **Yönetim bağlantısı:** Fatih Bey siteyi ilk açtığında "giriş yok" diye şaşırdı. ORMEN ana sayfasının altına küçük bir "Yönetim" bağlantısı kondu. Firma sayfalarında ve kioskta yok; firmanın müşterisi panel bağlantısı görmüyor.
 - **Sürükleme testi:** Berjer sürüklenince hedefin birkaç santim gerisine düşebiliyor; parça 0,5 m yükseklikten tutuluyor ve kamera açılış hareketi sürerken perspektif kayması oluşuyor. Test artık tam nokta yerine hedefe 0,35 m yakınlık, aynı model, kumaş ve açı arıyor.
+
+## Gerçek cihaz testi için ölçüm ekranı (`?olcum`)
+
+- **Neden:** Acil toplantının 5. şartı, testin gerçek cihazda ölçülmesi. Mert: "Testler yeşil ama hiçbiri gerçek cihazda koşmadı." "Akıcı mı?" sorusunun cevabı tahmin olmasın diye site kendi ölçtüklerini gösteriyor:
+  - cihaza verilen kalite,
+  - piksel oranının düşüp düşmediği,
+  - sahne dönerken kare hızı,
+  - ilk kumaşın gelme süresi,
+  - AR sonucu.
+- **Yeni özellik değil:** Müşteri bu ekranı görmez. Yalnızca adrese `?olcum` yazılınca çıkar, hiçbir yere veri göndermez, yeni paket gerektirmez. Sonuç "Kopyala" ile WhatsApp'a yapıştırılır.
+- **Ölçüt:** Geçme sınırları `CIHAZ-TESTI.md`'de (ilk kumaş mobil veride 6 saniyeyi, kare hızı 25'in altını geçerse pilot bekler).

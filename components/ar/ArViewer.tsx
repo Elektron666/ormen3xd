@@ -5,6 +5,7 @@ import type { Fabric, FurnitureModel } from "@/lib/types";
 import { arGlb } from "@/lib/ar/build";
 import { currentArDevice } from "@/lib/ar/device";
 import { track } from "@/lib/track";
+import { record, snapshot as measured } from "@/lib/olcum";
 
 // One piece of furniture in one ORMEN fabric, in <model-viewer>: a 3D preview
 // on any screen, and "Odamda gör" on phones that can do AR (Android: WebXR /
@@ -50,15 +51,20 @@ export function ArViewer({ model, fabric, firmSlug = null, className = "" }: { m
     const failed = () => track("ar_acilamadi", { firmSlug, modelSlug: model.slug, fabricCode: fabric.code });
     const onLoad = () => {
       setArReady(!!el.canActivateAR);
+      if (measured().ar === "bilinmiyor") record({ ar: el.canActivateAR ? "destekleniyor" : "desteklenmiyor" });
       if (!el.canActivateAR && device !== "desktop") failed();
     };
     const onStatus = (e: Event) => {
       const status = (e as CustomEvent<{ status: string }>).detail?.status;
       if (status === "failed") {
         setArFailed(true);
+        record({ ar: "acilamadi" });
         failed();
       }
-      if (status === "session-started") track("ar_acildi", { firmSlug, modelSlug: model.slug, fabricCode: fabric.code });
+      if (status === "session-started") {
+        record({ ar: "acildi" });
+        track("ar_acildi", { firmSlug, modelSlug: model.slug, fabricCode: fabric.code });
+      }
     };
     el.addEventListener("load", onLoad);
     el.addEventListener("ar-status", onStatus);
