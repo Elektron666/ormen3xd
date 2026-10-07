@@ -5,6 +5,7 @@ import { gatherSetupFacts } from "@/lib/setup-facts";
 import { evaluateSetup, overall } from "@/lib/setup-check";
 import { getRepository } from "@/lib/data";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
+import { overdueCount } from "@/lib/pilot-metrics";
 
 export default async function PanelHome() {
   // checked here, not only in the layout: a layout check does not stop the page from rendering
@@ -22,12 +23,18 @@ export default async function PanelHome() {
     { href: "/panel/firmalar", title: "Firmalar", value: firms.filter((f) => f.isActive).length, note: "kendi sayfası olan firma" },
     { href: "/panel/talepler", title: "Numune talepleri", value: samples.length, note: samples[0] ? `son: ${new Date(samples[0].createdAt).toLocaleDateString("tr-TR")}` : "henüz yok" },
   ];
+  const overdue = overdueCount(samples);
   const setup = overall(evaluateSetup(await gatherSetupFacts((await headers()).get("host"))));
   return (
     <>
       {(setup === "error" || setup === "warn") && (
         <Link href="/panel/durum" className="mb-6 block rounded-xl border border-[#e7c3bd] bg-[#fbeeec] px-4 py-3 text-[14px] hover:border-[#b4483c]">
           Kurulumda {setup === "error" ? "yapılması gereken" : "eksik"} adımlar var. <span className="underline">Kurulum durumunu gör</span>
+        </Link>
+      )}
+      {overdue > 0 && (
+        <Link href="/panel/talepler" role="alert" className="mb-6 block rounded-xl border border-[#e7c3bd] bg-[#fbeeec] px-4 py-3 text-[14px] text-[#7a2f27] hover:border-[#b4483c]">
+          <strong>{overdue} numune talebi 24 saattir bekliyor.</strong> <span className="underline">Taleplere git</span>
         </Link>
       )}
       <PageHeader title="Genel bakış">

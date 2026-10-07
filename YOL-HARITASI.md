@@ -51,7 +51,7 @@ Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 E
 - [ ] Avukat: saklama süresi, yurt dışı aktarım (Frankfurt), firma protokolü (müşteri telefonu sözü dahil).
 - [ ] Pilot firmanın 2 modeli parametrik olarak, metrajıyla.
 - [ ] 3 gerçek cihazda test (Samsung, iPhone, kiosk tableti). Ölçüm ekranı hazır (`?olcum`); adımlar ve geçme ölçütleri `CIHAZ-TESTI.md`'de.
-- [ ] Talep sahibi (Selin), firmayla 30 dakikalık kurulum, panelde test kayıtlarının temizliği, ölçüm tablosu.
+- [ ] Talep sahibi (Selin), firmayla 30 dakikalık kurulum, panelde test kayıtlarının temizliği, ölçüm tablosu (Rapor → "Numune akışı" hazır; 24 saati geçen talep panelde uyarı verir).
 - [x] Müşteri telefonu: ORMEN'de kalıyor (Fatih Bey'in kararı). Protokol sözü ve onay cümlesi avukatta.
 - [x] Kiosk sadeleştirildi (yalnızca kumaş denenir); ana sayfanın altına küçük "Yönetim" bağlantısı.
 

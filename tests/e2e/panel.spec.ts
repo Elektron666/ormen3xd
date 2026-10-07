@@ -125,6 +125,14 @@ test.describe("panel", () => {
     await page.reload();
     await expect(page.getByRole("listitem").filter({ hasText: name }).getByTestId("talep-adim")).toHaveText("Siparişe döndü");
 
+    // the pilot measures: lot written and orders, over the samples that went out
+    await page.goto("/panel/rapor?gun=7");
+    const flow = page.getByTestId("rapor-akis");
+    await expect(flow).toContainText("Numune akışı");
+    await expect(flow.getByText("Lot yazılan").locator("..")).toContainText(/[1-9]\d*\/[1-9]/);
+    await expect(flow.getByText("Siparişe döndü").locator("..")).toContainText(/[1-9]\d*\/[1-9]/);
+    await page.goto("/panel/talepler");
+
     // a KVKK deletion request: gone for good after a confirmation
     const done = page.getByRole("listitem").filter({ hasText: name });
     await done.getByRole("button", { name: "Sil", exact: true }).click();

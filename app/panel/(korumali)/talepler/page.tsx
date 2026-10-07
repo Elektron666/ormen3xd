@@ -3,6 +3,7 @@ import { getRepository } from "@/lib/data";
 import { SAMPLE_STEPS, describeChoices, prettyPhone, retentionCutoff, retentionDays, whatsappUrl } from "@/lib/samples";
 import { SampleControls } from "@/components/panel/SampleControls";
 import { PageHeader, buttonClass } from "@/components/panel/ui";
+import { overdueCount } from "@/lib/pilot-metrics";
 
 export const metadata = { title: "Numune talepleri" };
 
@@ -19,6 +20,7 @@ export default async function RequestsPage() {
   const [requests, firms] = await Promise.all([repo.listSampleRequests(), repo.listFirms()]);
   const firmName = new Map(firms.map((f) => [f.slug, f.name]));
   const firmBySlug = new Map(firms.map((f) => [f.slug, f]));
+  const overdue = overdueCount(requests);
   return (
     <>
       <PageHeader title="Numune talepleri" eyebrow={`${requests.length} talep`}>
@@ -28,6 +30,11 @@ export default async function RequestsPage() {
           </a>
         )}
       </PageHeader>
+      {overdue > 0 && (
+        <p role="alert" className="mb-4 rounded-xl border border-[#e7c3bd] bg-[#fbeeec] px-4 py-3 text-[14px] text-[#7a2f27]">
+          <strong>{overdue} talep 24 saattir “Yeni”de bekliyor.</strong> Pilotta her talep bir gün içinde ele alınmalı: adımı “Hazırlanıyor”a alın.
+        </p>
+      )}
       {!repo.persistent && (
         <p className="mb-4 rounded-xl bg-[#F4E9DD] px-4 py-3 text-[14px] text-ceviz">
           Demo modundasınız: talepler sunucu yeniden başlayınca silinir. Supabase bağlanınca kalıcı olur.

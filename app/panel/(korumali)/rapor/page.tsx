@@ -3,6 +3,7 @@ import { getRepository } from "@/lib/data";
 import { PageHeader, buttonClass, inputClass } from "@/components/panel/ui";
 import { calibration } from "@/lib/cut-report";
 import { formatMetres } from "@/lib/metraj";
+import { sampleFunnel } from "@/lib/pilot-metrics";
 
 export const metadata = { title: "Rapor" };
 
@@ -37,7 +38,8 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
   from.setUTCHours(0, 0, 0, 0);
   const [firms, fabrics] = await Promise.all([repo.listFirms(), repo.listFabrics({ includeInactive: true })]);
   const scope = firmParam === "" ? undefined : firmParam === "ormen" ? "" : firmParam;
-  const [report, cutsAll] = await Promise.all([repo.eventReport(from, to, scope), repo.listCutReports()]);
+  const [report, cutsAll, samplesAll] = await Promise.all([repo.eventReport(from, to, scope), repo.listCutReports(), repo.listSampleRequests()]);
+  const funnel = sampleFunnel(samplesAll.filter((r) => r.createdAt >= from.toISOString() && (scope === undefined || (r.firmSlug ?? "") === scope)));
   const cuts = cutsAll.filter((c) => c.createdAt >= from.toISOString() && (scope === undefined || (c.firmSlug ?? "") === scope));
   const cal = calibration(cuts);
   const fabricByCode = new Map(fabrics.map((f) => [f.code, f]));
@@ -182,6 +184,29 @@ export default async function ReportPage({ searchParams }: PageProps<"/panel/rap
           />
         </div>
         <p className="mt-2 text-[12px] text-antrasit-50">“100 ziyarette” oranı en az 30 ziyaret olunca gösterilir; daha azında yanıltıcı olur.</p>
+      </section>
+
+      <section aria-labelledby="akis" className="mt-8" data-testid="rapor-akis">
+        <h2 id="akis" className="eyebrow mb-3">
+          Numune akışı (pilot ölçümü)
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {(
+            [
+              ["24 saati geçen", funnel.overdue, "hâlâ “Yeni”de bekleyen talep (hedef 0)"],
+              ["Lot yazılan", funnel.shipped ? `${funnel.withLot}/${funnel.shipped}` : "–", "gönderilen numunelerde lot yazılı olan"],
+              ["Gönderme süresi", funnel.sendHours === null ? "–" : `${nf.format(funnel.sendHours)} sa`, "talepten mağazaya çıkışa (şu an “gönderildi”dekiler, medyan)"],
+              ["Siparişe döndü", funnel.shipped ? `${funnel.ordered}/${funnel.shipped}` : "–", `${funnel.notReturned} numune dönmedi`],
+            ] as const
+          ).map(([t, v, n]) => (
+            <div key={t} className="rounded-2xl border border-cizgi bg-kagit p-4">
+              <p className="text-[13px] text-antrasit-70">{t}</p>
+              <p className="mt-1 font-display text-[30px] leading-none tabular-nums">{typeof v === "number" ? nf.format(v) : v}</p>
+              <p className="mt-1.5 text-[12px] text-antrasit-50">{n}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[12px] text-antrasit-50">Dönemde {nf.format(funnel.total)} talep. Metraj sapması aşağıda, kesim geri bildiriminde.</p>
       </section>
 
       <section aria-labelledby="kesim" className="mt-8" data-testid="rapor-kesim">

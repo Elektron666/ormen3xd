@@ -587,3 +587,16 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 - **Ne zaman reddeder:**
   - Sitede hiç gerçek kumaş yoksa. Örnek katalog tek başınayken düğme hiçbir şeyi gizlemez.
   - Yayındaki bir firmanın sayfasında gerçek kumaş kalmayacaksa. Kumaşsız firma sayfası "bulunamadı" der ve o firmanın basılı QR'ları boşa düşer. Mesaj bu firmaların adını sayar.
+
+## Numune akışı ölçümü ve 24 saat uyarısı (pilot şartı 6)
+
+- **Neden:** Acil toplantıda talepleri 24 saat içinde işleyen tek bir sahip (Selin) ve 10 siparişin ölçütlerinin tek tabloda toplanması şart koşuldu.
+- **Uyarı:** "Yeni" adımında 24 saatten uzun bekleyen talep varsa paneldeki Genel bakış ve Talepler sayfalarının üstünde kırmızı bir uyarı çıkıyor. E-posta ya da SMS yok; dış servis ve anahtar gerektirirdi.
+- **Rapor → Numune akışı:** Dört kutu var:
+  - 24 saati geçen talep (hedef 0),
+  - gönderilen numunelerde lotu yazılı olanlar,
+  - talepten mağazaya çıkışa kadar geçen sürenin medyanı,
+  - siparişe dönenler.
+
+  Metraj sapması zaten "Kesim geri bildirimi"nde.
+- **Bilinen sınır:** Talebin yalnızca son adımı ve zamanı saklanıyor. Bu yüzden gönderme süresi, şu an "gönderildi"de duran numunelerden ölçülüyor. Mağaza "siparişe döndü" deyince gönderme zamanının üzerine yazılıyor. Pilotta 10 sipariş için bu yeterli; her adımın zamanı gerekirse yeni bir veritabanı dosyası (migration) ister.
