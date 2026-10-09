@@ -600,3 +600,17 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 
   Metraj sapması zaten "Kesim geri bildirimi"nde.
 - **Bilinen sınır:** Talebin yalnızca son adımı ve zamanı saklanıyor. Bu yüzden gönderme süresi, şu an "gönderildi"de duran numunelerden ölçülüyor. Mağaza "siparişe döndü" deyince gönderme zamanının üzerine yazılıyor. Pilotta 10 sipariş için bu yeterli; her adımın zamanı gerekirse yeni bir veritabanı dosyası (migration) ister.
+
+## Sunucu Frankfurt'ta (`vercel.json`)
+
+- **Sorun:** Vercel'de bölge seçilmezse sunucu kodu ABD'de (Washington, `iad1`) çalışabiliyor. Veritabanı ise Frankfurt'ta. Bu durumda:
+  - her sayfa açılışında veritabanı sorguları Atlantik'i gidip geliyor ve sayfalar yavaşlıyor;
+  - müşterinin telefonu ABD'deki sunucudan geçiyor. Bu, aydınlatma metninde anlatılması gereken ikinci bir yurt dışı aktarım olurdu.
+- **Çözüm:**
+  - Depoya `vercel.json` eklendi ve bölge `fra1` (Frankfurt) olarak sabitlendi.
+  - Next.js'in sayfa bazlı `preferredRegion` ayarı bu sürümde kullanımdan kalktığı için platform ayarı tercih edildi.
+  - Panelin Kurulum sayfası, sunucunun gerçekte çalıştığı bölgeyi (`VERCEL_REGION`) okuyor. Frankfurt değilse uyarıyor.
+- **KVKK metni:**
+  - Taslağa "Yurt dışına aktarım" paragrafı eklendi: Supabase ve Vercel, Frankfurt. Dayanağı avukat yazacak.
+  - "Amaç" cümlesi düzeltildi. Numune müşteriye değil, firmanın mağazasına gidiyor (2. toplantı); eski metin "size ulaştırılması" diyordu.
+  - Avukata verilecek bilgi `AVUKAT-PAKETI.md` dosyasında.

@@ -79,5 +79,6 @@ export async function gatherSetupFacts(requestHost: string | null): Promise<Setu
     sessionSecretOk: !!secret && secret.length >= 32,
     retentionDays: retentionDays(),
     production: process.env.NODE_ENV === "production",
+    region: process.env.VERCEL_REGION || null,
   };
 }

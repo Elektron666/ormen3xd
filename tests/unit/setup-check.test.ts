@@ -26,6 +26,14 @@ describe("setup checklist", () => {
     expect(evaluateSetup({ ...ready, retentionDays: 730 }).find((c) => c.id === "retention")?.status).toBe("ok");
   });
 
+  it("sunucu veritabanından uzak bölgedeyse uyarır; Vercel dışında sormaz", () => {
+    expect(byId({ ...ready, region: "iad1" }).region.status).toBe("warn");
+    expect(byId({ ...ready, region: "iad1" }).region.detail).toContain("iad1");
+    expect(byId({ ...ready, region: "fra1" }).region.status).toBe("ok");
+    expect(byId({ ...ready, region: null }).region).toBeUndefined();
+    expect(overall(evaluateSetup({ ...ready, region: "iad1" }))).toBe("warn");
+  });
+
   it("names the SQL files still to run", () => {
     const c = byId({ ...ready, migrations: { ...allMigrations, "20261006000000_fabric_series_limits.sql": false, "20261008000000_storage_limits.sql": false } });
     expect(c.migrations.status).toBe("error");

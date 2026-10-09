@@ -48,7 +48,8 @@ Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 E
 
 - [ ] Pilot firmanın 6–8 kumaşı gerçek fotoğraf, kod, en, desen ve yönle; gerçek ORMEN logosu; yer tutucular gizli (Kumaşlar sayfasında "Yer tutucuları yayından kaldır" düğmesi hazır).
 - [ ] Vercel Pro, alan adı (CNAME), Supabase yedeği ve "uyumama". Alan adından önce hiçbir QR basılmaz.
-- [ ] Avukat: saklama süresi, yurt dışı aktarım (Frankfurt), firma protokolü (müşteri telefonu sözü dahil).
+- [ ] Avukat: saklama süresi, yurt dışı aktarım (Frankfurt), firma protokolü (müşteri telefonu sözü dahil). Avukata verilecek bilgi: `AVUKAT-PAKETI.md`.
+- [x] Sunucu Frankfurt'a sabitlendi (`vercel.json`, `fra1`); Kurulum sayfası bölgeyi denetliyor.
 - [ ] Pilot firmanın 2 modeli parametrik olarak, metrajıyla.
 - [ ] 3 gerçek cihazda test (Samsung, iPhone, kiosk tableti). Ölçüm ekranı hazır (`?olcum`); adımlar ve geçme ölçütleri `CIHAZ-TESTI.md`'de.
 - [ ] Talep sahibi (Selin), firmayla 30 dakikalık kurulum, panelde test kayıtlarının temizliği, ölçüm tablosu (Rapor → "Numune akışı" hazır; 24 saati geçen talep panelde uyarı verir).

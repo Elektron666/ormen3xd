@@ -23,11 +23,15 @@ export default function KvkkPage() {
           kullanılmaz.
         </p>
         <p>
-          <strong className="text-antrasit">Amaç:</strong> Talep ettiğiniz kumaş numunesinin size ulaştırılması ve bu amaçla sizinle iletişime geçilmesi.
+          <strong className="text-antrasit">Amaç:</strong> Talep ettiğiniz kumaş numunesinin hazırlanıp mobilya firmasının mağazasına gönderilmesi ve bu amaçla sizinle iletişime geçilmesi. Numune size değil mağazaya gönderilir; adresiniz istenmez.
         </p>
         <p>
           <strong className="text-antrasit">Aktarım:</strong> Talebiniz, aracı kullandığınız mobilya firmasının sayfasından geldiyse o firmayla ve ORMEN TEKSTİL ile paylaşılır.
           Başka amaçla üçüncü kişilere aktarılmaz.
+        </p>
+        <p>
+          <strong className="text-antrasit">Yurt dışına aktarım:</strong> Talepler, ORMEN TEKSTİL adına hizmet veren iki altyapı sağlayıcısının Frankfurt’taki (Almanya) sunucularında işlenir ve saklanır:
+          veritabanı için Supabase, internet sitesinin sunucusu için Vercel. [Avukat: aktarımın hukuki dayanağı ve sağlayıcılarla yapılan sözleşme buraya yazılacak.]
         </p>
         <p>
           <strong className="text-antrasit">Saklama süresi:</strong> [Avukat onayıyla belirlenecek süre] boyunca saklanır, sonra kendiliğinden silinir. Daha önce silinmesini isterseniz bize yazmanız yeterli; talebiniz adınız ve telefonunuzla birlikte kalıcı olarak silinir.

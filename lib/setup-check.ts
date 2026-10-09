@@ -26,6 +26,8 @@ export interface SetupFacts {
   whatsapp: string | null;
   sessionSecretOk: boolean;
   production: boolean;
+  /** Vercel region the server code runs in (VERCEL_REGION); null when not on Vercel. */
+  region?: string | null;
   /** Days sample requests are kept (SAMPLE_RETENTION_DAYS), null = until deleted by hand. */
   retentionDays: number | null;
 }
@@ -159,6 +161,21 @@ export function evaluateSetup(f: SetupFacts): Check[] {
           fix: "Saklama süresini avukatla belirleyin, Vercel’de SAMPLE_RETENTION_DAYS (gün, ör. 730) olarak girin ve aynı süreyi KVKK metnine yazın.",
         },
   );
+
+  // the database is in Frankfurt; server code elsewhere sends every query (and the
+  // customer's phone) across the ocean: slower pages and a needless transfer abroad
+  if (f.region)
+    checks.push(
+      f.region === "fra1"
+        ? { id: "region", title: "Sunucu bölgesi", status: "ok", detail: "Sunucu Frankfurt’ta (fra1), veritabanıyla aynı yerde." }
+        : {
+            id: "region",
+            title: "Sunucu bölgesi",
+            status: "warn",
+            detail: `Sunucu ${f.region} bölgesinde çalışıyor, veritabanı Frankfurt’ta. Her sayfa okyanusu iki kez geçiyor ve müşteri telefonu gereksiz yere başka bir ülkeden geçiyor.`,
+            fix: "Depodaki vercel.json Frankfurt’u (fra1) seçiyor; son yayını Redeploy edin. Düzelmezse Vercel → Settings → Functions → Function Region’da Frankfurt’u seçin.",
+          },
+    );
 
   // things only a person can confirm
   checks.push(
