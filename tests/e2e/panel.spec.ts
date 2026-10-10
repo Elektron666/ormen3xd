@@ -193,10 +193,16 @@ test.describe("panel", () => {
     await expect(page.getByText("Genişlik 180–270 cm arasında olmalı.")).toBeVisible();
     await page.getByRole("spinbutton").first().fill("240");
     await expect(page.getByText("Dış ölçü:")).toContainText("240 × 95 × 82 cm");
+    // the firm's own height and a fixed back with a bench seat, as in its photos
+    await page.getByRole("spinbutton").nth(2).fill("88");
+    await expect(page.getByText("Dış ölçü:")).toContainText("240 × 95 × 88 cm");
+    await expect(page.getByRole("radio", { name: "Orta" })).toHaveAttribute("aria-checked", "false");
+    await page.getByRole("radio", { name: "Sabit (tek parça)" }).click();
+    await page.getByRole("radio", { name: "Tek parça minder" }).click();
     await page.getByLabel("Bağlantı adı").fill(slug);
     await page.getByRole("button", { name: "Kaydet" }).click();
     await expect(page.getByRole("status")).toContainText("kaydedildi", { timeout: 30_000 });
-    await expect(page.getByRole("listitem").filter({ hasText: "Üçlü kanepe · 240 × 95 cm · kolsuz" }).first()).toBeVisible();
+    await expect(page.getByRole("listitem").filter({ hasText: "Üçlü kanepe · 240 × 95 cm · kolsuz · sabit sırt · tek parça oturum · 88 cm yükseklik" }).first()).toBeVisible();
 
     await page.goto(`/?y=${slug}.SIENA-05.0.51.0`);
     await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).toEqual(["SIENA-05"]);

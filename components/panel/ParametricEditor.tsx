@@ -7,15 +7,21 @@ import {
   AYAK_LABELS,
   AYAKLAR,
   DEFAULTS,
+  HEIGHT_LIMITS,
   KOL_LABELS,
   KOLLAR,
   LIMITS,
+  OTURUM_TIPI_LABELS,
+  OTURUM_TIPLERI,
   SIRT_LABELS,
+  SIRT_TIPI_LABELS,
+  SIRT_TIPLERI,
   SIRTLAR,
   TIP_LABELS,
   TIPLER,
   UC_LABELS,
   UCLAR,
+  heightCm,
   paramDimensions,
   shapeName,
   validateParams,
@@ -70,6 +76,13 @@ function SizeField({ label, value, range, error, onChange }: { label: string; va
   );
 }
 
+/** A copy without an optional choice, so the stored data stays as before it was set. */
+function without(p: ParametricParams, k: "yukseklikCm" | "sirtTipi" | "oturumTipi"): ParametricParams {
+  const next = { ...p };
+  delete next[k];
+  return next;
+}
+
 const autoName = (p: ParametricParams) => `${shapeName(p)} ${p.tip === "kose" ? `${p.genislikCm}×${paramDimensions(p).d}` : p.genislikCm}`;
 
 export function ParametricEditor({ model, fabrics, firmId = null }: { model?: FurnitureModel | null; fabrics: Fabric[]; firmId?: string | null }) {
@@ -115,7 +128,21 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
   const setTip = (tip: Tip) => {
     setServerErrors({});
     // switching type starts from that type's sensible defaults, keeping the style choices
-    setParams((p) => ({ ...DEFAULTS[tip], kol: tip === "puf" ? "yok" : p.tip === "puf" ? DEFAULTS[tip].kol : p.kol, sirt: p.sirt, ayak: p.ayak }));
+    setParams((p) => {
+      const next: ParametricParams = { ...DEFAULTS[tip], kol: tip === "puf" ? "yok" : p.tip === "puf" ? DEFAULTS[tip].kol : p.kol, sirt: p.sirt, ayak: p.ayak };
+      if (tip !== "puf" && p.sirtTipi) next.sirtTipi = p.sirtTipi;
+      if (tip !== "puf" && tip !== "berjer" && p.oturumTipi) next.oturumTipi = p.oturumTipi;
+      return next;
+    });
+  };
+  // a back preset is a shortcut for a height: choosing one drops the typed-in height
+  const setSirt = (sirt: ParametricParams["sirt"]) => {
+    setServerErrors({});
+    setParams((p) => ({ ...without(p, "yukseklikCm"), sirt }));
+  };
+  const optional = <K extends "sirtTipi" | "oturumTipi">(k: K, v: NonNullable<ParametricParams[K]>, none: string) => {
+    setServerErrors({});
+    setParams((p) => (v === none ? without(p, k) : { ...p, [k]: v }));
   };
 
   // the preview rebuilds only from valid, settled values
@@ -167,7 +194,13 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
           <h2 className="eyebrow">1 · Model</h2>
           <Segmented label="Tip" value={params.tip} options={TIPLER} labels={TIP_LABELS} onChange={setTip} />
           {params.tip !== "puf" && <Segmented label="Kol" value={params.kol} options={KOLLAR} labels={KOL_LABELS} onChange={(v) => set("kol", v)} />}
-          {params.tip !== "puf" && <Segmented label="Sırt" value={params.sirt} options={SIRTLAR} labels={SIRT_LABELS} onChange={(v) => set("sirt", v)} />}
+          {params.tip !== "puf" && <Segmented label="Sırt" value={params.yukseklikCm === undefined ? params.sirt : ("" as typeof params.sirt)} options={SIRTLAR} labels={SIRT_LABELS} onChange={setSirt} />}
+          {params.tip !== "puf" && (
+            <Segmented label="Sırt tipi" value={params.sirtTipi ?? "minderli"} options={SIRT_TIPLERI} labels={SIRT_TIPI_LABELS} onChange={(v) => optional("sirtTipi", v, "minderli")} />
+          )}
+          {params.tip !== "puf" && params.tip !== "berjer" && (
+            <Segmented label="Oturum" value={params.oturumTipi ?? "ayri"} options={OTURUM_TIPLERI} labels={OTURUM_TIPI_LABELS} onChange={(v) => optional("oturumTipi", v, "ayri")} />
+          )}
           <Segmented label="Ayak" value={params.ayak} options={AYAKLAR} labels={AYAK_LABELS} onChange={(v) => set("ayak", v)} />
           {params.tip === "kose" && (
             <>
@@ -187,6 +220,13 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
           <h2 className="eyebrow">2 · Ölçüler</h2>
           <SizeField label={params.tip === "kose" ? "Arka duvar boyu, uçlar dahil (cm)" : "Genişlik (cm)"} value={params.genislikCm} range={lim.w} error={errors.genislikCm} onChange={(v) => set("genislikCm", v)} />
           <SizeField label="Derinlik (cm)" value={params.derinlikCm} range={lim.d} error={errors.derinlikCm} onChange={(v) => set("derinlikCm", v)} />
+          <SizeField
+            label={params.tip === "puf" ? "Yükseklik (cm)" : "Yükseklik, sırtın üstü (cm)"}
+            value={heightCm(params)}
+            range={HEIGHT_LIMITS[params.tip === "puf" ? "puf" : "koltuk"]}
+            error={errors.yukseklikCm}
+            onChange={(v) => set("yukseklikCm", v)}
+          />
           {params.tip === "kose" &&
             (
               [
@@ -207,6 +247,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
             )}
           <p className="text-[13px] text-antrasit-70">
             Dış ölçü: <strong className="font-medium text-antrasit">{dims.w} × {dims.d} × {dims.h} cm</strong> (oturma yüksekliği 44 cm)
+            {params.yukseklikCm === undefined && params.tip !== "puf" && <> · yükseklik sırt seçiminden geliyor; firmanın ölçüsünü yazabilirsiniz</>}
           </p>
         </section>
 

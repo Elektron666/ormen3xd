@@ -614,3 +614,12 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Taslağa "Yurt dışına aktarım" paragrafı eklendi: Supabase ve Vercel, Frankfurt. Dayanağı avukat yazacak.
   - "Amaç" cümlesi düzeltildi. Numune müşteriye değil, firmanın mağazasına gidiyor (2. toplantı); eski metin "size ulaştırılması" diyordu.
   - Avukata verilecek bilgi `AVUKAT-PAKETI.md` dosyasında.
+
+## Seçerek oluştur: gerçek yükseklik, sabit sırt, tek parça oturum
+
+- **Neden:** Fatih Bey müşteri firmaların koltuk fotoğraflarını gönderecek. Fotoğraftan 3B model çıkaran yapay zekâ servisleri ücretli ve dış servis; kumaşı da gerçek ölçüde oturtamıyorlar. Bu yüzden "Seçerek oluştur" fotoğraftaki koltuğa daha çok benzeyecek şekilde genişletildi. Pilot şartı 4: firma kendi koltuğunu görmeli.
+- **Yükseklik:** Firmanın verdiği ölçü santimetre olarak giriliyor (koltuklarda 65–110 cm, pufta 30–55 cm). Önceden yalnızca alçak, orta ya da yüksek seçilebiliyordu; gerçek ölçü tutmayınca kumaş deseni de yanlış büyüklükte görünürdü. Sırt düğmeleri artık hazır değer kısayolu: birine basınca yazılan yükseklik silinir.
+- **Sırt tipi:** Ayrı minderli (önceki hâli) ya da sabit (tek parça, döşemesi gövdeye sabit sırt).
+- **Oturum:** Her kişiye ayrı minder ya da tek parça minder. Tek parça oturumda sırt minderleri yine kişi başına; çoğu modelde böyle.
+- **Eski modeller:** Yeni seçimler yalnızca seçildiklerinde kaydediliyor. Eski modellerin verisi birebir aynı kalıyor ve veritabanında değişiklik gerekmiyor (`params` alanı zaten jsonb).
+- **Hâlâ çıkmayanlar:** Kapitone, kulaklı berjer, özel kol kıvrımı ve dikiş detayı. Fotoğraflar gelince en sık ihtiyaç duyulan hangisiyse o eklenecek.

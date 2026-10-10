@@ -13,6 +13,12 @@ export const SIRTLAR = ["alcak", "orta", "yuksek"] as const;
 export type Sirt = (typeof SIRTLAR)[number];
 export const AYAKLAR = ["konik", "metal", "gizli"] as const;
 export type Ayak = (typeof AYAKLAR)[number];
+/** Loose back cushions, or a fixed upholstered back (common on modern and Chester-style pieces). */
+export const SIRT_TIPLERI = ["minderli", "sabit"] as const;
+export type SirtTipi = (typeof SIRT_TIPLERI)[number];
+/** One cushion per seat, or one long bench cushion per straight run. */
+export const OTURUM_TIPLERI = ["ayri", "tek"] as const;
+export type OturumTipi = (typeof OTURUM_TIPLERI)[number];
 /** What a corner/modular set ends with on each side, seen from the front. */
 export const UCLAR = ["kol", "kose", "sezlong"] as const;
 export type Uc = (typeof UCLAR)[number];
@@ -35,6 +41,15 @@ export interface ParametricParams {
   /** Overall length of that end's return or chaise, from the back wall forward, cm. */
   solBoyCm?: number;
   sagBoyCm?: number;
+  /** Fixed back instead of loose cushions; missing = loose cushions. */
+  sirtTipi?: SirtTipi;
+  /** One bench cushion per run; missing = one per seat. */
+  oturumTipi?: OturumTipi;
+  /**
+   * The firm's real overall height, cm (top of the back; for a pouf, its top).
+   * Missing = the height of the chosen back preset.
+   */
+  yukseklikCm?: number;
 }
 
 export const TIP_LABELS: Record<Tip, string> = {
@@ -48,6 +63,8 @@ export const TIP_LABELS: Record<Tip, string> = {
 export const KOL_LABELS: Record<Kol, string> = { ince: "İnce", kalin: "Kalın", yuvarlak: "Yuvarlak", yok: "Kolsuz" };
 export const SIRT_LABELS: Record<Sirt, string> = { alcak: "Alçak", orta: "Orta", yuksek: "Yüksek" };
 export const AYAK_LABELS: Record<Ayak, string> = { konik: "Ahşap konik", metal: "İnce metal", gizli: "Gizli kaide" };
+export const SIRT_TIPI_LABELS: Record<SirtTipi, string> = { minderli: "Ayrı minderli", sabit: "Sabit (tek parça)" };
+export const OTURUM_TIPI_LABELS: Record<OturumTipi, string> = { ayri: "Her kişiye ayrı minder", tek: "Tek parça minder" };
 export const UC_LABELS: Record<Uc, string> = { kol: "Kol", kose: "Köşe", sezlong: "Şezlong" };
 
 /** Chaise module width (m in the builder, cm here). */
@@ -75,6 +92,18 @@ export const DEFAULTS: Record<Tip, ParametricParams> = {
 /** Overall heights, cm. Seats are 44 cm high on every type. */
 export const BACK_HEIGHT_CM: Record<Sirt, number> = { alcak: 72, orta: 82, yuksek: 95 };
 export const SEAT_HEIGHT_CM = 44;
+/** Real heights a firm may enter, cm: a back clears the seat by 20 cm at least. */
+export const HEIGHT_LIMITS = { koltuk: [65, 110] as [number, number], puf: [30, 55] as [number, number] };
+
+/** Overall height in cm: the firm's own figure when entered, else the preset's. */
+export function heightCm(p: ParametricParams): number {
+  return p.yukseklikCm ?? (p.tip === "puf" ? SEAT_HEIGHT_CM : BACK_HEIGHT_CM[p.sirt]);
+}
+
+/** A back counts as low (no cushion rising over the frame) up to the low preset's height. */
+export function lowBack(p: ParametricParams): boolean {
+  return p.yukseklikCm !== undefined ? p.yukseklikCm <= BACK_HEIGHT_CM.alcak + 3 : p.sirt === "alcak";
+}
 
 /** How many seat cushions a straight run of the given type and length gets. */
 export function seatCount(tip: Tip, runCm: number): number {
@@ -85,7 +114,7 @@ export function seatCount(tip: Tip, runCm: number): number {
   return Math.max(1, Math.round(runCm / 65));
 }
 
-export type ParamErrors = Partial<Record<"genislikCm" | "derinlikCm" | "solBoyCm" | "sagBoyCm" | "uclar", string>>;
+export type ParamErrors = Partial<Record<"genislikCm" | "derinlikCm" | "yukseklikCm" | "solBoyCm" | "sagBoyCm" | "uclar", string>>;
 
 /** Width the end takes from the back-wall run, cm (an arm is part of the run). */
 function endWidthCm(p: ParametricParams, uc: Uc | undefined): number {
@@ -98,6 +127,10 @@ export function validateParams(p: ParametricParams): ParamErrors {
   const range = (v: number | undefined, [lo, hi]: [number, number]) => typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi;
   if (!range(p.genislikCm, lim.w)) e.genislikCm = `Genişlik ${lim.w[0]}–${lim.w[1]} cm arasında olmalı.`;
   if (!range(p.derinlikCm, lim.d)) e.derinlikCm = `Derinlik ${lim.d[0]}–${lim.d[1]} cm arasında olmalı.`;
+  if (p.yukseklikCm !== undefined) {
+    const hl = HEIGHT_LIMITS[p.tip === "puf" ? "puf" : "koltuk"];
+    if (!range(p.yukseklikCm, hl)) e.yukseklikCm = `Yükseklik ${hl[0]}–${hl[1]} cm arasında olmalı.`;
+  }
   if (p.tip === "kose") {
     const sol = p.solUc ?? "kol";
     const sag = p.sagUc ?? "kol";
@@ -120,7 +153,7 @@ export function validateParams(p: ParametricParams): ParamErrors {
 
 /** Bounding box (cm) as used for the room layout and the plan. */
 export function paramDimensions(p: ParametricParams): { w: number; d: number; h: number } {
-  const h = p.tip === "puf" ? SEAT_HEIGHT_CM : BACK_HEIGHT_CM[p.sirt];
+  const h = heightCm(p);
   const d =
     p.tip === "kose"
       ? Math.max(p.derinlikCm, p.solUc && p.solUc !== "kol" ? (p.solBoyCm ?? 0) : 0, p.sagUc && p.sagUc !== "kol" ? (p.sagBoyCm ?? 0) : 0)
@@ -187,6 +220,10 @@ export function normaliseParams(raw: unknown): ParametricParams | null {
       p.sagBoyCm = num(r.sagBoyCm, base.sagBoyCm!);
     }
   }
+  // newer, optional choices: stored only when set, so older models keep their exact data
+  if (p.tip !== "puf" && SIRT_TIPLERI.includes(r.sirtTipi as SirtTipi) && r.sirtTipi !== "minderli") p.sirtTipi = r.sirtTipi as SirtTipi;
+  if (p.tip !== "puf" && p.tip !== "berjer" && OTURUM_TIPLERI.includes(r.oturumTipi as OturumTipi) && r.oturumTipi !== "ayri") p.oturumTipi = r.oturumTipi as OturumTipi;
+  if (typeof r.yukseklikCm === "number" && Number.isFinite(r.yukseklikCm)) p.yukseklikCm = Math.round(r.yukseklikCm);
   return p;
 }
 
@@ -208,6 +245,8 @@ export function describeParams(p: ParametricParams): string {
   const size = p.tip === "kose" ? `${p.genislikCm} × ${d} cm` : `${p.genislikCm} × ${p.derinlikCm} cm`;
   const parts = [shapeName(p), size];
   if (p.tip !== "puf") parts.push(p.kol === "yok" ? "kolsuz" : `${KOL_LABELS[p.kol].toLocaleLowerCase("tr-TR")} kol`);
+  if (p.sirtTipi === "sabit") parts.push("sabit sırt");
+  if (p.oturumTipi === "tek") parts.push("tek parça oturum");
   if (p.tip === "kose") {
     const side = (uc: Uc | undefined, where: string) => (uc === "kose" ? `köşe ${where}` : uc === "sezlong" ? `şezlong ${where}` : null);
     parts.push(...[side(p.solUc, "solda"), side(p.sagUc, "sağda")].filter((x): x is string => !!x));

@@ -14,6 +14,12 @@ const cases: ParametricParams[] = [
   { ...DEFAULTS.kose, solUc: "kose", sagUc: "kose", genislikCm: 360, solBoyCm: 200, sagBoyCm: 240 },
   { ...DEFAULTS.kose, solUc: "kol", sagUc: "sezlong", genislikCm: 260, sagBoyCm: 165, ayak: "metal" },
   { ...DEFAULTS.kose, solUc: "sezlong", sagUc: "kose", genislikCm: 320, solBoyCm: 160, sagBoyCm: 230, kol: "ince" },
+  // the firm's own height, fixed back, bench seat (closer to real models from photos)
+  { ...DEFAULTS.uclu, yukseklikCm: 88, sirtTipi: "sabit", oturumTipi: "tek" },
+  { ...DEFAULTS.ikili, yukseklikCm: 70, sirtTipi: "sabit" },
+  { ...DEFAULTS.berjer, yukseklikCm: 104, sirtTipi: "sabit", kol: "yuvarlak" },
+  { ...DEFAULTS.kose, solUc: "kose", sagUc: "sezlong", genislikCm: 330, solBoyCm: 230, sagBoyCm: 170, sirtTipi: "sabit", oturumTipi: "tek", yukseklikCm: 78 },
+  { ...DEFAULTS.puf, yukseklikCm: 38 },
 ];
 
 describe("parametric spec", () => {
@@ -36,6 +42,35 @@ describe("parametric spec", () => {
     expect(normaliseParams({ tip: "masa" })).toBeNull();
     expect(normaliseParams({ tip: "puf", kol: "kalin" })!.kol).toBe("yok");
   });
+  it("firmanın gerçek yüksekliği, sabit sırt ve tek parça oturum", () => {
+    expect(paramDimensions({ ...DEFAULTS.uclu, yukseklikCm: 88 }).h).toBe(88);
+    expect(paramDimensions(DEFAULTS.uclu).h).toBe(82);
+    expect(validateParams({ ...DEFAULTS.uclu, yukseklikCm: 50 }).yukseklikCm).toMatch(/65–110/);
+    expect(validateParams({ ...DEFAULTS.puf, yukseklikCm: 70 }).yukseklikCm).toMatch(/30–55/);
+    // stored only when set: older models keep exactly the same data
+    expect(normaliseParams(DEFAULTS.uclu)).toEqual(DEFAULTS.uclu);
+    expect(normaliseParams({ ...DEFAULTS.uclu, sirtTipi: "minderli", oturumTipi: "ayri" })).toEqual(DEFAULTS.uclu);
+    expect(normaliseParams({ ...DEFAULTS.uclu, sirtTipi: "sabit", oturumTipi: "tek", yukseklikCm: 87.6 })).toEqual({ ...DEFAULTS.uclu, sirtTipi: "sabit", oturumTipi: "tek", yukseklikCm: 88 });
+    expect(normaliseParams({ ...DEFAULTS.berjer, oturumTipi: "tek" })!.oturumTipi).toBeUndefined();
+    expect(describeParams({ ...DEFAULTS.uclu, yukseklikCm: 88, sirtTipi: "sabit", oturumTipi: "tek" })).toBe("Üçlü kanepe · 225 × 95 cm · kalın kol · sabit sırt · tek parça oturum");
+  });
+
+  it("tek parça oturumda bir oturum minderi, sabit sırtta bir sırt dolgusu", () => {
+    const names = (p: ParametricParams) => {
+      const n: string[] = [];
+      buildParametric(p).traverse((o) => o.name && n.push(o.name));
+      return n;
+    };
+    const count = (p: ParametricParams, name: string) => names(p).filter((n) => n === name).length;
+    expect(count(DEFAULTS.uclu, "oturum")).toBe(3);
+    expect(count(DEFAULTS.uclu, "sirt-minder")).toBe(3);
+    expect(count({ ...DEFAULTS.uclu, oturumTipi: "tek" }, "oturum")).toBe(1);
+    // a bench seat keeps a back cushion per person
+    expect(count({ ...DEFAULTS.uclu, oturumTipi: "tek" }, "sirt-minder")).toBe(3);
+    expect(count({ ...DEFAULTS.uclu, sirtTipi: "sabit" }, "sirt-minder")).toBe(0);
+    expect(count({ ...DEFAULTS.uclu, sirtTipi: "sabit" }, "sirt-dolgu")).toBe(1);
+  });
+
   it("describes a model in Turkish", () => {
     expect(describeParams(DEFAULTS.kose)).toBe("Köşe takımı · 290 × 220 cm · kalın kol · köşe sağda");
     expect(shapeName({ ...DEFAULTS.kose, solUc: "kose" })).toBe("U koltuk");
