@@ -693,3 +693,13 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Halkanın kapandığı tek ek yeri arka-alt kenarda, görünmeyen yerde.
 - **Doğrulama:** Yeni test, ön-üst, ön-alt, ön-yan ve kol üst kenarlarında doku koordinatının kesintisiz olduğunu denetliyor. Kumaşın gerçek ölçüsü (1 doku birimi = 1 m) değişmedi.
 - **Hâlâ olan:** Üst yüz ile yan kapak arasında desen buluşmuyor; gerçek döşemede de bu dikiş çizgisidir. Her minderde desen, minderin ortasına ortalanıyor; usta da genelde böyle yapar.
+
+## MISSO: tile artık fotoğrafın ortasından dört tam diş (10 Ekim, ikinci düzeltme)
+
+- **Şikâyet (Fatih Bey):** Önceki düzeltmeden sonra "daha da bozulmuş".
+- **Asıl sebep ölçek değil, kesimdi.** Telefon fotoğrafı kumaşa tam dik değildi; dişler fotoğrafın bir kenarına doğru büyüyordu. Fotoğrafın geniş bir bölümünden kesilen tile kenarından kendine uymuyordu. Kenarlar karıştırılınca koltukta 20–25 cm'de bir bulanık, kaymış şeritler oluşuyordu.
+- **Çözüm:**
+  - Tile, fotoğrafın tam ortasından alınan **dört tam diş** genişliğinde bir şerit. Orada açı bozulması en az; zikzak dişten dişe birebir tekrar ettiği için şerit yan yana birebir oturuyor.
+  - Kalan küçük eğim, şeridin iki kenar sütunu karşılaştırılarak alınıyor; yan kenarda yalnızca ince bir geçiş var.
+  - Yükseklikte tile fotoğrafın neredeyse tamamı (yaklaşık 1 m). Renk bantlarının döndüğü yerde ince bir geçişle kapanıyor; dikey ek çok seyrek.
+- **Ölçek:** Bir diş 4,6 cm (MISSO-05'in metreli fotoğrafından), tile genişliği 18,4 cm.

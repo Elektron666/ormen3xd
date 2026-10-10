@@ -6,10 +6,10 @@ import type { ColorFamily, Fabric } from "@/lib/types";
 // edge bands cross-faded) and are served from /seed/fabrics/misso.
 //
 // Scale is measured, not assumed: one photo (MISSO-05) has a ruler in it,
-// 14.25 px per cm; its tile is 52.5 cm wide and holds 11.4 teeth, so one
-// zigzag tooth is 4.6 cm. The other colourways are the same weave and take the
-// same tooth size; their teeth are counted in the finished tile (an earlier
-// count from the photos was a quarter off and drew them too fine). MISSO-01, 02, 04, 05 and
+// 14.25 px per cm, which makes one zigzag tooth 4.6 cm. The other colourways
+// are the same weave and take the same tooth size. Each tile is a strip of
+// exactly four teeth from the centre of its photo (where the phone's slant
+// distorts least), so it meets itself side by side without blending. MISSO-01, 02, 04, 05 and
 // 06 come from photos taken flat from above; MISSO-03 still from a photo on
 // the roll (a flat one was sent but did not arrive as a file).
 //
@@ -23,12 +23,12 @@ export const TOOTH_CM = 4.6;
 
 // colour family by the dominant colour: the average of a multicoloured fabric comes out grey
 const MISSO: { colorName: string; family: ColorFamily; repeatCm: { w: number; h: number }; avgColor: string }[] = [
-  { colorName: "Mercan Çok Renkli", family: "kirmizi-bordo", repeatCm: { w: 88.3, h: 79.4 }, avgColor: "#A8998E" },
-  { colorName: "Gri Bej", family: "gri", repeatCm: { w: 69, h: 71.9 }, avgColor: "#A49A93" },
-  { colorName: "Siyah Pembe", family: "pembe", repeatCm: { w: 28.5, h: 24.7 }, avgColor: "#8B6B66" },
-  { colorName: "Kahve Altın", family: "kahve", repeatCm: { w: 69.5, h: 106.4 }, avgColor: "#80766E" },
-  { colorName: "Gri Pastel", family: "gri", repeatCm: { w: 52.5, h: 91.3 }, avgColor: "#A18D79" },
-  { colorName: "Gri Siyah", family: "gri", repeatCm: { w: 85.6, h: 83.1 }, avgColor: "#A29992" },
+  { colorName: "Mercan Çok Renkli", family: "kirmizi-bordo", repeatCm: { w: 18.4, h: 112.5 }, avgColor: "#A8998D" },
+  { colorName: "Gri Bej", family: "gri", repeatCm: { w: 18.4, h: 87.2 }, avgColor: "#A59A91" },
+  { colorName: "Siyah Pembe", family: "pembe", repeatCm: { w: 18.4, h: 26.8 }, avgColor: "#8A6864" },
+  { colorName: "Kahve Altın", family: "kahve", repeatCm: { w: 18.4, h: 99.4 }, avgColor: "#7E736B" },
+  { colorName: "Gri Pastel", family: "gri", repeatCm: { w: 18.4, h: 91.5 }, avgColor: "#A18C78" },
+  { colorName: "Gri Siyah", family: "gri", repeatCm: { w: 18.4, h: 112.5 }, avgColor: "#A19991" },
 ];
 
 export function buildPhotoFabrics(startOrder = 100): Fabric[] {

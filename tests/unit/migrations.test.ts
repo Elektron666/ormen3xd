@@ -123,7 +123,7 @@ describe("seed.sql", () => {
     await fresh.exec("update fabric_textures set repeat_w_cm = 1 where fabric_id = (select id from fabrics where code = 'MISSO-05'); update fabrics set color_name = 'Panelde verilen ad' where code = 'MISSO-05'");
     await fresh.exec(misso);
     const m5 = await fresh.query<{ color_name: string; repeat_w_cm: number }>("select f.color_name, t.repeat_w_cm::float as repeat_w_cm from fabrics f join fabric_textures t on t.fabric_id = f.id where f.code = 'MISSO-05'");
-    expect(m5.rows[0]).toEqual({ color_name: "Panelde verilen ad", repeat_w_cm: 52.5 });
+    expect(m5.rows[0]).toEqual({ color_name: "Panelde verilen ad", repeat_w_cm: 18.4 });
     const mf = await fresh.query<{ pattern: string; is_placeholder: boolean; width_cm: number | null }>("select pattern, is_placeholder, width_cm from fabrics where code = 'MISSO-03'");
     expect(mf.rows[0]).toEqual({ pattern: "desenli", is_placeholder: false, width_cm: null });
     const m = await fresh.query<{ fabric_material_names: string[]; default_fabric_code: string }>("select fabric_material_names, default_fabric_code from models where slug = 'berjer'");

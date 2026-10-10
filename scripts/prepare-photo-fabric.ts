@@ -6,8 +6,9 @@
 //      colour bands) and the photo is turned level;
 //   2. the flattest central part is kept;
 //   3. the horizontal repeat of the pattern (one zigzag tooth) is measured;
-//   4. width and height are searched for where the fabric repeats itself, a
-//      thin band at the edges is cross-faded (overlapTile), relief and roughness are
+//   4. a strip of whole teeth from the centre of the photo is the tile's width
+//      (stripTile: it meets itself exactly side by side), its height is cut where
+//      the colour bands come round again and cross-faded thinly; relief and roughness are
 //      derived (deriveMaps), and 2K/1K maps plus a swatch are written.
 //
 //   npx tsx scripts/prepare-photo-fabric.ts --series MISSO --type jakar --tooth-cm 2.4 a.jpg b.jpg …
@@ -190,84 +191,34 @@ function flattenLight(rgb: Uint8Array, w: number, h: number, radius: number): vo
   }
 }
 
-/** Mean squared colour difference between two vertical (or horizontal) strips of an RGB image. */
-function stripDiff(rgb: Uint8Array, w: number, a: number, b: number, len: number, band: number, vertical: boolean): number {
-  let sum = 0;
-  let n = 0;
-  for (let k = 0; k < band; k++)
-    for (let t = 0; t < len; t += 2) {
-      const i = vertical ? (t * w + a + k) * 3 : ((a + k) * w + t) * 3;
-      const j = vertical ? (t * w + b + k) * 3 : ((b + k) * w + t) * 3;
-      for (let c = 0; c < 3; c++) sum += (rgb[i + c] - rgb[j + c]) ** 2;
-      n++;
-    }
-  return sum / n;
+/** Bilinear sample of one channel of an RGB image, clamped to its edges. */
+function sample(rgb: Uint8Array, w: number, h: number, x: number, y: number, c: number): number {
+  const cx = Math.min(w - 1.001, Math.max(0, x));
+  const cy = Math.min(h - 1.001, Math.max(0, y));
+  const x0 = Math.floor(cx);
+  const y0 = Math.floor(cy);
+  const fx = cx - x0;
+  const fy = cy - y0;
+  const at = (xx: number, yy: number) => rgb[(yy * w + xx) * 3 + c];
+  return (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) + (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
 }
 
-/**
- * Cuts a tile that repeats on its own: the width is searched near the given
- * number of teeth, the height over the whole crop, each for the place where
- * the fabric looks most like itself again. Only a thin band at each edge is
- * then cross-faded into the fabric just beyond it, so there is no ghosting
- * of a shifted copy over the pattern (what a half-shift blend does to a
- * zigzag).
- */
-function overlapTile(rgb: Uint8Array, w: number, h: number, approxW: number): { tile: Uint8ClampedArray; width: number; height: number } {
-  const bx = Math.max(6, Math.round(approxW * 0.06));
-  let tw = Math.round(approxW);
-  let best = Infinity;
-  for (let W = Math.round(approxW * 0.94); W <= Math.round(approxW * 1.06) && W + bx < w; W++) {
-    const d = stripDiff(rgb, w, 0, W, h, bx, true);
-    if (d < best) {
-      best = d;
-      tw = W;
-    }
-  }
-  const by = Math.max(6, Math.round(h * 0.06));
-  let th = h - by;
-  best = Infinity;
-  for (let T = Math.round(Math.max(tw * 0.6, h * 0.45)); T + by < h; T++) {
-    const d = stripDiff(rgb, w, 0, T, tw + bx, by, false);
-    if (d < best) {
-      best = d;
-      th = T;
-    }
-  }
-  const tile = new Uint8ClampedArray(tw * th * 4);
-  const smooth = (t: number) => t * t * (3 - 2 * t);
-  for (let y = 0; y < th; y++)
-    for (let x = 0; x < tw; x++) {
-      // near the left/top edge, fade from the fabric that follows the right/bottom edge
-      const mx = x < bx ? smooth(x / bx) : 1;
-      const my = y < by ? smooth(y / by) : 1;
-      const o = (y * tw + x) * 4;
-      for (let c = 0; c < 3; c++) {
-        const at = (yy: number, xx: number) => rgb[(yy * w + xx) * 3 + c];
-        // read beyond the tile only inside the bands: elsewhere it may lie outside the crop
-        const row = (yy: number) => (mx < 1 ? at(yy, x) * mx + at(yy, x + tw) * (1 - mx) : at(yy, x));
-        tile[o + c] = my < 1 ? row(y) * my + row(y + th) * (1 - my) : row(y);
-      }
-      tile[o + 3] = 255;
-    }
-  return { tile, width: tw, height: th };
-}
-
-/** Teeth across a seamless tile: circular autocorrelation of its rows, searched within ±35 % of the expected count. */
-function teethInTile({ data, width: w, height: h }: Pixels, expected: number): number {
-  const lum = (i: number) => 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
-  const lo = Math.max(4, Math.floor(w / (expected * 1.35)));
-  const hi = Math.min(Math.floor(w / 2), Math.ceil(w / (expected * 0.65)));
+/** The tooth (px) right at the centre of the photo, where the camera's slant distorts least. */
+function centrePeriod(rgb: Uint8Array, w: number, h: number, near: number): number {
+  const lum = (x: number, y: number) => 0.2126 * rgb[(y * w + x) * 3] + 0.7152 * rgb[(y * w + x) * 3 + 1] + 0.0722 * rgb[(y * w + x) * 3 + 2];
+  const half = Math.min(Math.floor(w / 2) - 2, Math.round(near * 4));
+  const x0 = Math.floor(w / 2) - half;
+  const lo = Math.floor(near * 0.75);
+  const hi = Math.ceil(near * 1.25);
   const score = new Float64Array(hi + 2);
-  const row = new Float64Array(w);
-  for (let y = 0; y < h; y += 8) {
+  for (let y = Math.floor(h * 0.2); y < h * 0.8; y += 2) {
     let mean = 0;
-    for (let x = 0; x < w; x++) mean += row[x] = lum((y * w + x) * 4);
-    mean /= w;
-    for (let x = 0; x < w; x++) row[x] -= mean;
+    for (let x = x0; x < x0 + 2 * half; x++) mean += lum(x, y);
+    mean /= 2 * half;
     for (let lag = lo - 1; lag <= hi + 1; lag++) {
       let s = 0;
-      for (let x = 0; x < w; x++) s += row[x] * row[(x + lag) % w];
-      score[lag] += s;
+      for (let x = x0; x + lag < x0 + 2 * half; x++) s += (lum(x, y) - mean) * (lum(x + lag, y) - mean);
+      score[lag] += s / (2 * half - lag);
     }
   }
   let best = lo;
@@ -275,8 +226,85 @@ function teethInTile({ data, width: w, height: h }: Pixels, expected: number): n
   const a = score[best - 1];
   const b = score[best];
   const c = score[best + 1];
-  const lag = best + (a - c) / (2 * (a - 2 * b + c) || 1);
-  return Math.round((w / lag) * 10) / 10;
+  return best + (a - c) / (2 * (a - 2 * b + c) || 1);
+}
+
+/**
+ * A tile made of whole teeth from the middle of the photo. A zigzag repeats
+ * exactly from tooth to tooth across the fabric, so a strip of `teeth` teeth
+ * placed side by side meets itself without any blending. Phone photos are
+ * never quite square to the fabric (teeth grow towards one edge), which is
+ * why a wide cut did not meet itself; a narrow strip from the centre does.
+ * Any slight tilt left is taken out by matching the strip's two edge columns.
+ * Top and bottom are cut where the colour bands match and cross-faded thinly.
+ */
+function stripTile(rgb: Uint8Array, w: number, h: number, period: number, teeth: number): { tile: Uint8ClampedArray; width: number; height: number; stripPx: number } {
+  const Wf = teeth * period;
+  const x0 = w / 2 - Wf / 2;
+  // vertical offset between the strip's left and right edges (tilt), sub-pixel
+  const colDiff = (dy: number) => {
+    let s = 0;
+    let n = 0;
+    for (let y = Math.floor(h * 0.15); y < h * 0.85; y++)
+      for (let c = 0; c < 3; c++) {
+        s += (sample(rgb, w, h, x0, y, c) - sample(rgb, w, h, x0 + Wf, y + dy, c)) ** 2;
+        n++;
+      }
+    return s / n;
+  };
+  let dy = 0;
+  let best = Infinity;
+  for (let d = -10; d <= 10; d += 0.25) {
+    const v = colDiff(d);
+    if (v < best) {
+      best = v;
+      dy = d;
+    }
+  }
+  const W = Math.round(Wf);
+  const bx = Math.max(4, Math.round(W * 0.06));
+  const strip = new Uint8Array(W * h * 3);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < W; x++) {
+      const sx = x0 + (x * Wf) / W;
+      const sy = y + (dy * x) / W;
+      // the first few columns fade in from the fabric just past the strip's right edge, so a
+      // little light falloff across the strip does not show as a line where it repeats
+      const k = x < bx ? ((t) => t * t * (3 - 2 * t))(x / bx) : 1;
+      for (let c = 0; c < 3; c++) {
+        const v = sample(rgb, w, h, sx, sy, c);
+        strip[(y * W + x) * 3 + c] = Math.round(k < 1 ? v * k + sample(rgb, w, h, sx + Wf, sy + dy, c) * (1 - k) : v);
+      }
+    }
+  // height: where the rows of colour bands come round again
+  // tall: the seam comes round as seldom as the photo allows, and a wide fade hides it
+  const by = Math.max(8, Math.round(h * 0.1));
+  const rowDiff = (a: number, b: number) => {
+    let s = 0;
+    for (let k = 0; k < by; k++) for (let i = 0; i < W * 3; i++) s += (strip[(a + k) * W * 3 + i] - strip[(b + k) * W * 3 + i]) ** 2;
+    return s;
+  };
+  let T = h - by - 1;
+  best = Infinity;
+  for (let t = Math.round(h * 0.7); t + by < h; t++) {
+    const v = rowDiff(0, t);
+    if (v < best) {
+      best = v;
+      T = t;
+    }
+  }
+  const tile = new Uint8ClampedArray(W * T * 4);
+  for (let y = 0; y < T; y++) {
+    const m = y < by ? ((k) => k * k * (3 - 2 * k))(y / by) : 1;
+    for (let x = 0; x < W; x++) {
+      for (let c = 0; c < 3; c++) {
+        const top = strip[(y * W + x) * 3 + c];
+        tile[(y * W + x) * 4 + c] = m < 1 ? top * m + strip[((y + T) * W + x) * 3 + c] * (1 - m) : top;
+      }
+      tile[(y * W + x) * 4 + 3] = 255;
+    }
+  }
+  return { tile, width: W, height: T, stripPx: Wf };
 }
 
 async function main() {
@@ -310,11 +338,13 @@ async function main() {
     const period = horizontalPeriod(g, w, h, shot.toothPx);
     const { data: rgb } = await centre.clone().removeAlpha().raw().toBuffer({ resolveWithObject: true });
     flattenLight(rgb, cw, ch, Math.round(period * 1.5));
-    // as many whole teeth as fit with room for the overlap band
-    const teeth = Math.max(2, Math.floor((cw * 0.85) / period));
-    const { tile: tilePx, width: tileW, height: tileH } = overlapTile(rgb, cw, ch, teeth * period);
+    const tooth = centrePeriod(rgb, cw, ch, shot.toothPx ?? period);
+    const teeth = 4;
+    const { tile: tilePx, width: tileW, height: tileH, stripPx } = stripTile(rgb, cw, ch, tooth, teeth);
+    // about 24 px per cm, no bigger than 2048 on the long side
+    const scale = Math.min(2048 / Math.max(tileW, tileH), Math.max(1, (24 * (shot.pxPerCm ? tileW / shot.pxPerCm : teeth * toothCm)) / tileW));
     const tile = await sharp(Buffer.from(tilePx), { raw: { width: tileW, height: tileH, channels: 4 } })
-      .resize(2048, Math.round((2048 * tileH) / tileW), { kernel: "lanczos3" })
+      .resize(Math.round(tileW * scale), Math.round(tileH * scale), { kernel: "lanczos3" })
       .raw()
       .toBuffer({ resolveWithObject: true });
     const px: Pixels = {
@@ -323,10 +353,8 @@ async function main() {
       height: tile.info.height,
     };
     const before = seamScore(px);
-    // count the teeth in the finished tile itself: it wraps round, so the strongest circular
-    // repeat near the expected one is the tooth (the estimate from the photo can be off by a quarter)
-    const tileTeeth = teethInTile(px, tileW / period);
-    const repeatW = Math.round((shot.pxPerCm ? tileW / shot.pxPerCm : tileTeeth * toothCm) * 10) / 10;
+    const tileTeeth = teeth;
+    const repeatW = Math.round((shot.pxPerCm ? stripPx / shot.pxPerCm : teeth * toothCm) * 10) / 10;
     const repeatH = Math.round(((repeatW * px.height) / px.width) * 10) / 10;
     const { normal, roughness } = deriveMaps(px, type, repeatW);
 
@@ -377,7 +405,7 @@ async function main() {
       code,
       file: path.basename(file),
       angle,
-      periodPx: Math.round(period * 10) / 10,
+      periodPx: Math.round(tooth * 10) / 10,
       teeth,
       tileTeeth,
       repeatCm: { w: repeatW, h: repeatH },
