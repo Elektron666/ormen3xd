@@ -50,3 +50,17 @@ describe("bölgeye göre kumaş", () => {
     expect(zoneCode(p, null)).toBe("MISSO-06");
   });
 });
+
+describe("ayak rengi", () => {
+  it("bağlantıda saklanır; ceviz (varsayılan) yazılmaz; bilinmeyen renk reddedilir", async () => {
+    const { hasWoodLegs } = await import("@/lib/three/legs");
+    const items = decodeLayout("moduler-kanepe.LUMA-02.0.51.0.mSIENA-05~asiyah")!;
+    expect(items[0]).toMatchObject({ ayak: "siyah", zones: { minder: "SIENA-05" } });
+    expect(encodeLayout(items)).toBe("moduler-kanepe.LUMA-02.0.51.0.mSIENA-05~asiyah");
+    expect(encodeLayout([{ ...items[0], zones: undefined, ayak: "mese" }])).toBe("moduler-kanepe.LUMA-02.0.51.0.amese");
+    expect(encodeLayout([{ ...items[0], zones: undefined, ayak: "ceviz" }])).toBe("moduler-kanepe.LUMA-02.0.51.0");
+    expect(decodeLayout("moduler-kanepe.LUMA-02.0.51.0.amor")).toBeNull();
+    expect(hasWoodLegs({ source: { kind: "parametric", params: { ...DEFAULTS.uclu, ayak: "metal" } } })).toBe(false);
+    expect(hasWoodLegs({ source: { kind: "parametric", params: DEFAULTS.uclu } })).toBe(true);
+  });
+});

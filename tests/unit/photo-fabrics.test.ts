@@ -33,14 +33,16 @@ describe("Chester vitrin modelleri", () => {
   it("geçerli tarif, kıvrık kol ve kapitone; kumaşları katalogda var", async () => {
     const { SHOWCASE_MODELS } = await import("@/lib/seed/showcase-models");
     const { validateParams, normaliseParams } = await import("@/lib/parametric/spec");
-    const codes = new Set(buildPhotoFabrics().map((f) => f.code));
+    const { buildSeedFabrics } = await import("@/lib/seed/fabrics");
+    const codes = new Set([...buildPhotoFabrics(), ...buildSeedFabrics()].map((f) => f.code));
+    expect(new Set(SHOWCASE_MODELS.map((m) => m.slug)).size).toBe(SHOWCASE_MODELS.length);
     for (const m of SHOWCASE_MODELS) {
       if (m.source.kind !== "parametric") throw new Error(m.slug);
-      expect(validateParams(m.source.params)).toEqual({});
+      expect(validateParams(m.source.params), m.slug).toEqual({});
       expect(normaliseParams(m.source.params)).toEqual(m.source.params);
-      expect(m.source.params).toMatchObject({ kol: "kivrik", sirtTipi: "kapitone" });
       expect(codes.has(m.defaultFabricCode!)).toBe(true);
     }
+    for (const m of SHOWCASE_MODELS.slice(0, 2)) expect(m.source).toMatchObject({ params: { kol: "kivrik", sirtTipi: "kapitone" } });
     expect(SHOWCASE_MODELS[1].source).toMatchObject({ params: { kulak: true } });
   });
 });

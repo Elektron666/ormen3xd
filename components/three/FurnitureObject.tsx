@@ -11,12 +11,16 @@ import { FabricDresser } from "@/lib/three/fabric-dresser";
 import { setObjectLayer } from "@/lib/three/layers";
 import { LAYER_PRIMARY } from "@/lib/three/constants";
 import { ZONES, type Zone } from "@/lib/three/zones";
+import type { LegFinish } from "@/lib/three/legs";
+import { paintLegs } from "@/lib/three/paint-legs";
 
 export interface FurnitureObjectProps {
   model: FurnitureModel;
   fabric: Fabric;
   /** Single zones (arms, cushions…) in their own fabric. */
   zoneFabrics?: Partial<Record<Zone, Fabric>>;
+  /** Finish of wooden legs (models built from code). */
+  legFinish?: LegFinish;
   textureSize: TextureSize;
   onPrepared?: (prepared: PreparedModel) => void;
   /** Called once a fabric is actually visible on the model. */
@@ -26,7 +30,7 @@ export interface FurnitureObjectProps {
   layer?: number;
 }
 
-function Dressed({ source, model, fabric, zoneFabrics, textureSize, onPrepared, onFabricShown, onError, layer = LAYER_PRIMARY }: FurnitureObjectProps & { source: THREE.Object3D }) {
+function Dressed({ source, model, fabric, zoneFabrics, legFinish, textureSize, onPrepared, onFabricShown, onError, layer = LAYER_PRIMARY }: FurnitureObjectProps & { source: THREE.Object3D }) {
   const invalidate = useThree((s) => s.invalidate);
   const prepared = useMemo(() => prepareModel(source, model.fabricMaterialNames), [source, model.fabricMaterialNames]);
   const dresser = useMemo(() => new FabricDresser(prepared.root, prepared.slots), [prepared]);
@@ -35,6 +39,12 @@ function Dressed({ source, model, fabric, zoneFabrics, textureSize, onPrepared, 
   useEffect(() => {
     callbacks.current = { onPrepared, onFabricShown, onError };
   });
+
+  useEffect(() => {
+    if (model.source.kind === "glb") return;
+    paintLegs(prepared.root, legFinish);
+    invalidate();
+  }, [prepared, model.source.kind, legFinish, invalidate]);
 
   // the layer can change (e.g. compare mode) without re-preparing the model
   useEffect(() => {

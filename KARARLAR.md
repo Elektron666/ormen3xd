@@ -725,3 +725,20 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - "Odamda gör" (AR) dosyası her bölgeyi kendi kumaşıyla içeriyor ve 4 MB sınırının altında kalıyor.
 - **Metraj:** Firmanın metrajı tek kumaşlı parça için. Bölgelere bölünmüş parçada föy her kumaşı ayrı satırda, bölgesiyle gösteriyor. Metre yerine "Bölgelere farklı kumaş seçildi; hangi kumaştan kaç metre gideceğini usta hesaplar" yazıyor. Uydurma bölme yok.
 - **Karşılaştırma modunda** bölge seçimi gizli; karşılaştırma bütün parçayı tek kumaşta gösteriyor.
+
+## Ayak rengi, "tümüne uygula" ve yeni vitrin modelleri (10 Ekim)
+
+- **Ayak rengi:** Kumaş panelinde, bölge seçiminin altında. Seçenekler ceviz (varsayılan), meşe, doğal ahşap ve siyah.
+  - Yalnızca konik ahşap ayaklı, kodla çizilen modellerde çıkıyor; metal ayak ve gizli kaide olduğu gibi kalıyor.
+  - Bağlantıya `a` ile yazılıyor (ör. `.mSIENA-05~asiyah`); ceviz yazılmıyor.
+  - AR dosyasına da geçiyor.
+- **"Tümüne uygula":** Önceden yalnızca ana kumaşı kopyalıyordu. Artık seçili parçanın bütün döşemesini (ana kumaş, bölge kumaşları, ayak rengi) diğer parçalara kopyalıyor. Bölge ya da ayak varsa düğmenin adı "Bu döşemeyi tümüne uygula" oluyor.
+- **Vitrin modelleri (Fatih Bey: "birkaç tane koltuk modeli ekle"):** Seçerek oluştur ile kuruldu:
+  - Modern Üçlü
+  - İskandinav İkili
+  - Şezlonglu L Köşe
+  - U Koltuk
+  - Blok Dörtlü Kanepe
+  - Puf
+
+  Chester ikilisiyle birlikte toplam sekiz model var. Canlı için `supabase/modeller-vitrin.sql` dosyası çalıştırılmalı; `modeller-chester.sql` bu dosyanın içine katıldı. Ölçüler Türkiye'de yaygın ölçüler; firma modeli değil, vitrin örneği.

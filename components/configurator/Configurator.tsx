@@ -11,6 +11,7 @@ import { PresetStrip } from "./PresetStrip";
 import { KioskCodeEntry } from "@/components/kiosk/KioskCodeEntry";
 import { MeasurePanel } from "./MeasurePanel";
 import { ZonePicker } from "./ZonePicker";
+import { DEFAULT_LEG, hasWoodLegs } from "@/lib/three/legs";
 import { cleanZones, fabricParts, pieceCodes, zoneCode, zoneFabricsOf, type Zone } from "@/lib/three/zones";
 import { useMedia } from "@/lib/use-media";
 import { FabricPicker } from "./FabricPicker";
@@ -188,7 +189,16 @@ export function Configurator({
     return m ? fabricsForModel(fabrics, m) : fabrics;
   };
   // only pieces whose model offers this fabric take it
-  const applyToAll = () => commit(items.map((p) => (allowedOn(p.modelSlug).some((f) => f.code === selected.code) ? { ...p, fabricCode: selected.code } : p)));
+  // copies the selected piece's whole dressing: main fabric, zone fabrics, leg finish
+  const applyToAll = () =>
+    commit(
+      items.map((p) => {
+        const allowed = allowedOn(p.modelSlug);
+        if (!allowed.some((f) => f.code === selected.code)) return p;
+        const zones = selectedItem.zones && Object.fromEntries(Object.entries(selectedItem.zones).filter(([, c]) => allowed.some((f) => f.code === c)));
+        return { ...p, fabricCode: selected.code, zones: zones && Object.keys(zones).length ? zones : undefined, ayak: selectedItem.ayak };
+      }),
+    );
 
   // ---------------------------------------------------------------- piece actions
   const addPiece = (slug: string) => {
@@ -483,7 +493,16 @@ export function Configurator({
       >
         <div id="bolum-kumas" role="tabpanel" aria-labelledby="sekme-kumas" hidden={tab !== "kumas"}>
           <PresetStrip presets={firm?.presets ?? []} fabrics={byCode} />
-          {zonable && !compare && <ZonePicker piece={selectedItem} fabrics={byCode} zone={activeZone} onZone={setZone} />}
+          {zonable && !compare && (
+            <ZonePicker
+              piece={selectedItem}
+              fabrics={byCode}
+              zone={activeZone}
+              onZone={setZone}
+              legs={hasWoodLegs(selectedModel)}
+              onLegs={(ayak) => commit(items.map((p) => (p.id === selectedItem.id ? { ...p, ayak: ayak === DEFAULT_LEG ? undefined : ayak } : p)))}
+            />
+          )}
           {compare && (
             <div className="mb-6 rounded-xl border border-cizgi p-3">
               <div className="mb-2 flex items-center justify-between">
@@ -530,9 +549,9 @@ export function Configurator({
               <span className="text-antrasit-70">
                 Seçili: <span className="text-antrasit">{selectedModel.name}</span>
               </span>
-              {items.some((p) => p.fabricCode !== selected.code) && (
+              {items.some((p) => pieceCodes(p).join() !== pieceCodes(selectedItem).join() || p.ayak !== selectedItem.ayak) && (
                 <button type="button" onClick={applyToAll} className="rounded-full px-2 py-1 text-antrasit underline underline-offset-4 hover:text-ceviz focus-visible:outline-2 focus-visible:outline-antrasit">
-                  Bu kumaşı tümüne uygula
+                  {selectedItem.zones || selectedItem.ayak ? "Bu döşemeyi tümüne uygula" : "Bu kumaşı tümüne uygula"}
                 </button>
               )}
             </div>
@@ -638,7 +657,7 @@ export function Configurator({
           url={takeHome}
         />
       )}
-      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
+      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} legFinish={selectedItem.ayak} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { textureRepeat } from "@/lib/fabric/scale";
 import { prepareModel, type PreparedModel } from "@/lib/three/prepare-model";
 import { createFabricMaterial, type FabricTextures } from "@/lib/three/fabric-material";
 import { ZONES, wornZone, type Zone } from "@/lib/three/zones";
+import type { LegFinish } from "@/lib/three/legs";
+import { paintLegs } from "@/lib/three/paint-legs";
 
 // AR export: one piece of furniture, dressed in one fabric, as a standalone
 // .glb the phone's AR viewer can place in the room at real size.
@@ -55,8 +57,10 @@ export function buildArScene(
   fabric: Fabric,
   tex: FabricTextures,
   zones: Partial<Record<Zone, { fabric: Fabric; tex: FabricTextures }>> = {},
+  legFinish?: LegFinish,
 ): PreparedModel {
   const prepared = prepareModel(source, model.fabricMaterialNames);
+  if (model.source.kind !== "glb") paintLegs(prepared.root, legFinish);
   const materials = new Map<string, THREE.MeshPhysicalMaterial>();
   const forSlot = (mesh: THREE.Mesh) => {
     const z = wornZone(mesh.name, mesh.parent?.name, zones);
@@ -120,8 +124,8 @@ async function loadSource(model: FurnitureModel): Promise<THREE.Object3D> {
 const glbCache = new Map<string, Promise<Blob>>();
 
 /** The AR file for a model in a fabric (built once per pair and kept for the visit). */
-export function arGlb(model: FurnitureModel, fabric: Fabric, zoneFabrics: Partial<Record<Zone, Fabric>> = {}): Promise<Blob> {
-  const zoneKey = ZONES.map((z) => zoneFabrics[z]?.code ?? "").join(",");
+export function arGlb(model: FurnitureModel, fabric: Fabric, zoneFabrics: Partial<Record<Zone, Fabric>> = {}, legFinish?: LegFinish): Promise<Blob> {
+  const zoneKey = ZONES.map((z) => zoneFabrics[z]?.code ?? "").join(",") + `:${legFinish ?? ""}`;
   const key = `${model.id}:${fabric.id}:${fabric.texture.maps.albedo["1k"]}:${zoneKey}`;
   let entry = glbCache.get(key);
   if (!entry) {
@@ -133,7 +137,7 @@ export function arGlb(model: FurnitureModel, fabric: Fabric, zoneFabrics: Partia
         const f = zoneFabrics[z];
         if (f) zones[z] = { fabric: f, tex: await loadFabricTextures(f, "1k") };
       }
-      return exportGlb(buildArScene(source, model, fabric, tex, zones).root);
+      return exportGlb(buildArScene(source, model, fabric, tex, zones, legFinish).root);
     })();
     entry.catch(() => glbCache.delete(key));
     glbCache.set(key, entry);

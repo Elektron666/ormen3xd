@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Fabric, FurnitureModel } from "@/lib/types";
 import { arGlb } from "@/lib/ar/build";
 import { ZONES, type Zone } from "@/lib/three/zones";
+import type { LegFinish } from "@/lib/three/legs";
 import { currentArDevice } from "@/lib/ar/device";
 import { track } from "@/lib/track";
 import { record, snapshot as measured } from "@/lib/olcum";
@@ -23,6 +24,7 @@ export function ArViewer({
   model,
   fabric,
   zoneFabrics,
+  legFinish,
   firmSlug = null,
   className = "",
 }: {
@@ -30,6 +32,7 @@ export function ArViewer({
   fabric: Fabric;
   /** Arms, cushions… in their own fabric. */
   zoneFabrics?: Partial<Record<Zone, Fabric>>;
+  legFinish?: LegFinish;
   firmSlug?: string | null;
   className?: string;
 }) {
@@ -47,7 +50,7 @@ export function ArViewer({
   useEffect(() => {
     let alive = true;
     let url: string | null = null;
-    Promise.all([import("@google/model-viewer"), arGlb(model, fabric, zones.current)])
+    Promise.all([import("@google/model-viewer"), arGlb(model, fabric, zones.current, legFinish)])
       .then(([, glb]) => {
         if (!alive) return;
         url = URL.createObjectURL(glb);
@@ -60,7 +63,7 @@ export function ArViewer({
       alive = false;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [model, fabric, zoneKey]);
+  }, [model, fabric, zoneKey, legFinish]);
 
   useEffect(() => {
     const el = ref.current;

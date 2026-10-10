@@ -6,6 +6,7 @@ import { BrandMark } from "@/components/configurator/BrandMark";
 import { accentStyle } from "@/lib/firm";
 import { FABRIC_TYPE_LABELS, t } from "@/lib/i18n/tr";
 import { ZONES, ZONE_LABELS, type Zone } from "@/lib/three/zones";
+import type { LegFinish } from "@/lib/three/legs";
 
 const ArViewer = dynamic(() => import("@/components/ar/ArViewer").then((m) => m.ArViewer), {
   ssr: false,
@@ -16,12 +17,14 @@ export function ArLanding({
   model,
   fabric,
   zoneFabrics,
+  legFinish,
   firm,
   backHref,
 }: {
   model: FurnitureModel;
   fabric: Fabric;
   zoneFabrics?: Partial<Record<Zone, Fabric>>;
+  legFinish?: LegFinish;
   firm: Firm | null;
   backHref: string;
 }) {
@@ -46,7 +49,7 @@ export function ArLanding({
           </p>
         )}
       </div>
-      <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} firmSlug={firm?.slug ?? null} className="h-[58dvh] min-h-[320px]" />
+      <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} legFinish={legFinish} firmSlug={firm?.slug ?? null} className="h-[58dvh] min-h-[320px]" />
       <ol className="flex flex-col gap-1 text-[13px] leading-snug text-antrasit-70">
         <li>1. “Odamda gör”e dokunun.</li>
         <li>2. Telefonu yere doğru tutup yavaşça gezdirin; zemin bulununca koltuk gerçek boyutunda yerleşir.</li>

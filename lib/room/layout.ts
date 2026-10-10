@@ -10,6 +10,7 @@ import { paramFloorRects, type FloorRect } from "@/lib/parametric/spec";
 import type { FurnitureModel } from "@/lib/types";
 import { L_NOTCH, type RoomSpec } from "./spec";
 import { cleanZones, decodeZones, encodeZones, type ZoneCodes } from "@/lib/three/zones";
+import { DEFAULT_LEG, isLegFinish, type LegFinish } from "@/lib/three/legs";
 
 export interface Placement {
   id: string;
@@ -21,6 +22,8 @@ export interface Placement {
   rot: number;
   /** Fabrics of single zones (arms, cushions…) that differ from fabricCode. */
   zones?: ZoneCodes;
+  /** Finish of wooden legs; missing = ceviz (the default). */
+  ayak?: LegFinish;
 }
 
 export interface Footprint {
@@ -218,7 +221,7 @@ export function overlapping(items: { p: Placement; dims: Dims }[]): Set<string> 
 export function encodeLayout(items: Placement[]): string {
   return items
     .map((p) => {
-      const z = encodeZones(cleanZones(p.fabricCode, p.zones));
+      const z = [encodeZones(cleanZones(p.fabricCode, p.zones)), p.ayak && p.ayak !== DEFAULT_LEG ? `a${p.ayak}` : ""].filter(Boolean).join("~");
       return [p.modelSlug, p.fabricCode, Math.round(p.x * 100), Math.round(p.z * 100), normaliseRot(p.rot), ...(z ? [z] : [])].join(".");
     })
     .join("_");
@@ -230,12 +233,18 @@ export function decodeLayout(value: string | null | undefined): Placement[] | nu
   for (const [i, part] of value.split("_").entries()) {
     const [modelSlug, fabricCode, x, z, rot, zonePart, ...extra] = part.split(".");
     if (!modelSlug || !fabricCode || extra.length || [x, z, rot].some((v) => v === undefined || !/^-?\d+$/.test(v))) return null;
-    const zones = zonePart ? decodeZones(zonePart, codeUpper) : undefined;
+    // "a…" is the leg finish, the rest are zone fabrics
+    const bits = zonePart ? zonePart.split("~") : [];
+    const leg = bits.find((b) => b[0] === "a");
+    if (leg && !isLegFinish(leg.slice(1))) return null;
+    const zoneBits = bits.filter((b) => b[0] !== "a");
+    const zones = zoneBits.length ? decodeZones(zoneBits.join("~"), codeUpper) : undefined;
     if (zones === null) return null;
     const main = codeUpper(fabricCode);
     const item: Placement = { id: `m${i + 1}`, modelSlug, fabricCode: main, x: Number(x) / 100, z: Number(z) / 100, rot: normaliseRot(Number(rot)) };
     const clean = cleanZones(main, zones);
     if (clean) item.zones = clean;
+    if (leg && leg.slice(1) !== DEFAULT_LEG) item.ayak = leg.slice(1) as LegFinish;
     items.push(item);
   }
   return items.length > 0 && items.length <= 12 ? items : null;
