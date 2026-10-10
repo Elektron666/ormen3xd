@@ -252,6 +252,33 @@ function overlapTile(rgb: Uint8Array, w: number, h: number, approxW: number): { 
   return { tile, width: tw, height: th };
 }
 
+/** Teeth across a seamless tile: circular autocorrelation of its rows, searched within ±35 % of the expected count. */
+function teethInTile({ data, width: w, height: h }: Pixels, expected: number): number {
+  const lum = (i: number) => 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+  const lo = Math.max(4, Math.floor(w / (expected * 1.35)));
+  const hi = Math.min(Math.floor(w / 2), Math.ceil(w / (expected * 0.65)));
+  const score = new Float64Array(hi + 2);
+  const row = new Float64Array(w);
+  for (let y = 0; y < h; y += 8) {
+    let mean = 0;
+    for (let x = 0; x < w; x++) mean += row[x] = lum((y * w + x) * 4);
+    mean /= w;
+    for (let x = 0; x < w; x++) row[x] -= mean;
+    for (let lag = lo - 1; lag <= hi + 1; lag++) {
+      let s = 0;
+      for (let x = 0; x < w; x++) s += row[x] * row[(x + lag) % w];
+      score[lag] += s;
+    }
+  }
+  let best = lo;
+  for (let lag = lo; lag <= hi; lag++) if (score[lag] > score[best]) best = lag;
+  const a = score[best - 1];
+  const b = score[best];
+  const c = score[best + 1];
+  const lag = best + (a - c) / (2 * (a - 2 * b + c) || 1);
+  return Math.round((w / lag) * 10) / 10;
+}
+
 async function main() {
   const out: Record<string, unknown>[] = [];
   const dir = path.join(outRoot, series.toLowerCase());
@@ -296,7 +323,10 @@ async function main() {
       height: tile.info.height,
     };
     const before = seamScore(px);
-const repeatW = Math.round((shot.pxPerCm ? tileW / shot.pxPerCm : (tileW / period) * toothCm) * 10) / 10;
+    // count the teeth in the finished tile itself: it wraps round, so the strongest circular
+    // repeat near the expected one is the tooth (the estimate from the photo can be off by a quarter)
+    const tileTeeth = teethInTile(px, tileW / period);
+    const repeatW = Math.round((shot.pxPerCm ? tileW / shot.pxPerCm : tileTeeth * toothCm) * 10) / 10;
     const repeatH = Math.round(((repeatW * px.height) / px.width) * 10) / 10;
     const { normal, roughness } = deriveMaps(px, type, repeatW);
 
@@ -349,6 +379,7 @@ const repeatW = Math.round((shot.pxPerCm ? tileW / shot.pxPerCm : (tileW / perio
       angle,
       periodPx: Math.round(period * 10) / 10,
       teeth,
+      tileTeeth,
       repeatCm: { w: repeatW, h: repeatH },
       avgColor: averageColor(px),
       seamBefore: Math.round(before * 100) / 100,
