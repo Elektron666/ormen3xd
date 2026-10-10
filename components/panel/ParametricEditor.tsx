@@ -38,6 +38,7 @@ import { saveParametricModelAction } from "@/app/panel/actions";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
 import { buttonClass, Field, inputClass } from "./ui";
 import { FabricPreview } from "./FabricPreview";
+import { ReferencePhoto } from "./ReferencePhoto";
 import { SeriesPicker } from "./SeriesPicker";
 import { MeterageFields, meterageDraft, meterageValue } from "./MeterageFields";
 import { seriesOf } from "@/lib/fabric/allowed";
@@ -338,9 +339,9 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
 
       <div className="lg:sticky lg:top-6 lg:self-start">
         <p className="eyebrow mb-2">Canlı önizleme</p>
-        <div className="h-[46vh] min-h-[340px] lg:h-[62vh]">
+        <ReferencePhoto>
           <FabricPreview model={previewModel} fabric={fabric} />
-        </div>
+        </ReferencePhoto>
         <p className="mt-2 text-[12px] leading-snug text-antrasit-50">
           Bu model sizin seçimlerinizle kodla çizilir; gerçek ürünün birebir kopyası değil, kumaşı doğru ölçüde gösteren bir benzeridir.
         </p>

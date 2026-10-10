@@ -208,6 +208,30 @@ test.describe("panel", () => {
     await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).toEqual(["SIENA-05"]);
   });
 
+  test("seçerek: hazır stil tek tıkla seçer, firmanın fotoğrafı yüklenmeden yanına konur", async ({ page }) => {
+    await login(page);
+    await page.goto("/panel/modeller/yeni?tur=secerek");
+    await page.getByRole("radio", { name: "Üçlü kanepe" }).click();
+    await page.getByRole("radio", { name: "Chester", exact: true }).click();
+    for (const name of ["Chester", "Kıvrık (Chester)", "Kapitone (düğmeli)", "Ahşap konik"]) await expect(page.getByRole("radio", { name, exact: true })).toHaveAttribute("aria-checked", "true");
+    // changing one choice: no longer exactly the style
+    await page.getByRole("radio", { name: "İnce metal" }).click();
+    await expect(page.getByRole("radio", { name: "Chester", exact: true })).toHaveAttribute("aria-checked", "false");
+
+    const uploads: string[] = [];
+    page.on("request", (r) => {
+      if (r.method() !== "GET") uploads.push(r.url());
+    });
+    await page.getByText("Firmanın fotoğrafını koy").locator("input").setInputFiles(PHOTO);
+    await expect(page.getByRole("img", { name: "Firmanın fotoğrafı" })).toBeVisible();
+    await page.getByRole("radio", { name: "Üstüne bindir" }).click();
+    await expect(page.getByRole("img", { name: "Firmanın fotoğrafı" })).toHaveCount(0);
+    await expect(page.getByLabel("Saydamlık")).toBeVisible();
+    await page.getByRole("button", { name: "Kaldır" }).click();
+    await expect(page.getByText("Firmanın fotoğrafını koy")).toBeVisible();
+    expect(uploads).toEqual([]);
+  });
+
   test("kurulum durumu eksikleri söyler", async ({ page }) => {
     await login(page);
     await page.goto("/panel/durum");
