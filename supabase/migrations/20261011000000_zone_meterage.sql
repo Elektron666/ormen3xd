@@ -14,3 +14,6 @@ alter table public.models
       and meterage_zones - array['govde', 'kol', 'oturak', 'sirt'] = '{}'::jsonb
     )
   );
+
+-- Supabase security advisor: the timestamp trigger function gets a fixed search_path.
+alter function public.touch_updated_at() set search_path = public;

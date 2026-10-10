@@ -2,7 +2,7 @@
 -- Paste into the Supabase SQL editor and press Run (after all migrations).
 -- Running it again is safe: fabric rows (codes, names edited in the panel) stay as they are,
 -- images and scale are updated to this version. Scale is from a ruler photo (one zigzag tooth
--- 4.4 cm). Colour names are provisional; width, pattern repeat and cut direction are left empty
+-- 4.6 cm). Colour names are provisional; width, pattern repeat and cut direction are left empty
 -- on purpose: they are not known yet.
 
 insert into public.fabrics (code, series, color_name, color_family, type, description, pattern, is_active, is_placeholder, sort_order) values

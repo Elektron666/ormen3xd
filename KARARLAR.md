@@ -766,3 +766,14 @@ Fatih Bey katalog görseli fikrini düşürdü; toplantının kalanı yapıldı.
 - **Denetim:** Her bölge 0,1–40 m. Bölgelerin toplamı bir adetin metrajını %10'dan fazla geçemez (parçalar biraz daha fire verebilir, çok daha fazla değil). Toplamın altında kalması serbest: bütün koltuk kesiminde artandan da biçilir.
 - **Veritabanı:** `20261011000000_zone_meterage.sql` modele `meterage_zones` (jsonb, yalnızca dört bölge adı) ekliyor. Dosya çalıştırılmadan da model kaydı çalışıyor; yalnızca bölge sayısı girilirse "dosyayı çalıştırın" hatası çıkıyor. Kurulum sayfası dosyayı yokluyor.
 
+
+## Supabase bağlantısı (10 Ekim)
+
+- Fatih Bey Claude'a Supabase bağlantısını (connector) kurdu. Tablo dosyalarını ve kumaş/model dosyalarını artık Claude çalıştırıyor; gizli anahtar hiçbir yerde mesajla paylaşılmıyor. Kural aynı: service_role anahtarı yalnızca Vercel'de.
+- 10 Ekim'de çalıştırılanlar (`ormen-atelier` projesi): `20261011000000_zone_meterage.sql`, `kumaslar-misso.sql` (yeni dokular ve ölçek), `modeller-vitrin.sql` (8 hazır model). Sonuç: 29 kumaş, 11 model, `meterage_zones` sütunu var.
+- **Güvenlik danışmanı (Supabase advisor):**
+  - `touch_updated_at` fonksiyonuna sabit `search_path` verildi (aynı tablo dosyasına eklendi).
+  - `cut_reports` tablosunda kural yok: bilerek. Tabloya yalnızca sunucu gizli anahtarla yazıyor; tarayıcıdan okuma ve yazma kapalı.
+  - `is_staff()` herkesçe çağrılabiliyor: bilerek. Satır kuralları bu fonksiyonu kullanıyor; yalnızca çağıranın kendisi personel mi, onu söylüyor.
+  - `rls_auto_enable()` bizim dosyalarımızdan değil, Supabase'in kendi yardımcı fonksiyonu; dokunulmadı.
+  - "Sızdırılmış şifre koruması" kapalı: Supabase panelinden Fatih Bey açabilir (Authentication → Sign In / Providers → Email → Leaked password protection; ücretli planlarda var).
