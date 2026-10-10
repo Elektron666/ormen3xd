@@ -33,14 +33,14 @@ export interface SetupFacts {
 }
 
 export const MIGRATIONS = [
-  ["20261004000000_init.sql", "Tablolar ve güvenlik kuralları"],
-  ["20261005000000_parametric_models.sql", "Seçerek oluşturulan modeller"],
-  ["20261006000000_fabric_series_limits.sql", "Firma ve model başına kumaş serisi"],
-  ["20261007000000_report_function.sql", "Rapor fonksiyonu"],
-  ["20261008000000_storage_limits.sql", "Dosya klasörü sınırları"],
-  ["20261009000000_visit_sources.sql", "Ziyaret kaynağı ve etiketler"],
-  ["20261010000000_cutting_table.sql", "Kesim masası: numune adımları, lot, kumaş deseni ve yönü"],
-  ["20261011000000_zone_meterage.sql", "Bölge başına metraj (kasa, kollar, oturak, sırt)"],
+  ["20261004000000_kurulum.sql", "Tablolar ve güvenlik kuralları"],
+  ["20261005000000_secerek_modeller.sql", "Seçerek oluşturulan modeller"],
+  ["20261006000000_kumas_serisi.sql", "Firma ve model başına kumaş serisi"],
+  ["20261007000000_rapor_fonksiyonu.sql", "Rapor fonksiyonu"],
+  ["20261008000000_dosya_sinirlari.sql", "Dosya klasörü sınırları"],
+  ["20261009000000_ziyaret_kaynaklari.sql", "Ziyaret kaynağı ve etiketler"],
+  ["20261010000000_kesim_masasi.sql", "Kesim masası: numune adımları, lot, kumaş deseni ve yönü"],
+  ["20261011000000_bolge_metraji.sql", "Bölge başına metraj (kasa, kollar, oturak, sırt)"],
 ] as const;
 
 export function evaluateSetup(f: SetupFacts): Check[] {
@@ -77,13 +77,13 @@ export function evaluateSetup(f: SetupFacts): Check[] {
             fix: `Supabase → SQL Editor’de eksik dosyaları ad sırasıyla çalıştırın (${README}, 2. adım). Daha önce çalıştırılanları tekrar çalıştırmayın.`,
           },
     );
-    if (f.bucketLimited === false && f.migrations["20261004000000_init.sql"]) {
+    if (f.bucketLimited === false && f.migrations["20261004000000_kurulum.sql"]) {
       checks.push({
         id: "bucket",
         title: "Dosya klasörü sınırları",
         status: "warn",
         detail: "Dosya klasöründe boyut ve tür sınırı yok.",
-        fix: "20261008000000_storage_limits.sql dosyasını SQL Editor’de çalıştırın.",
+        fix: "20261008000000_dosya_sinirlari.sql dosyasını SQL Editor’de çalıştırın.",
       });
     }
   }
@@ -95,7 +95,7 @@ export function evaluateSetup(f: SetupFacts): Check[] {
           title: "Kumaşlar",
           status: "error",
           detail: "Katalogda hiç kumaş yok; site açılmaz.",
-          fix: `supabase/seed.sql dosyasını SQL Editor’de çalıştırın ya da panelden kumaş ekleyin (${README}, 3. adım).`,
+          fix: `supabase/veri/1-ornek-katalog.sql dosyasını SQL Editor’de çalıştırın ya da panelden kumaş ekleyin (${README}, 3. adım).`,
         }
       : f.fabrics.real === 0
         ? {
@@ -109,7 +109,7 @@ export function evaluateSetup(f: SetupFacts): Check[] {
   );
 
   if (f.models === 0)
-    checks.push({ id: "models", title: "Modeller", status: "error", detail: "Vitrinde açık model yok; site açılmaz.", fix: "Panel → Modeller’den bir modeli yayına alın ya da seed.sql’i çalıştırın." });
+    checks.push({ id: "models", title: "Modeller", status: "error", detail: "Vitrinde açık model yok; site açılmaz.", fix: "Panel → Modeller’den bir modeli yayına alın ya da 1-ornek-katalog.sql’i çalıştırın." });
 
   if (f.panelMode === "demo" && f.production)
     checks.push({

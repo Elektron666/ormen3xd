@@ -62,7 +62,7 @@ Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 E
 - [x] Telefonda bölge seçimi tek satır.
 - [x] Açılış: koltuk önden üç çeyrek açıyla açılıyor, dönüş kısa.
 - [x] Desen yönü: Düz / Dönük; bağlantıya, AR'a ve föye geçiyor (dönükte metrajı usta hesaplar).
-- [x] Bölge başına metraj: panelde Kasa / Kollar / Oturak / Sırt; föy bölgeli koltukta firmanın sayılarını topluyor (`20261011000000_zone_meterage.sql` çalıştırılmalı).
+- [x] Bölge başına metraj: panelde Kasa / Kollar / Oturak / Sırt; föy bölgeli koltukta firmanın sayılarını topluyor (`20261011000000_bolge_metraji.sql` çalıştırılmalı).
 - [x] Daha yumuşak minder görünümü.
 - ~~Panelden katalog görseli~~: Fatih Bey düşürdü.
 - [ ] Panelden katalog görseli: her ORMEN kumaşında beyaz fonlu ürün görseli (pilottan sonra, Fatih Bey onaylarsa).

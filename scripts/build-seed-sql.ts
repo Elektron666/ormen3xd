@@ -1,4 +1,4 @@
-// Writes supabase/seed.sql: the demo catalogue (placeholder fabrics, the
+// Writes supabase/veri/1-ornek-katalog.sql: the demo catalogue (placeholder fabrics, the
 // code-generated models incl. a parametric corner sofa, and a sample firm) as plain SQL, so it can be pasted into the
 // Supabase SQL editor without installing anything. Safe to run twice.
 //
@@ -77,6 +77,6 @@ ${SEED_FIRMS.map((f) => row([f.name, f.slug, f.logoUrl, f.accentColor, f.whatsap
 on conflict (slug) do nothing;
 `;
 
-const out = path.join(process.cwd(), "supabase", "seed.sql");
+const out = path.join(process.cwd(), "supabase", "veri", "1-ornek-katalog.sql");
 writeFileSync(out, sql);
 console.log(`${out}: ${fabrics.length} kumaş, ${SEED_MODELS.length} model, ${SEED_FIRMS.length} firma`);

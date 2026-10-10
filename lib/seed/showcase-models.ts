@@ -5,7 +5,7 @@ import { DEFAULTS, applyStil, paramDimensions, type ParametricParams } from "@/l
 // ORMEN showcase models built with "Seçerek oluştur" (10 Oct): Fatih Bey
 // looked for the Chester options on the home page, where only the three
 // sample models were, and asked for a few more models. Added to the live
-// database with supabase/modeller-vitrin.sql.
+// database with supabase/veri/3-modeller-vitrin.sql.
 
 const chesterSofa: ParametricParams = { ...applyStil(DEFAULTS.uclu, "chester"), genislikCm: 220, derinlikCm: 92, yukseklikCm: 76 };
 const wingback: ParametricParams = { ...applyStil(DEFAULTS.berjer, "chester"), genislikCm: 82, derinlikCm: 88, yukseklikCm: 104 };

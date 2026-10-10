@@ -98,13 +98,13 @@ describe("database schema", () => {
   });
 });
 
-describe("seed.sql", () => {
+describe("1-ornek-katalog.sql", () => {
   it("loads the demo catalogue on a fresh database and is safe to run twice", async () => {
     const fresh = new PGlite();
     await fresh.exec(STUBS);
     const dir = path.join(process.cwd(), "supabase/migrations");
     for (const f of readdirSync(dir).filter((x) => x.endsWith(".sql")).sort()) await fresh.exec(readFileSync(path.join(dir, f), "utf8"));
-    const seed = readFileSync(path.join(process.cwd(), "supabase/seed.sql"), "utf8");
+    const seed = readFileSync(path.join(process.cwd(), "supabase/veri/1-ornek-katalog.sql"), "utf8");
     await fresh.exec(seed);
     await fresh.exec(seed);
     const count = async (t: string) => (await fresh.query<{ n: number }>(`select count(*)::int as n from ${t}`)).rows[0].n;
@@ -114,7 +114,7 @@ describe("seed.sql", () => {
     expect(await count("firms")).toBe(1);
 
     // the MISSO fabrics from photos, added afterwards on the live database
-    const misso = readFileSync(path.join(process.cwd(), "supabase/kumaslar-misso.sql"), "utf8");
+    const misso = readFileSync(path.join(process.cwd(), "supabase/veri/2-kumaslar-misso.sql"), "utf8");
     await fresh.exec(misso);
     await fresh.exec(misso);
     expect(await count("fabrics")).toBe(29);
@@ -125,7 +125,7 @@ describe("seed.sql", () => {
     const m5 = await fresh.query<{ color_name: string; repeat_w_cm: number }>("select f.color_name, t.repeat_w_cm::float as repeat_w_cm from fabrics f join fabric_textures t on t.fabric_id = f.id where f.code = 'MISSO-05'");
     expect(m5.rows[0]).toEqual({ color_name: "Panelde verilen ad", repeat_w_cm: 18.4 });
     // the Chester showcase models, on top
-    const chester = readFileSync(path.join(process.cwd(), "supabase/modeller-vitrin.sql"), "utf8");
+    const chester = readFileSync(path.join(process.cwd(), "supabase/veri/3-modeller-vitrin.sql"), "utf8");
     await fresh.exec(chester);
     await fresh.exec(chester);
     expect(await count("models")).toBe(11);

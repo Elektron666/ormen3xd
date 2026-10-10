@@ -32,10 +32,10 @@ export async function gatherSetupFacts(requestHost: string | null): Promise<Setu
     reachable = init.ok || /relation|does not exist|schema cache/i.test(init.error ?? "");
     if (!reachable) supabaseError = init.error;
     if (reachable) {
-      migrations["20261004000000_init.sql"] = init.ok;
-      migrations["20261005000000_parametric_models.sql"] = (await probe(() => db.from("models").select("params").limit(1))).ok;
-      migrations["20261006000000_fabric_series_limits.sql"] = (await probe(() => db.from("firms").select("fabric_series").limit(1))).ok;
-      migrations["20261007000000_report_function.sql"] = (
+      migrations["20261004000000_kurulum.sql"] = init.ok;
+      migrations["20261005000000_secerek_modeller.sql"] = (await probe(() => db.from("models").select("params").limit(1))).ok;
+      migrations["20261006000000_kumas_serisi.sql"] = (await probe(() => db.from("firms").select("fabric_series").limit(1))).ok;
+      migrations["20261007000000_rapor_fonksiyonu.sql"] = (
         await probe(() => db.rpc("atelier_report", { p_from: new Date(Date.now() - 60_000).toISOString(), p_to: new Date().toISOString(), p_scope: null }))
       ).ok;
       try {
@@ -44,13 +44,13 @@ export async function gatherSetupFacts(requestHost: string | null): Promise<Setu
       } catch {
         bucketLimited = null;
       }
-      migrations["20261008000000_storage_limits.sql"] = bucketLimited === true;
-      migrations["20261009000000_visit_sources.sql"] = (await probe(() => db.from("events").select("source, tag").limit(1))).ok;
-      migrations["20261010000000_cutting_table.sql"] = (await probe(() => db.from("sample_requests").select("purpose, code, lot").limit(1))).ok &&
+      migrations["20261008000000_dosya_sinirlari.sql"] = bucketLimited === true;
+      migrations["20261009000000_ziyaret_kaynaklari.sql"] = (await probe(() => db.from("events").select("source, tag").limit(1))).ok;
+      migrations["20261010000000_kesim_masasi.sql"] = (await probe(() => db.from("sample_requests").select("purpose, code, lot").limit(1))).ok &&
         (await probe(() => db.from("fabrics").select("pattern, cut_direction").limit(1))).ok &&
         (await probe(() => db.from("models").select("meterage_m").limit(1))).ok &&
         (await probe(() => db.from("cut_reports").select("id").limit(1))).ok;
-      migrations["20261011000000_zone_meterage.sql"] = (await probe(() => db.from("models").select("meterage_zones").limit(1))).ok;
+      migrations["20261011000000_bolge_metraji.sql"] = (await probe(() => db.from("models").select("meterage_zones").limit(1))).ok;
     }
   }
 

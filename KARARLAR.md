@@ -64,7 +64,7 @@ Yayından önce dışarıya açık bütün kapılar ayrı bir incelemeyle tarand
 - **Seri düzeyinde, kumaş düzeyinde değil:** Plan `model_fabrics` (kumaş kumaş seçim) tablosu öngörüyordu. Firmaların "şu koleksiyonlar" diye düşündüğünü varsayıp seri seçtirdim: on kumaşı tek tek işaretlemekten hızlı, yeni renk eklenince kendiliğinden dahil oluyor. `model_fabrics` tablosu kullanılmıyor; kumaş kumaş seçim gerekirse oradan devam edilir.
 - **Kırılmaz kural:** Kısıt hiçbir kumaşa uymuyorsa (seri gizlendi ya da kaldırıldı) liste boş kalmıyor, sayfanın bütün kumaşları gösteriliyor.
 - Eski paylaşım linkleri kısıt yüzünden bozulmuyor: linkteki kumaş firma sayfasında yoksa o parça linkten düşüyor, sayfa açılıyor.
-- **Veritabanı:** Üçüncü migration (`20261006000000_fabric_series_limits.sql`): `firms.fabric_series`, `models.fabric_series` (boş liste = hepsi). Panelden gelen seri adları kayıtta katalogla karşılaştırılıp temizleniyor.
+- **Veritabanı:** Üçüncü migration (`20261006000000_kumas_serisi.sql`): `firms.fabric_series`, `models.fabric_series` (boş liste = hepsi). Panelden gelen seri adları kayıtta katalogla karşılaştırılıp temizleniyor.
 
 ---
 
@@ -85,8 +85,8 @@ Yayından önce dışarıya açık bütün kapılar ayrı bir incelemeyle tarand
 - **Nasıl çiziliyor:** Mevcut örnek kanepenin minder parçasıyla (UV'leri metre cinsinden). Köşe takımı üç modül: arka duvar boyunca düz bölüm, iki duvarı da sırtlı köşe karesi, yan duvar boyunca 90° döndürülmüş düz bölüm. Kumaş her parçada gerçek ölçüsünde; birim testi her tip için ölçüleri ve kumaş yoğunluğunu kontrol ediyor (minder kabarıklığı yüzeyi yaklaşık %1,6 uzatıyor, örnek kanepede de böyle).
 - **Ölçü aralıkları** tipe göre sınırlı (ör. üçlü 180–270 cm, köşe takımı arka duvar 200–380 cm, yan duvar 150–320 cm). Oturma yüksekliği her tipte 44 cm, sırt yüksekliği 72/82/95 cm. Bu değerler gerçek ürün verisi değil, yaygın ölçülere göre benim seçimim; pilot firmalarla düzeltilmeli.
 - **Panelde açık not:** "Bu model sizin seçimlerinizle kodla çizilir; gerçek ürünün birebir kopyası değil, kumaşı doğru ölçüde gösteren bir benzeridir." Müşteriye birebir ürün gibi sunulmasın diye.
-- **Veritabanı:** İkinci migration (`20261005000000_parametric_models.sql`): `models.params` (jsonb) ve `procedural_key = 'parametric'`. Tarifi olmayan parametrik modeli kurallar reddediyor (PGlite'ta test edildi). Kayıtta tarif sunucuda yeniden doğrulanıyor.
-- **Vitrine örnek köşe takımı** eklendi (`/?y=kose-takimi…`, seed.sql'de de var).
+- **Veritabanı:** İkinci migration (`20261005000000_secerek_modeller.sql`): `models.params` (jsonb) ve `procedural_key = 'parametric'`. Tarifi olmayan parametrik modeli kurallar reddediyor (PGlite'ta test edildi). Kayıtta tarif sunucuda yeniden doğrulanıyor.
+- **Vitrine örnek köşe takımı** eklendi (`/?y=kose-takimi…`, 1-ornek-katalog.sql'de de var).
 - **AR** parametrik modellerde de çalışıyor (aynı kod yolu).
 - **Gerçek L/U şekli:** Köşe takımı yerleşimde birkaç dikdörtgen olarak hesaplanıyor: arka duvar boyunca uzanan bölüm, köşe ya da şezlong uçları (`paramFloorRects`, `lib/parametric/spec.ts`). L'nin içine konan sehpa ya da berjer "çakışma" uyarısı vermiyor, "Mobilya ekle" boş yer ararken L'nin içini de kullanabiliyor, plandaki boşluk ölçüleri parçaların kendisine kadar alınıyor ve teklif föyündeki plan L/U çizgisini çiziyor.
   - Duvara yaslama ve oda sınırı hâlâ dış kutuyla yapılıyor. Duvarlar düz olduğu için sonuç aynı.
@@ -151,7 +151,7 @@ Yayından önce dışarıya açık bütün kapılar ayrı bir incelemeyle tarand
 
 - **Veri katmanı:** Supabase anahtarları tanımlıysa her şey Supabase'de (Postgres + Storage), değilse bellekteki örnek veriyle çalışıyor. Sayfalar hangisinin çalıştığını bilmiyor (`lib/data/`). Bellek modunda panelin üstünde sarı uyarı var: eklenenler sunucu yeniden başlayınca kaybolur. **Vercel'de panelin gerçekten kullanılması için Supabase şart.**
 - **Şema:** `supabase/migrations/…_init.sql`. Her tabloda satır güvenliği (RLS) açık. Herkes yalnızca yayındaki kumaş/model/firmayı okuyabiliyor; numune talebi ve olaylara yalnızca ekleme yapabiliyor; okuma ve düzenleme yalnızca panel kullanıcısında. Şema ve kurallar testte gerçek bir Postgres'te (PGlite) çalıştırılıp deneniyor.
-- **Örnek veri SQL olarak:** `supabase/seed.sql`, Supabase'in SQL ekranına yapıştırılıyor. Önce Node ile çalışan bir betik yazdım, sonra vazgeçtim: yazılımcı olmayan biri için kopyala-yapıştır daha kolay ve SQL dosyası testte iki kez çalıştırılıp denenebiliyor. Dosya `npm run seed:sql` ile örnek veriden üretiliyor.
+- **Örnek veri SQL olarak:** `supabase/veri/1-ornek-katalog.sql`, Supabase'in SQL ekranına yapıştırılıyor. Önce Node ile çalışan bir betik yazdım, sonra vazgeçtim: yazılımcı olmayan biri için kopyala-yapıştır daha kolay ve SQL dosyası testte iki kez çalıştırılıp denenebiliyor. Dosya `npm run seed:sql` ile örnek veriden üretiliyor.
 - **Panel girişi:** Supabase Auth (e-posta + şifre). Kayıt ekranı yok; kullanıcıyı ORMEN Supabase'den ekliyor ve `profiles` tablosuna satır ekleyerek yetki veriyor. Profil satırı olmayan kullanıcı panele giremiyor. Supabase yokken tek bir deneme kullanıcısı (`PANEL_DEMO_EMAIL/PASSWORD`, imzalı çerez) var; geliştirme ortamında varsayılanı `demo@ormen.local / ormen-demo`, üretimde varsayılan yok.
 - **Sunucu yetkisi:** Panel işlemleri önce oturumu kontrol ediyor, sonra sunucuda service role anahtarıyla yazıyor. Bu anahtar tarayıcıya hiç gitmiyor.
 - **Dosya yükleme:** Fotoğraf ve modeller tarayıcıdan doğrudan Supabase Storage'a gidiyor (sunucunun verdiği tek kullanımlık imzalı adresle). Vercel'in 4,5 MB istek sınırına takılmamak için böyle. İzinli klasörler `kumaslar/`, `modeller/`, `logolar/`; SVG kabul edilmiyor (içinde betik taşıyabilir).
@@ -365,7 +365,7 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 - **Neden şube, kişi değil:** Satış elemanı numarası istendi (Selin). Ancak "eleman 3" firma için belli bir kişi demek; bu, çalışan performans takibi olur ve ayrı aydınlatma gerektirir (Hakan). Bu yüzden etiket serbest bir sabit değer olarak bırakıldı ve panelde "kişi adı yazmayın" uyarısı konuldu. Eleman bazında takip istenirse avukata sorulacak.
 - **Etiket biçimi:** Küçük harf, rakam ve tire; en fazla 32 karakter. Panelde yazılan "Ankara Şube 1" kendiliğinden `ankara-sube-1` olur. Veritabanı da aynı kuralı denetliyor.
 - **`ar_acilamadi` olayı:** Telefonda AR başlamadığında yazılıyor. Bu iki durumda oluyor: cihaz ya da tarayıcı AR'ı desteklemiyor, ya da oturum hata veriyor. Raporda AR kutusunda görünüyor. Faz 2 madde 6 (sunucuda GLB) bu sayıya göre yapılacak.
-- **Veritabanı:** `20261009000000_visit_sources.sql` dosyası `events` tablosuna `source` ve `tag` sütunlarını ekliyor, olay türü listesini genişletiyor ve `atelier_report` fonksiyonuna iki yeni döküm ekliyor. Daha önceki olaylar raporda "Kayıt yok" olarak görünüyor. SQL raporun uygulamadaki hesapla aynı sonucu verdiği PGlite testinde kaynak ve etiketle birlikte denetleniyor.
+- **Veritabanı:** `20261009000000_ziyaret_kaynaklari.sql` dosyası `events` tablosuna `source` ve `tag` sütunlarını ekliyor, olay türü listesini genişletiyor ve `atelier_report` fonksiyonuna iki yeni döküm ekliyor. Daha önceki olaylar raporda "Kayıt yok" olarak görünüyor. SQL raporun uygulamadaki hesapla aynı sonucu verdiği PGlite testinde kaynak ve etiketle birlikte denetleniyor.
 - **Renk ibaresi (1. madde):** Ekranda, paylaşım görselinde, teklif föyünde ve AR sayfasında artık "renkler bağlayıcı değildir; renk onayı numuneyle verilir" yazıyor.
 
 ## Pilot hazırlığı: cihaza göre görüntü kalitesi (3. madde)
@@ -390,7 +390,7 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
 
     Bu sorular kişisel veri taşımıyor ve geri arayan satış elemanına notun verdiğinden daha düzenli bilgi veriyor (Selin, Zeynep, Ece).
   - **Sunucu tarafı:** `validateSample` bilinmeyen alanları atıyor. Eski bir tarayıcı sekmesi hâlâ `note` gönderse bile kaydedilmiyor.
-  - **Veritabanı:** `20261010000000_cutting_table.sql` dosyası `note` sütununu siliyor, seçenekleri sabit listeyle denetliyor. Aynı dosya bir sonraki adım için şunları da hazırlıyor:
+  - **Veritabanı:** `20261010000000_kesim_masasi.sql` dosyası `note` sütununu siliyor, seçenekleri sabit listeyle denetliyor. Aynı dosya bir sonraki adım için şunları da hazırlıyor:
     - talep adımları (yeni → hazırlanıyor → mağazaya gönderildi → siparişe döndü / dönmedi),
     - numune kodu,
     - lot,
@@ -429,7 +429,7 @@ Kaldırılanlar: `zod` (henüz kullanılmadığı için; form dilimine kadar ekl
   - Veritabanı, desensiz bir kumaşa rapor ölçüsü girilmesini reddediyor.
   - Toplu aktarımda "düz/desensiz/desenli" ve "tek/çift (yön)" yazımlarının hepsi kabul ediliyor; anlaşılmayan yazım "bilinmiyor" sayılıyor.
 - **Künye:** Değerler girildiyse künyede görünüyor ("Desenli, rapor 32 × 28 cm", "Tek yön").
-- **Tek tablo dosyası:** Kesim masasının bütün veritabanı değişiklikleri tek dosyada toplandı: `20261010000000_cutting_table.sql`. Önceki adı `…_sample_flow.sql` idi. Bu dosya henüz hiçbir veritabanında çalıştırılmadığı için yeniden adlandırmak güvenli; Fatih Bey'in kurulumda çalıştıracağı dosya sayısı da artmamış oldu.
+- **Tek tablo dosyası:** Kesim masasının bütün veritabanı değişiklikleri tek dosyada toplandı: `20261010000000_kesim_masasi.sql`. Önceki adı `…_sample_flow.sql` idi. Bu dosya henüz hiçbir veritabanında çalıştırılmadığı için yeniden adlandırmak güvenli; Fatih Bey'in kurulumda çalıştıracağı dosya sayısı da artmamış oldu.
 
 ## Kesim masası, 5. adım: firmanın kendi metrajı (`lib/metraj.ts`)
 
@@ -557,7 +557,7 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 
 - Oda kurucu donduruldu ve karar veriyle verilecek. Deniz'in ölçütü: pilotta ziyaretlerin %10'undan azı odaya ya da plana dokunuyorsa sadeleştirme önerisiyle Fatih Bey'e rakamla gidilecek.
 - **Yeni olay:** `plan_acildi` (2D plan açıldı). Mevcut `oda_degisti` olayıyla birlikte raporda yeni bir "Oda / plan" kutusu oluşturuyor: odayı değiştiren ya da planı açan ziyaret sayısı ve tüm ziyaretlere oranı.
-- **Tablo dosyaları:** Olay listesi ve SQL rapor fonksiyonu, henüz çalıştırılmamış `20261009000000_visit_sources.sql` içinde güncellendi. SQL raporun uygulamadaki hesapla aynı sonucu verdiğini denetleyen test bu alanı da kapsıyor.
+- **Tablo dosyaları:** Olay listesi ve SQL rapor fonksiyonu, henüz çalıştırılmamış `20261009000000_ziyaret_kaynaklari.sql` içinde güncellendi. SQL raporun uygulamadaki hesapla aynı sonucu verdiğini denetleyen test bu alanı da kapsıyor.
 
 ## Müşterinin telefonu ORMEN'de kalıyor (6 Ekim, Fatih Bey)
 
@@ -653,7 +653,7 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 
 - **Ne:** Fatih Bey'in gönderdiği zikzak jakar fotoğrafları MISSO-01…06 olarak eklendi. Görseller sitede (`public/seed/fabrics/misso/`).
   - Yerel demoda hemen görünüyor.
-  - Canlı sitede görünmesi için `supabase/kumaslar-misso.sql` Supabase SQL Editor'de bir kez çalıştırılmalı.
+  - Canlı sitede görünmesi için `supabase/veri/2-kumaslar-misso.sql` Supabase SQL Editor'de bir kez çalıştırılmalı.
 - **Fotoğraflar kumaş üzerinde açılı ve hafif dökümlü çekilmişti; panelin tek tuşluk işlemesi bu fotoğraflarda yetmedi.** Bunun için `scripts/prepare-photo-fabric.ts` yazıldı. Betik her fotoğrafta şunları yapıyor:
   - deseni yataya çeviriyor;
   - fotoğrafın düz orta bölümünü alıyor;
@@ -670,7 +670,7 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - **Ölçek (güncellendi, ölçüldü):** İlk sürümde bir diş 6 cm varsayılmıştı; önce 3 cm denenmiş, koltukta çizgili kumaş gibi durmuştu. Fatih Bey ardından kumaşı masaya serip tepeden çekti, bir fotoğrafa da metre koydu: 80 cm, 1140 piksel tutuyor, yani santimetre başına 14,25 piksel. Bu fotoğraftan bir zikzak dişi önce 4,4 cm, düzeltmeden sonra 4,6 cm çıktı. Diğer renkler aynı dokuma olduğu için aynı diş boyunu aldı.
   - **Düzeltme (Fatih Bey: "sadece bu doğru gibi"):** Yalnızca metreli MISSO-05 doğru görünüyordu. Diğer fotoğraflarda diş sayısı fotoğraftan yaklaşık çeyrek hatalı ölçülmüştü; 01, 02 ve 06'nın dişleri koltukta 3,9 cm, 04'ünkiler 5,3 cm çiziliyordu. Diş sayısı artık bitmiş tile'ın içinde sayılıyor; tile kendini tekrar ettiği için oradaki tekrar kesin. MISSO-05'in tile'ı 52,5 cm genişlikte ve 11,4 diş içeriyor, buradan diş 4,6 cm. Diğer bütün renkler de 4,6 cm'ye getirildi. MISSO-05'in ölçeği doğrudan metreden hesaplanıyor (`pxPerCm`).
   - **Düz fotoğraflar:** MISSO-01, 02, 04, 05 ve yeni gelen gri-siyah renk (MISSO-06) düz fotoğraftan yeniden hazırlandı. MISSO-03'ün düz fotoğrafı dosya olarak ulaşmadığı için o renk hâlâ ilk, açılı fotoğraftan; ölçeği 4,4 cm'ye göre düzeltildi.
-  - **SQL yeniden çalıştırılabilir:** `kumaslar-misso.sql` tekrar çalıştırılınca kumaş satırlarına (panelde değiştirilmiş adlar dahil) dokunmuyor, yalnızca görsel ve ölçek satırlarını bu sürüme güncelliyor.
+  - **SQL yeniden çalıştırılabilir:** `2-kumaslar-misso.sql` tekrar çalıştırılınca kumaş satırlarına (panelde değiştirilmiş adlar dahil) dokunmuyor, yalnızca görsel ve ölçek satırlarını bu sürüme güncelliyor.
   - **Kodlar:** Fotoğrafların geliş sırasına göre verildi.
   - **Renk adları:** Tarif amaçlı, geçici.
   - **Renk ailesi:** Baskın renge göre seçildi; çok renkli kumaşın ortalaması gri çıkıyordu.
@@ -741,7 +741,7 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Blok Dörtlü Kanepe
   - Puf
 
-  Chester ikilisiyle birlikte toplam sekiz model var. Canlı için `supabase/modeller-vitrin.sql` dosyası çalıştırılmalı; `modeller-chester.sql` bu dosyanın içine katıldı. Ölçüler Türkiye'de yaygın ölçüler; firma modeli değil, vitrin örneği.
+  Chester ikilisiyle birlikte toplam sekiz model var. Canlı için `supabase/veri/3-modeller-vitrin.sql` dosyası çalıştırılmalı; `modeller-chester.sql` bu dosyanın içine katıldı. Ölçüler Türkiye'de yaygın ölçüler; firma modeli değil, vitrin örneği.
 
 ## 10 Ekim acil toplantısının hemen uygulanan kararları
 
@@ -764,16 +764,19 @@ Fatih Bey katalog görseli fikrini düşürdü; toplantının kalanı yapıldı.
 - **Föy:** Müşteri bölgelere farklı kumaş seçtiyse her kumaş satırı, kapladığı bölgelerin firma sayılarının toplamını gösteriyor (ör. kasa 9 + sırt 2 = 11 m). Sayı yine yalnızca aynı enli, düz, çift yönlü kumaşta; dönükte yine usta.
 - **Boş bölge:** Modelde olmayan bölge demek (kolsuz koltukta Kollar). Panelde böyle yazıyor. Firma bölge sayısı girmediyse bölgeli parçada eskisi gibi "usta hesaplar".
 - **Denetim:** Her bölge 0,1–40 m. Bölgelerin toplamı bir adetin metrajını %10'dan fazla geçemez (parçalar biraz daha fire verebilir, çok daha fazla değil). Toplamın altında kalması serbest: bütün koltuk kesiminde artandan da biçilir.
-- **Veritabanı:** `20261011000000_zone_meterage.sql` modele `meterage_zones` (jsonb, yalnızca dört bölge adı) ekliyor. Dosya çalıştırılmadan da model kaydı çalışıyor; yalnızca bölge sayısı girilirse "dosyayı çalıştırın" hatası çıkıyor. Kurulum sayfası dosyayı yokluyor.
+- **Veritabanı:** `20261011000000_bolge_metraji.sql` modele `meterage_zones` (jsonb, yalnızca dört bölge adı) ekliyor. Dosya çalıştırılmadan da model kaydı çalışıyor; yalnızca bölge sayısı girilirse "dosyayı çalıştırın" hatası çıkıyor. Kurulum sayfası dosyayı yokluyor.
 
 
 ## Supabase bağlantısı (10 Ekim)
 
 - Fatih Bey Claude'a Supabase bağlantısını (connector) kurdu. Tablo dosyalarını ve kumaş/model dosyalarını artık Claude çalıştırıyor; gizli anahtar hiçbir yerde mesajla paylaşılmıyor. Kural aynı: service_role anahtarı yalnızca Vercel'de.
-- 10 Ekim'de çalıştırılanlar (`ormen-atelier` projesi): `20261011000000_zone_meterage.sql`, `kumaslar-misso.sql` (yeni dokular ve ölçek), `modeller-vitrin.sql` (8 hazır model). Sonuç: 29 kumaş, 11 model, `meterage_zones` sütunu var.
+- 10 Ekim'de çalıştırılanlar (`ormen-atelier` projesi): `20261011000000_bolge_metraji.sql`, `2-kumaslar-misso.sql` (yeni dokular ve ölçek), `3-modeller-vitrin.sql` (8 hazır model). Sonuç: 29 kumaş, 11 model, `meterage_zones` sütunu var.
 - **Güvenlik danışmanı (Supabase advisor):**
   - `touch_updated_at` fonksiyonuna sabit `search_path` verildi (aynı tablo dosyasına eklendi).
   - `cut_reports` tablosunda kural yok: bilerek. Tabloya yalnızca sunucu gizli anahtarla yazıyor; tarayıcıdan okuma ve yazma kapalı.
   - `is_staff()` herkesçe çağrılabiliyor: bilerek. Satır kuralları bu fonksiyonu kullanıyor; yalnızca çağıranın kendisi personel mi, onu söylüyor.
   - `rls_auto_enable()` bizim dosyalarımızdan değil, Supabase'in kendi yardımcı fonksiyonu; dokunulmadı.
   - "Sızdırılmış şifre koruması" kapalı: Supabase panelinden Fatih Bey açabilir (Authentication → Sign In / Providers → Email → Leaked password protection; ücretli planlarda var).
+- **Dosyalar düzenlendi (Fatih Bey'in isteği):** Tablo dosyaları Türkçe adlandı (`…_kurulum.sql`, `…_kesim_masasi.sql`, `…_bolge_metraji.sql` …), katalog dosyaları `supabase/veri/` altında çalışma sırasıyla numaralandı (`1-ornek-katalog`, `2-kumaslar-misso`, `3-modeller-vitrin`). Açıklama: `supabase/BENIOKU.md`.
+  - Canlı veritabanının "Migrations" listesi de aynı adlara çekildi: sekiz dosyanın hepsi işli. Önce her dosyanın değişikliğinin veritabanında gerçekten olduğu tek tek denetlendi, sonra listeye yazıldı.
+- **İzinler:** `.claude/settings.json`'a Supabase'te okuma, SQL çalıştırma ve tablo dosyası uygulama izni eklendi; bu depoda açılan oturumlarda bunlar için onay sorulmaz. Proje silme, durdurma, yeni proje açma gibi geri dönüşü zor işler listede yok; onlar yine sorulur.

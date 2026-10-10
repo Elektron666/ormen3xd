@@ -310,7 +310,7 @@ export class SupabaseRepository implements Repository {
     let res = await write(row);
     // the zone-metres column comes with a later migration; a model without zone figures saves without it
     if (res.error && /meterage_zones/.test(res.error.message)) {
-      if (input.meterage?.zones) throw new Error("Bölge metrajı için Supabase'te 20261011000000_zone_meterage.sql dosyasını çalıştırın.");
+      if (input.meterage?.zones) throw new Error("Bölge metrajı için Supabase'te 20261011000000_bolge_metraji.sql dosyasını çalıştırın.");
       const rest: Partial<typeof row> = { ...row };
       delete rest.meterage_zones;
       res = await write(rest);
@@ -461,7 +461,7 @@ export class SupabaseRepository implements Repository {
   }
 
   async eventReport(from: Date, to: Date, firmSlug?: string) {
-    // computed in the database (migration 20261007000000_report_function.sql)
+    // computed in the database (migration 20261007000000_rapor_fonksiyonu.sql)
     const data = check(await this.db.rpc("atelier_report", { p_from: from.toISOString(), p_to: to.toISOString(), p_scope: firmSlug ?? null }));
     return reportFromJson(data);
   }

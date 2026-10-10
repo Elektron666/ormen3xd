@@ -1,4 +1,4 @@
-// Writes supabase/kumaslar-misso.sql: the ORMEN fabrics prepared from photos
+// Writes supabase/veri/2-kumaslar-misso.sql: the ORMEN fabrics prepared from photos
 // (lib/seed/photo-fabrics.ts) as plain SQL for the Supabase SQL editor. The
 // images are served by the site itself from /seed/fabrics/…, so only rows are
 // added. Safe to run again: fabric rows (names you may have edited in the
@@ -45,6 +45,6 @@ on conflict (fabric_id) do update set
   repeat_w_cm = excluded.repeat_w_cm, repeat_h_cm = excluded.repeat_h_cm, avg_color = excluded.avg_color;
 `;
 
-const out = path.join(process.cwd(), "supabase", "kumaslar-misso.sql");
+const out = path.join(process.cwd(), "supabase", "veri", "2-kumaslar-misso.sql");
 writeFileSync(out, sql);
 console.log(`${out}: ${fabrics.length} kumaş`);

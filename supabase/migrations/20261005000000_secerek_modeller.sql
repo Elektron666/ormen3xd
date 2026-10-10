@@ -1,6 +1,6 @@
 -- ORMEN Atelier: parametric models (Faz 2). A model described in the panel
 -- with a few choices (type, arms, back, legs, sizes) and built from code.
--- Run after 20261004000000_init.sql.
+-- Run after 20261004000000_kurulum.sql.
 
 alter table public.models add column params jsonb;
 

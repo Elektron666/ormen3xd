@@ -159,8 +159,9 @@ QR kodları sitenin adresini içerir. **Gerçek alan adı bağlanmadan QR bastı
 Panelde eklediğiniz kumaşların ve gelen taleplerin kalıcı olması için Supabase gerekir. Supabase olmadan site örnek veriyle çalışır ama panelde eklenenler sunucu yeniden başlayınca kaybolur.
 
 1. **Proje açın.** [supabase.com](https://supabase.com) → hesabınızla girin → **New project**. Ad: `ormen-atelier`. Bölge: **Central EU (Frankfurt)** (Türkiye’ye en yakın). Veritabanı şifresini güvenli bir yere not edin. Proje birkaç dakikada hazır olur.
-2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/` klasöründeki dosyaları **ad sırasıyla, tek tek** yapıştırıp **Run**’a basın: önce `20261004000000_init.sql`, sonra `20261005000000_parametric_models.sql`, sonra `20261006000000_fabric_series_limits.sql`, `20261007000000_report_function.sql`, `20261008000000_storage_limits.sql`, `20261009000000_visit_sources.sql`, `20261010000000_cutting_table.sql`, en son `20261011000000_zone_meterage.sql`. Her birinde “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
-3. **Örnek kataloğu yükleyin.** Yine **SQL Editor** → **New query** → `supabase/seed.sql` dosyasının tamamını yapıştırın → **Run**. 23 yer tutucu kumaş, 3 örnek model (kanepe, berjer, köşe takımı) ve bir örnek firma (`/f/ornek-mobilya`) gelir. Gerçek kumaşlarınızı ekledikçe bunları panelden gizleyebilirsiniz.
+   Dosyaların listesi ve ne işe yaradıkları: `supabase/BENIOKU.md`. Supabase bağlantısı kurulduğu için bu adımları artık Claude yapıyor; aşağıdaki elle kurulum yeni bir projeye başlanırsa diye duruyor.
+2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/` klasöründeki dosyaları **ad sırasıyla, tek tek** yapıştırıp **Run**’a basın: önce `20261004000000_kurulum.sql`, sonra `20261005000000_secerek_modeller.sql`, sonra `20261006000000_kumas_serisi.sql`, `20261007000000_rapor_fonksiyonu.sql`, `20261008000000_dosya_sinirlari.sql`, `20261009000000_ziyaret_kaynaklari.sql`, `20261010000000_kesim_masasi.sql`, en son `20261011000000_bolge_metraji.sql`. Her birinde “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
+3. **Örnek kataloğu yükleyin.** Yine **SQL Editor** → **New query** → `supabase/veri/1-ornek-katalog.sql` dosyasının tamamını yapıştırın → **Run**. 23 yer tutucu kumaş, 3 örnek model (kanepe, berjer, köşe takımı) ve bir örnek firma (`/f/ornek-mobilya`) gelir. Gerçek kumaşlarınızı ekledikçe bunları panelden gizleyebilirsiniz.
 4. **Anahtarları alın.** **Project Settings** → **API** (yeni arayüzde **API Keys**) sayfasından üç değeri kopyalayın:
    - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
    - `anon` / `publishable` anahtarı → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -202,6 +203,6 @@ Supabase anahtarı gerekmez. Anahtarlar yokken uygulama `lib/seed/` içindeki ö
 | `npm test` | Birim testleri (Vitest; veritabanı şeması PGlite ile denenir) |
 | `npm run test:e2e` | Uçtan uca testler (Playwright; derleyip 3100 portunda çalıştırır) |
 | `npm run textures -- --force` | Örnek kumaş dokularını yeniden üretir |
-| `npm run seed:sql` | `supabase/seed.sql` dosyasını örnek veriden yeniden yazar |
+| `npm run seed:sql` | `supabase/veri/1-ornek-katalog.sql` dosyasını örnek veriden yeniden yazar |
 
 Önceden kurulu bir Chromium kullanmak için: `PW_CHROMIUM_PATH=/yol/chromium npm run test:e2e`.

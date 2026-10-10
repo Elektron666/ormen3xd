@@ -35,11 +35,11 @@ describe("setup checklist", () => {
   });
 
   it("names the SQL files still to run", () => {
-    const c = byId({ ...ready, migrations: { ...allMigrations, "20261006000000_fabric_series_limits.sql": false, "20261008000000_storage_limits.sql": false } });
+    const c = byId({ ...ready, migrations: { ...allMigrations, "20261006000000_kumas_serisi.sql": false, "20261008000000_dosya_sinirlari.sql": false } });
     expect(c.migrations.status).toBe("error");
-    expect(c.migrations.detail).toContain("20261006000000_fabric_series_limits.sql");
-    expect(c.migrations.detail).toContain("20261008000000_storage_limits.sql");
-    expect(c.migrations.detail).not.toContain("20261004000000_init.sql");
+    expect(c.migrations.detail).toContain("20261006000000_kumas_serisi.sql");
+    expect(c.migrations.detail).toContain("20261008000000_dosya_sinirlari.sql");
+    expect(c.migrations.detail).not.toContain("20261004000000_kurulum.sql");
   });
 
   it("without Supabase in production: error; locally: a warning", () => {
