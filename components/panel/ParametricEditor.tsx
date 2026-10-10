@@ -77,7 +77,7 @@ function SizeField({ label, value, range, error, onChange }: { label: string; va
 }
 
 /** A copy without an optional choice, so the stored data stays as before it was set. */
-function without(p: ParametricParams, k: "yukseklikCm" | "sirtTipi" | "oturumTipi"): ParametricParams {
+function without(p: ParametricParams, k: "yukseklikCm" | "sirtTipi" | "oturumTipi" | "kulak"): ParametricParams {
   const next = { ...p };
   delete next[k];
   return next;
@@ -131,6 +131,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
     setParams((p) => {
       const next: ParametricParams = { ...DEFAULTS[tip], kol: tip === "puf" ? "yok" : p.tip === "puf" ? DEFAULTS[tip].kol : p.kol, sirt: p.sirt, ayak: p.ayak };
       if (tip !== "puf" && p.sirtTipi) next.sirtTipi = p.sirtTipi;
+      if (tip === "berjer" && p.kulak) next.kulak = true;
       if (tip !== "puf" && tip !== "berjer" && p.oturumTipi) next.oturumTipi = p.oturumTipi;
       return next;
     });
@@ -197,6 +198,18 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
           {params.tip !== "puf" && <Segmented label="Sırt" value={params.yukseklikCm === undefined ? params.sirt : ("" as typeof params.sirt)} options={SIRTLAR} labels={SIRT_LABELS} onChange={setSirt} />}
           {params.tip !== "puf" && (
             <Segmented label="Sırt tipi" value={params.sirtTipi ?? "minderli"} options={SIRT_TIPLERI} labels={SIRT_TIPI_LABELS} onChange={(v) => optional("sirtTipi", v, "minderli")} />
+          )}
+          {params.tip === "berjer" && (
+            <Segmented
+              label="Kulak"
+              value={params.kulak ? "var" : "yok"}
+              options={["yok", "var"] as const}
+              labels={{ yok: "Kulaksız", var: "Kulaklı" }}
+              onChange={(v) => {
+                setServerErrors({});
+                setParams((p) => (v === "var" ? { ...p, kulak: true } : without(p, "kulak")));
+              }}
+            />
           )}
           {params.tip !== "puf" && params.tip !== "berjer" && (
             <Segmented label="Oturum" value={params.oturumTipi ?? "ayri"} options={OTURUM_TIPLERI} labels={OTURUM_TIPI_LABELS} onChange={(v) => optional("oturumTipi", v, "ayri")} />

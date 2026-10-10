@@ -14,7 +14,7 @@ export type Sirt = (typeof SIRTLAR)[number];
 export const AYAKLAR = ["konik", "metal", "gizli"] as const;
 export type Ayak = (typeof AYAKLAR)[number];
 /** Loose back cushions, or a fixed upholstered back (common on modern and Chester-style pieces). */
-export const SIRT_TIPLERI = ["minderli", "sabit"] as const;
+export const SIRT_TIPLERI = ["minderli", "sabit", "kapitone"] as const;
 export type SirtTipi = (typeof SIRT_TIPLERI)[number];
 /** One cushion per seat, or one long bench cushion per straight run. */
 export const OTURUM_TIPLERI = ["ayri", "tek"] as const;
@@ -43,6 +43,8 @@ export interface ParametricParams {
   sagBoyCm?: number;
   /** Fixed back instead of loose cushions; missing = loose cushions. */
   sirtTipi?: SirtTipi;
+  /** Armchair only: wings rising over the arms beside the back (kulaklı berjer). */
+  kulak?: boolean;
   /** One bench cushion per run; missing = one per seat. */
   oturumTipi?: OturumTipi;
   /**
@@ -63,7 +65,7 @@ export const TIP_LABELS: Record<Tip, string> = {
 export const KOL_LABELS: Record<Kol, string> = { ince: "İnce", kalin: "Kalın", yuvarlak: "Yuvarlak", yok: "Kolsuz" };
 export const SIRT_LABELS: Record<Sirt, string> = { alcak: "Alçak", orta: "Orta", yuksek: "Yüksek" };
 export const AYAK_LABELS: Record<Ayak, string> = { konik: "Ahşap konik", metal: "İnce metal", gizli: "Gizli kaide" };
-export const SIRT_TIPI_LABELS: Record<SirtTipi, string> = { minderli: "Ayrı minderli", sabit: "Sabit (tek parça)" };
+export const SIRT_TIPI_LABELS: Record<SirtTipi, string> = { minderli: "Ayrı minderli", sabit: "Sabit (tek parça)", kapitone: "Kapitone (düğmeli)" };
 export const OTURUM_TIPI_LABELS: Record<OturumTipi, string> = { ayri: "Her kişiye ayrı minder", tek: "Tek parça minder" };
 export const UC_LABELS: Record<Uc, string> = { kol: "Kol", kose: "Köşe", sezlong: "Şezlong" };
 
@@ -222,6 +224,7 @@ export function normaliseParams(raw: unknown): ParametricParams | null {
   }
   // newer, optional choices: stored only when set, so older models keep their exact data
   if (p.tip !== "puf" && SIRT_TIPLERI.includes(r.sirtTipi as SirtTipi) && r.sirtTipi !== "minderli") p.sirtTipi = r.sirtTipi as SirtTipi;
+  if (p.tip === "berjer" && r.kulak === true) p.kulak = true;
   if (p.tip !== "puf" && p.tip !== "berjer" && OTURUM_TIPLERI.includes(r.oturumTipi as OturumTipi) && r.oturumTipi !== "ayri") p.oturumTipi = r.oturumTipi as OturumTipi;
   if (typeof r.yukseklikCm === "number" && Number.isFinite(r.yukseklikCm)) p.yukseklikCm = Math.round(r.yukseklikCm);
   return p;
@@ -229,6 +232,7 @@ export function normaliseParams(raw: unknown): ParametricParams | null {
 
 /** Everyday name of a corner/modular set from its two ends. */
 export function shapeName(p: ParametricParams): string {
+  if (p.tip === "berjer" && p.kulak) return "Kulaklı berjer";
   if (p.tip !== "kose") return TIP_LABELS[p.tip];
   const ends = [p.solUc ?? "kol", p.sagUc ?? "kol"];
   const corners = ends.filter((u) => u === "kose").length;
@@ -246,6 +250,7 @@ export function describeParams(p: ParametricParams): string {
   const parts = [shapeName(p), size];
   if (p.tip !== "puf") parts.push(p.kol === "yok" ? "kolsuz" : `${KOL_LABELS[p.kol].toLocaleLowerCase("tr-TR")} kol`);
   if (p.sirtTipi === "sabit") parts.push("sabit sırt");
+  if (p.sirtTipi === "kapitone") parts.push("kapitone sırt");
   if (p.oturumTipi === "tek") parts.push("tek parça oturum");
   if (p.tip === "kose") {
     const side = (uc: Uc | undefined, where: string) => (uc === "kose" ? `köşe ${where}` : uc === "sezlong" ? `şezlong ${where}` : null);

@@ -622,4 +622,7 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 - **Sırt tipi:** Ayrı minderli (önceki hâli) ya da sabit (tek parça, döşemesi gövdeye sabit sırt).
 - **Oturum:** Her kişiye ayrı minder ya da tek parça minder. Tek parça oturumda sırt minderleri yine kişi başına; çoğu modelde böyle.
 - **Eski modeller:** Yeni seçimler yalnızca seçildiklerinde kaydediliyor. Eski modellerin verisi birebir aynı kalıyor ve veritabanında değişiklik gerekmiyor (`params` alanı zaten jsonb).
-- **Hâlâ çıkmayanlar:** Kapitone, kulaklı berjer, özel kol kıvrımı ve dikiş detayı. Fotoğraflar gelince en sık ihtiyaç duyulan hangisiyse o eklenecek.
+- **Kapitone ve kulaklı berjer (ek):**
+  - **Kapitone:** Sırt tipine "Kapitone (düğmeli)" eklendi. Sabit sırt panelinde, yaklaşık bir el aralığıyla elmas dizilimli düğme çukurları var. Ayrı bir görsel kullanılmıyor; çukurlar geometrinin kendisinde, bu yüzden kumaş deseni çukura doğru ölçüyle iniyor.
+  - **Kulaklı berjer:** Berjere "Kulaklı" seçeneği eklendi. Kanatlar kolun içinden yükseliyor.
+- **Hâlâ çıkmayanlar:** Özel kol kıvrımı (Chester'ın dışa kıvrık kolu) ve dikiş detayı.

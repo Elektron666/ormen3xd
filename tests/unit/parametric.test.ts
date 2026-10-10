@@ -4,6 +4,7 @@ import { DEFAULTS, TIPLER, describeParams, normaliseParams, paramDimensions, par
 import { buildParametric } from "@/lib/three/procedural/parametric";
 import { prepareModel } from "@/lib/three/prepare-model";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
+import { createCushionGeometry, tuftPoints } from "@/lib/three/procedural/cushion";
 
 const cases: ParametricParams[] = [
   ...TIPLER.map((t) => DEFAULTS[t]),
@@ -20,6 +21,11 @@ const cases: ParametricParams[] = [
   { ...DEFAULTS.berjer, yukseklikCm: 104, sirtTipi: "sabit", kol: "yuvarlak" },
   { ...DEFAULTS.kose, solUc: "kose", sagUc: "sezlong", genislikCm: 330, solBoyCm: 230, sagBoyCm: 170, sirtTipi: "sabit", oturumTipi: "tek", yukseklikCm: 78 },
   { ...DEFAULTS.puf, yukseklikCm: 38 },
+  // Chester-style tufted back, wingback armchair
+  { ...DEFAULTS.uclu, sirtTipi: "kapitone", kol: "yuvarlak", yukseklikCm: 78 },
+  { ...DEFAULTS.berjer, kulak: true, sirtTipi: "kapitone", yukseklikCm: 105 },
+  { ...DEFAULTS.berjer, kulak: true, kol: "yok" },
+  { ...DEFAULTS.kose, sirtTipi: "kapitone", solUc: "kose", sagUc: "sezlong", genislikCm: 330, solBoyCm: 230, sagBoyCm: 170 },
 ];
 
 describe("parametric spec", () => {
@@ -69,6 +75,36 @@ describe("parametric spec", () => {
     expect(count({ ...DEFAULTS.uclu, oturumTipi: "tek" }, "sirt-minder")).toBe(3);
     expect(count({ ...DEFAULTS.uclu, sirtTipi: "sabit" }, "sirt-minder")).toBe(0);
     expect(count({ ...DEFAULTS.uclu, sirtTipi: "sabit" }, "sirt-dolgu")).toBe(1);
+    expect(count({ ...DEFAULTS.uclu, sirtTipi: "kapitone" }, "sirt-dolgu")).toBe(1);
+    expect(count({ ...DEFAULTS.berjer, kulak: true }, "kulak")).toBe(2);
+    expect(count(DEFAULTS.berjer, "kulak")).toBe(0);
+  });
+
+  it("kapitone: düğmeler sırtı içe çeker, kenarlara taşmaz", () => {
+    const pts = tuftPoints(1.6, 0.45, 0.15);
+    expect(pts.length).toBeGreaterThan(10);
+    for (const [x, y] of pts) {
+      expect(Math.abs(x)).toBeLessThanOrEqual(0.8 - 0.075 + 1e-9);
+      expect(Math.abs(y)).toBeLessThanOrEqual(0.225 - 0.075 + 1e-9);
+    }
+    expect(tuftPoints(0.1, 0.1, 0.15)).toEqual([]);
+    // the front face really has dimples: some front vertices sit well behind the plain panel's surface
+    const plain = createCushionGeometry({ w: 0.6, h: 0.4, d: 0.09, r: 0.04 });
+    const tufted = createCushionGeometry({ w: 0.6, h: 0.4, d: 0.09, r: 0.04, tufts: { spacing: 0.15, depth: 0.018 } });
+    const minFrontZ = (g: THREE.BufferGeometry) => {
+      const pos = g.getAttribute("position");
+      let min = Infinity;
+      for (let i = 0; i < pos.count; i++) if (Math.abs(pos.getX(i)) < 0.2 && Math.abs(pos.getY(i)) < 0.1 && pos.getZ(i) > 0) min = Math.min(min, pos.getZ(i));
+      return min;
+    };
+    expect(minFrontZ(plain) - minFrontZ(tufted)).toBeGreaterThan(0.015);
+  });
+
+  it("kulak yalnızca berjerde saklanır", () => {
+    expect(normaliseParams({ ...DEFAULTS.berjer, kulak: true })!.kulak).toBe(true);
+    expect(normaliseParams({ ...DEFAULTS.uclu, kulak: true })!.kulak).toBeUndefined();
+    expect(shapeName({ ...DEFAULTS.berjer, kulak: true })).toBe("Kulaklı berjer");
+    expect(describeParams({ ...DEFAULTS.berjer, kulak: true, sirtTipi: "kapitone" })).toBe("Kulaklı berjer · 80 × 85 cm · ince kol · kapitone sırt");
   });
 
   it("describes a model in Turkish", () => {

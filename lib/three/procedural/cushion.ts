@@ -20,6 +20,29 @@ export interface CushionOptions {
   step?: number;
   /** Segments per rounded edge (each side of the 45° seam). */
   arcSegments?: number;
+  /**
+   * Button tufting (kapitone) on the front face (+z): dimples on a diamond
+   * grid, `spacing` apart, `depth` deep, kept `spacing / 2` inside the edges.
+   */
+  tufts?: { spacing: number; depth: number };
+}
+
+/** Button points of a diamond grid inside a w × h face, centred. */
+export function tuftPoints(w: number, h: number, spacing: number): [number, number][] {
+  const rowStep = spacing * 0.75;
+  const xMax = w / 2 - spacing / 2;
+  const yMax = h / 2 - spacing / 2;
+  if (xMax < 0 || yMax < 0) return [];
+  const rows = Math.max(1, Math.floor((2 * yMax) / rowStep) + 1);
+  const y0 = -((rows - 1) * rowStep) / 2;
+  const pts: [number, number][] = [];
+  for (let j = 0; j < rows; j++) {
+    const offset = j % 2 ? spacing / 2 : 0;
+    const cols = Math.floor((2 * xMax - offset) / spacing) + 1;
+    const x0 = -((cols - 1) * spacing) / 2;
+    for (let i = 0; i < cols; i++) pts.push([x0 + i * spacing, y0 + j * rowStep]);
+  }
+  return pts;
 }
 
 type Axis = 0 | 1 | 2;
@@ -68,7 +91,10 @@ const FACES: { n: Axis; s: 1 | -1; u: Axis; us: 1 | -1; v: Axis; vs: 1 | -1 }[] 
 export function createCushionGeometry(o: CushionOptions): THREE.BufferGeometry {
   const half = [o.w / 2, o.h / 2, o.d / 2];
   const r = Math.min(o.r, ...half.map((v) => v * 0.98));
-  const step = o.step ?? 0.04;
+  // dimples need a finer mesh than a plain pillow
+  const step = o.step ?? (o.tufts ? 0.012 : 0.04);
+  const buttons = o.tufts ? tuftPoints(o.w, o.h, o.tufts.spacing) : [];
+  const sigma = o.tufts ? o.tufts.spacing * 0.16 : 0;
   const arcSegs = o.arcSegments ?? 6;
   const samples = half.map((hv) => sampleAxis(hv, r, step, arcSegs));
   const bulge = [o.bulge?.x ?? 0, o.bulge?.y ?? 0, o.bulge?.z ?? 0];
@@ -100,6 +126,12 @@ export function createCushionGeometry(o: CushionOptions): THREE.BufferGeometry {
           const a = p[f.u] / half[f.u];
           const b = p[f.v] / half[f.v];
           q[f.n] += f.s * bulge[f.n] * (1 - a * a) * (1 - b * b);
+        }
+        if (buttons.length && f.n === 2 && f.s === 1) {
+          // each button pulls the face in; overlapping pulls do not add up past one button's depth
+          let pull = 0;
+          for (const [bx, by] of buttons) pull = Math.max(pull, Math.exp(-((q[0] - bx) ** 2 + (q[1] - by) ** 2) / (2 * sigma * sigma)));
+          q[2] -= o.tufts!.depth * pull;
         }
         positions.push(q[0], q[1], q[2]);
         uvs.push(f.us * su.arc[i], f.vs * sv.arc[j]);

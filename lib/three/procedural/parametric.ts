@@ -36,6 +36,8 @@ interface Ctx {
   fixed: boolean;
   /** One bench seat cushion per straight run. */
   bench: boolean;
+  /** Button-tufted back panel (kapitone); implies a fixed back. */
+  tufted: boolean;
 }
 
 /** Top of the back frame: a loose cushion rises 6 cm over it unless the back is low or fixed. */
@@ -55,6 +57,17 @@ function straightRun(c: Ctx, len: number, armStart: boolean, armEnd: boolean, se
   const armH = seatTop + arm.rise - legH;
   if (armStart) parts.push({ name: "kol", w: aw, h: armH, d: D, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [-len / 2 + aw / 2, legH + armH / 2, 0] });
   if (armEnd) parts.push({ name: "kol", w: aw, h: armH, d: D, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [len / 2 - aw / 2, legH + armH / 2, 0] });
+
+  if (back && c.p.kulak) {
+    // wings (kulak): from the arm's top (or the seat) up to the back's top, standing on the arms' outer part
+    const ww = Math.max(0.08, aw);
+    // sunk into the arm by its rounding, so the wing grows out of the arm instead of resting on it
+    const bottom = aw ? seatTop + arm.rise - arm.r - 0.02 : seatTop;
+    const top = c.H - 0.02;
+    const wd = Math.min(0.42, D * 0.5);
+    for (const sx of [-1, 1] as const)
+      parts.push({ name: "kulak", w: ww, h: top - bottom, d: wd, r: Math.min(0.07, ww / 2.2), bulge: { x: 0.012, y: 0.006 }, at: [sx * (len / 2 - ww / 2), bottom + (top - bottom) / 2, -D / 2 + wd / 2] });
+  }
 
   if (back) {
     const frameTop = frameTopOf(c);
@@ -79,7 +92,18 @@ function backCushion(c: Ctx, w: number, x: number, z: number): Part {
     // a padded panel fixed to the frame: thinner, nearly upright, stops just under the frame's top
     const top = c.H - 0.035;
     const h = Math.max(0.18, top - bottom);
-    return { name: "sirt-dolgu", w, h, d: 0.09, r: 0.04, bulge: { z: 0.018, x: 0.004, y: 0.006 }, rotX: -0.07, at: [x, bottom + h / 2, z - 0.035] };
+    return {
+      name: "sirt-dolgu",
+      w,
+      h,
+      d: 0.09,
+      r: 0.04,
+      bulge: { z: c.tufted ? 0.012 : 0.018, x: 0.004, y: 0.006 },
+      // buttons about a hand apart, as on a Chester back
+      tufts: c.tufted ? { spacing: 0.15, depth: 0.018 } : undefined,
+      rotX: -0.07,
+      at: [x, bottom + h / 2, z - 0.035],
+    };
   }
   const top = c.H + (c.low ? -0.02 : 0.01);
   const h = Math.max(0.2, top - bottom);
@@ -219,7 +243,8 @@ export function buildParametric(p: ParametricParams): THREE.Group {
     baseTop: seatTop - SEAT_T,
     arm: ARM[p.tip === "puf" ? "yok" : p.kol],
     low: lowBack(p),
-    fixed: p.sirtTipi === "sabit",
+    fixed: p.sirtTipi === "sabit" || p.sirtTipi === "kapitone",
+    tufted: p.sirtTipi === "kapitone",
     bench: p.oturumTipi === "tek",
   };
   const W = p.genislikCm / 100;
