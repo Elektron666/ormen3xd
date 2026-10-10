@@ -340,7 +340,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
       <div className="lg:sticky lg:top-6 lg:self-start">
         <p className="eyebrow mb-2">Canlı önizleme</p>
         <ReferencePhoto>
-          <FabricPreview model={previewModel} fabric={fabric} />
+          <FabricPreview model={previewModel} fabric={fabric} views />
         </ReferencePhoto>
         <p className="mt-2 text-[12px] leading-snug text-antrasit-50">
           Bu model sizin seçimlerinizle kodla çizilir; gerçek ürünün birebir kopyası değil, kumaşı doğru ölçüde gösteren bir benzeridir.

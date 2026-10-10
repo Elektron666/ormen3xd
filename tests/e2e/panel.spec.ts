@@ -227,6 +227,9 @@ test.describe("panel", () => {
     await page.getByRole("radio", { name: "Üstüne bindir" }).click();
     await expect(page.getByRole("img", { name: "Firmanın fotoğrafı" })).toHaveCount(0);
     await expect(page.getByLabel("Saydamlık")).toBeVisible();
+    // fixed angles to line the preview up with the photo
+    await expect(page.getByRole("group", { name: "Bakış açısı" }).getByRole("button")).toHaveText(["Soldan çapraz", "Önden", "Sağdan çapraz", "Yandan"]);
+    await page.getByRole("button", { name: "Önden" }).click();
     await page.getByRole("button", { name: "Kaldır" }).click();
     await expect(page.getByText("Firmanın fotoğrafını koy")).toBeVisible();
     expect(uploads).toEqual([]);
