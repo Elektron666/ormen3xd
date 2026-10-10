@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { DEFAULTS, TIPLER, describeParams, normaliseParams, paramDimensions, paramFloorRects, shapeName, validateParams, type ParametricParams } from "@/lib/parametric/spec";
+import { DEFAULTS, TIPLER, applyStil, stilOf, describeParams, normaliseParams, paramDimensions, paramFloorRects, shapeName, validateParams, type ParametricParams } from "@/lib/parametric/spec";
 import { buildParametric } from "@/lib/three/procedural/parametric";
 import { prepareModel } from "@/lib/three/prepare-model";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
@@ -102,6 +102,22 @@ describe("parametric spec", () => {
       return min;
     };
     expect(minFrontZ(plain) - minFrontZ(tufted)).toBeGreaterThan(0.015);
+  });
+
+  it("hazır stil yalnızca görünüşü değiştirir, ölçüye dokunmaz", () => {
+    const firm = { ...DEFAULTS.uclu, genislikCm: 236, derinlikCm: 98, yukseklikCm: 79, oturumTipi: "tek" as const };
+    const chester = applyStil(firm, "chester");
+    expect(chester).toMatchObject({ kol: "kivrik", sirtTipi: "kapitone", ayak: "konik", genislikCm: 236, derinlikCm: 98, yukseklikCm: 79 });
+    expect(chester.oturumTipi).toBeUndefined();
+    expect(stilOf(chester)).toBe("chester");
+    expect(stilOf(applyStil(firm, "modern"))).toBe("modern");
+    expect(validateParams(chester)).toEqual({});
+    // a Chester armchair gets wings; a pouf keeps no arms
+    expect(applyStil(DEFAULTS.berjer, "chester").kulak).toBe(true);
+    expect(applyStil(DEFAULTS.berjer, "modern").oturumTipi).toBeUndefined();
+    expect(applyStil(DEFAULTS.puf, "chester").kol).toBe("yok");
+    // changing one choice after a style no longer matches it
+    expect(stilOf({ ...chester, ayak: "metal" })).toBeNull();
   });
 
   it("kulak yalnızca berjerde saklanır", () => {

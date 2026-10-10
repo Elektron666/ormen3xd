@@ -72,6 +72,44 @@ export const UC_LABELS: Record<Uc, string> = { kol: "Kol", kose: "Köşe", sezlo
 /** Chaise module width (m in the builder, cm here). */
 export const SEZLONG_EN_CM = 90;
 
+/**
+ * Starting points for the usual looks, to match a firm's photo in one tap.
+ * A style sets only the look (arms, back, seat, legs); the type and the
+ * firm's measurements stay as entered. Everything can be changed after.
+ */
+export const STILLER = ["chester", "modern", "iskandinav", "blok"] as const;
+export type Stil = (typeof STILLER)[number];
+export const STIL_LABELS: Record<Stil, string> = { chester: "Chester", modern: "Modern", iskandinav: "İskandinav", blok: "Blok / minimal" };
+
+const STIL_LOOK: Record<Stil, Pick<ParametricParams, "kol" | "sirt" | "ayak" | "sirtTipi" | "oturumTipi" | "kulak">> = {
+  chester: { kol: "kivrik", sirt: "alcak", ayak: "konik", sirtTipi: "kapitone", oturumTipi: undefined, kulak: undefined },
+  modern: { kol: "ince", sirt: "orta", ayak: "metal", sirtTipi: undefined, oturumTipi: "tek", kulak: undefined },
+  iskandinav: { kol: "yuvarlak", sirt: "orta", ayak: "konik", sirtTipi: undefined, oturumTipi: undefined, kulak: undefined },
+  blok: { kol: "kalin", sirt: "alcak", ayak: "gizli", sirtTipi: "sabit", oturumTipi: undefined, kulak: undefined },
+};
+
+export function applyStil(p: ParametricParams, stil: Stil): ParametricParams {
+  const look = STIL_LOOK[stil];
+  const next: ParametricParams = { ...p, kol: p.tip === "puf" ? "yok" : look.kol, sirt: look.sirt, ayak: look.ayak };
+  delete next.sirtTipi;
+  delete next.oturumTipi;
+  delete next.kulak;
+  if (p.tip !== "puf" && look.sirtTipi) next.sirtTipi = look.sirtTipi;
+  if (p.tip !== "puf" && p.tip !== "berjer" && look.oturumTipi) next.oturumTipi = look.oturumTipi;
+  // a Chester armchair is usually a wingback
+  if (p.tip === "berjer" && stil === "chester") next.kulak = true;
+  return next;
+}
+
+/** The style a set of choices matches exactly, if any (to light up its button). */
+export function stilOf(p: ParametricParams): Stil | null {
+  const keys = ["kol", "sirt", "ayak", "sirtTipi", "oturumTipi", "kulak"] as const;
+  return STILLER.find((s) => {
+    const q = applyStil(p, s);
+    return keys.every((k) => q[k] === p[k]);
+  }) ?? null;
+}
+
 /** Allowed ranges, cm. Wide enough for real Turkish models, narrow enough to stay believable. */
 export const LIMITS: Record<Tip, { w: [number, number]; d: [number, number]; boy?: [number, number] }> = {
   ikili: { w: [130, 210], d: [75, 115] },

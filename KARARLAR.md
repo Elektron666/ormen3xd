@@ -626,4 +626,5 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - **Kapitone:** Sırt tipine "Kapitone (düğmeli)" eklendi. Sabit sırt panelinde, yaklaşık bir el aralığıyla elmas dizilimli düğme çukurları var. Ayrı bir görsel kullanılmıyor; çukurlar geometrinin kendisinde, bu yüzden kumaş deseni çukura doğru ölçüyle iniyor.
   - **Kulaklı berjer:** Berjere "Kulaklı" seçeneği eklendi. Kanatlar kolun içinden yükseliyor.
 - **Kıvrık kol (Chester):** Kol tiplerine eklendi. İnce bir gövdenin üstünde dışa taşan yuvarlak bir rulo var; dış ölçü düz kolla aynı kalıyor. Kapitone sırtla birlikte Chester takımı kurulabiliyor.
+- **Hazır stiller:** Formun başında Chester, Modern, İskandinav ve Blok / minimal düğmeleri var. Her biri kol, sırt, oturum ve ayağı birlikte seçiyor; tip ve ölçüler olduğu gibi kalıyor. Fotoğraftan model kuran kişi en yakın stille başlayıp gerisini tek tek değiştiriyor. Bir seçim değişince stil düğmesi sönüyor; ekran yalnızca gerçekten o stilde olanı stil diye gösteriyor.
 - **Hâlâ çıkmayanlar:** Dikiş ve biye detayı, kolun önündeki sarmal yüzü (Chester kolunun ön kıvrımı düz görünüyor).

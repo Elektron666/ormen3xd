@@ -17,6 +17,10 @@ import {
   SIRT_TIPI_LABELS,
   SIRT_TIPLERI,
   SIRTLAR,
+  STIL_LABELS,
+  STILLER,
+  applyStil,
+  stilOf,
   TIP_LABELS,
   TIPLER,
   UC_LABELS,
@@ -194,6 +198,21 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
         <section className="flex flex-col gap-4">
           <h2 className="eyebrow">1 · Model</h2>
           <Segmented label="Tip" value={params.tip} options={TIPLER} labels={TIP_LABELS} onChange={setTip} />
+          {params.tip !== "puf" && (
+            <div>
+              <Segmented
+                label="Hazır stil (fotoğrafa en yakın olanla başlayın)"
+                value={stilOf(params) ?? ("" as (typeof STILLER)[number])}
+                options={STILLER}
+                labels={STIL_LABELS}
+                onChange={(v) => {
+                  setServerErrors({});
+                  setParams((p) => applyStil(p, v));
+                }}
+              />
+              <p className="mt-1 text-[12px] text-antrasit-50">Kol, sırt, oturum ve ayağı birlikte seçer; ölçüler değişmez. Aşağıdan tek tek değiştirebilirsiniz.</p>
+            </div>
+          )}
           {params.tip !== "puf" && <Segmented label="Kol" value={params.kol} options={KOLLAR} labels={KOL_LABELS} onChange={(v) => set("kol", v)} />}
           {params.tip !== "puf" && <Segmented label="Sırt" value={params.yukseklikCm === undefined ? params.sirt : ("" as typeof params.sirt)} options={SIRTLAR} labels={SIRT_LABELS} onChange={setSirt} />}
           {params.tip !== "puf" && (
