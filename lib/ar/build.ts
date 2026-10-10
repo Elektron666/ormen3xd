@@ -18,11 +18,14 @@ import { paintLegs } from "@/lib/three/paint-legs";
  * Scales the UVs of the given vertex range by the repeat (the caller makes
  * the geometry non-indexed when ranges of different materials could share a vertex).
  */
-export function bakeRepeat(geo: THREE.BufferGeometry, start: number, count: number, repeat: { x: number; y: number }): void {
+export function bakeRepeat(geo: THREE.BufferGeometry, start: number, count: number, repeat: { x: number; y: number }, turned = false): void {
   const uv = geo.getAttribute("uv") as THREE.BufferAttribute | undefined;
   if (!uv) return;
   const end = Math.min(uv.count, start + count);
-  for (let i = start; i < end; i++) uv.setXY(i, uv.getX(i) * repeat.x, uv.getY(i) * repeat.y);
+  // turned: the same transform three.js applies for texture.rotation = π/2 (u' = sx·v, v' = −sy·u)
+  for (let i = start; i < end; i++)
+    if (turned) uv.setXY(i, uv.getY(i) * repeat.x, -uv.getX(i) * repeat.y);
+    else uv.setXY(i, uv.getX(i) * repeat.x, uv.getY(i) * repeat.y);
   uv.needsUpdate = true;
 }
 
@@ -58,6 +61,7 @@ export function buildArScene(
   tex: FabricTextures,
   zones: Partial<Record<Zone, { fabric: Fabric; tex: FabricTextures }>> = {},
   legFinish?: LegFinish,
+  turned = false,
 ): PreparedModel {
   const prepared = prepareModel(source, model.fabricMaterialNames);
   if (model.source.kind !== "glb") paintLegs(prepared.root, legFinish);
@@ -85,12 +89,13 @@ export function buildArScene(
     }
     const { material, fabric: worn } = forSlot(mesh);
     const cmPerUv = Number.isFinite(slot.cmPerUv) ? slot.cmPerUv : 100;
-    const rep = textureRepeat(cmPerUv, worn.texture.repeatCm);
+    const rc = worn.texture.repeatCm;
+    const rep = textureRepeat(cmPerUv, turned ? { w: rc.h, h: rc.w } : rc);
     if (slot.materialIndex >= 0) {
-      for (const g of geo.groups) if (g.materialIndex === slot.materialIndex) bakeRepeat(geo, g.start, g.count, rep);
+      for (const g of geo.groups) if (g.materialIndex === slot.materialIndex) bakeRepeat(geo, g.start, g.count, rep, turned);
       (mesh.material as THREE.Material[])[slot.materialIndex] = material;
     } else {
-      bakeRepeat(geo, 0, Infinity, rep);
+      bakeRepeat(geo, 0, Infinity, rep, turned);
       mesh.material = material;
     }
   }
@@ -124,8 +129,8 @@ async function loadSource(model: FurnitureModel): Promise<THREE.Object3D> {
 const glbCache = new Map<string, Promise<Blob>>();
 
 /** The AR file for a model in a fabric (built once per pair and kept for the visit). */
-export function arGlb(model: FurnitureModel, fabric: Fabric, zoneFabrics: Partial<Record<Zone, Fabric>> = {}, legFinish?: LegFinish): Promise<Blob> {
-  const zoneKey = ZONES.map((z) => zoneFabrics[z]?.code ?? "").join(",") + `:${legFinish ?? ""}`;
+export function arGlb(model: FurnitureModel, fabric: Fabric, zoneFabrics: Partial<Record<Zone, Fabric>> = {}, legFinish?: LegFinish, turned = false): Promise<Blob> {
+  const zoneKey = ZONES.map((z) => zoneFabrics[z]?.code ?? "").join(",") + `:${legFinish ?? ""}:${turned}`;
   const key = `${model.id}:${fabric.id}:${fabric.texture.maps.albedo["1k"]}:${zoneKey}`;
   let entry = glbCache.get(key);
   if (!entry) {
@@ -137,7 +142,7 @@ export function arGlb(model: FurnitureModel, fabric: Fabric, zoneFabrics: Partia
         const f = zoneFabrics[z];
         if (f) zones[z] = { fabric: f, tex: await loadFabricTextures(f, "1k") };
       }
-      return exportGlb(buildArScene(source, model, fabric, tex, zones, legFinish).root);
+      return exportGlb(buildArScene(source, model, fabric, tex, zones, legFinish, turned).root);
     })();
     entry.catch(() => glbCache.delete(key));
     glbCache.set(key, entry);

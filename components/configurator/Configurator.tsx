@@ -196,7 +196,7 @@ export function Configurator({
         const allowed = allowedOn(p.modelSlug);
         if (!allowed.some((f) => f.code === selected.code)) return p;
         const zones = selectedItem.zones && Object.fromEntries(Object.entries(selectedItem.zones).filter(([, c]) => allowed.some((f) => f.code === c)));
-        return { ...p, fabricCode: selected.code, zones: zones && Object.keys(zones).length ? zones : undefined, ayak: selectedItem.ayak };
+        return { ...p, fabricCode: selected.code, zones: zones && Object.keys(zones).length ? zones : undefined, ayak: selectedItem.ayak, yon: selectedItem.yon };
       }),
     );
 
@@ -500,6 +500,7 @@ export function Configurator({
               zone={activeZone}
               onZone={setZone}
               legs={hasWoodLegs(selectedModel)}
+              onTurn={(donuk) => commit(items.map((p) => (p.id === selectedItem.id ? { ...p, yon: donuk ? "donuk" : undefined } : p)))}
               onLegs={(ayak) => commit(items.map((p) => (p.id === selectedItem.id ? { ...p, ayak: ayak === DEFAULT_LEG ? undefined : ayak } : p)))}
             />
           )}
@@ -549,9 +550,9 @@ export function Configurator({
               <span className="text-antrasit-70">
                 Seçili: <span className="text-antrasit">{selectedModel.name}</span>
               </span>
-              {items.some((p) => pieceCodes(p).join() !== pieceCodes(selectedItem).join() || p.ayak !== selectedItem.ayak) && (
+              {items.some((p) => pieceCodes(p).join() !== pieceCodes(selectedItem).join() || p.ayak !== selectedItem.ayak || p.yon !== selectedItem.yon) && (
                 <button type="button" onClick={applyToAll} className="rounded-full px-2 py-1 text-antrasit underline underline-offset-4 hover:text-ceviz focus-visible:outline-2 focus-visible:outline-antrasit">
-                  {selectedItem.zones || selectedItem.ayak ? "Bu döşemeyi tümüne uygula" : "Bu kumaşı tümüne uygula"}
+                  {selectedItem.zones || selectedItem.ayak || selectedItem.yon ? "Bu döşemeyi tümüne uygula" : "Bu kumaşı tümüne uygula"}
                 </button>
               )}
             </div>
@@ -657,7 +658,7 @@ export function Configurator({
           url={takeHome}
         />
       )}
-      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} legFinish={selectedItem.ayak} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
+      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} legFinish={selectedItem.ayak} turned={selectedItem.yon === "donuk"} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>
   );
 }

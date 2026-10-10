@@ -53,7 +53,10 @@ export const formatMetres = (m: number) => `${nf.format(m)} m`;
 /** The firm's figure is for the whole piece in one fabric; split over zones it is the upholsterer's call. */
 export const ZONED_REASON = "Bölgelere farklı kumaş seçildi; hangi kumaştan kaç metre gideceğini usta hesaplar.";
 
-export function meterageByFabric(pieces: { model: Pick<FurnitureModel, "meterage" | "name">; fabric: Fabric; zoned?: boolean }[]): {
+/** Railroaded fabric is cut across the roll: the firm's figure (cut along it) does not hold. */
+export const TURNED_REASON = "Kumaş dönük (yan çevrilmiş) kesilecek; metrajı usta hesaplar.";
+
+export function meterageByFabric(pieces: { model: Pick<FurnitureModel, "meterage" | "name">; fabric: Fabric; zoned?: boolean; turned?: boolean }[]): {
   fabric: Fabric;
   pieces: number;
   total: number | null;
@@ -62,7 +65,7 @@ export function meterageByFabric(pieces: { model: Pick<FurnitureModel, "meterage
   const groups = new Map<string, { fabric: Fabric; estimates: Estimate[]; names: string[] }>();
   for (const p of pieces) {
     const g = groups.get(p.fabric.code) ?? { fabric: p.fabric, estimates: [], names: [] };
-    g.estimates.push(p.zoned ? { kind: "usta", reason: ZONED_REASON } : estimate(p.model, p.fabric));
+    g.estimates.push(p.zoned ? { kind: "usta", reason: ZONED_REASON } : p.turned ? { kind: "usta", reason: TURNED_REASON } : estimate(p.model, p.fabric));
     g.names.push(p.model.name);
     groups.set(p.fabric.code, g);
   }

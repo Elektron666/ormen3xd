@@ -194,6 +194,7 @@ export function PlacedFurniture(props: PlacedFurnitureProps) {
           fabric={fabric}
           zoneFabrics={props.zoneFabrics}
           legFinish={p.ayak}
+          turned={p.yon === "donuk"}
           textureSize={textureSize}
           // in compare mode only the selected piece is split; the rest is shared by both halves
           layer={compareFabric && !selected ? 0 : LAYER_PRIMARY}
@@ -204,7 +205,7 @@ export function PlacedFurniture(props: PlacedFurnitureProps) {
       </Suspense>
       {selected && compareFabric && (
         <Suspense fallback={null}>
-          <FurnitureObject model={model} fabric={compareFabric} legFinish={p.ayak} textureSize={textureSize} layer={LAYER_COMPARE} onError={props.onError} />
+          <FurnitureObject model={model} fabric={compareFabric} legFinish={p.ayak} turned={p.yon === "donuk"} textureSize={textureSize} layer={LAYER_COMPARE} onError={props.onError} />
         </Suspense>
       )}
       {prepared && shown && (

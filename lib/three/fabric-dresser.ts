@@ -47,7 +47,7 @@ export class FabricDresser {
    * `zones` gives single zones (arms, cushions…) their own fabric; parts
    * without a zone (models from a file) always take `fabric`.
    */
-  async apply(fabric: Fabric, size: TextureSize, opts: { instant?: boolean; zones?: Partial<Record<Zone, Fabric>> } = {}): Promise<boolean> {
+  async apply(fabric: Fabric, size: TextureSize, opts: { instant?: boolean; zones?: Partial<Record<Zone, Fabric>>; turned?: boolean } = {}): Promise<boolean> {
     const id = ++this.request;
     const zones = opts.zones ?? {};
     const all = [fabric, ...ZONES.flatMap((z) => (zones[z] ? [zones[z]!] : []))];
@@ -61,13 +61,15 @@ export class FabricDresser {
       const f = (zone && zones[zone]) || fabric;
       const tex = loaded.get(f.code)!;
       const cmPerUv = Number.isFinite(slot.cmPerUv) ? slot.cmPerUv : 100;
-      const rep = textureRepeat(cmPerUv, f.texture.repeatCm);
+      // turned: the tile lies the other way, so its width runs along v
+      const rc = f.texture.repeatCm;
+      const rep = textureRepeat(cmPerUv, opts.turned ? { w: rc.h, h: rc.w } : rc);
       // baked occlusion (models built from code) is a vertex colour; other geometry must not read one
       const ao = !!slot.mesh.geometry.userData.ao;
-      const key = `${f.code}:${rep.x.toFixed(3)}:${rep.y.toFixed(3)}:${ao}`;
+      const key = `${f.code}:${rep.x.toFixed(3)}:${rep.y.toFixed(3)}:${ao}:${!!opts.turned}`;
       let mat = byRepeat.get(key);
       if (!mat) {
-        mat = createFabricMaterial(f, tex, new THREE.Vector2(rep.x, rep.y));
+        mat = createFabricMaterial(f, tex, new THREE.Vector2(rep.x, rep.y), opts.turned);
         mat.vertexColors = ao;
         byRepeat.set(key, mat);
       }

@@ -25,6 +25,7 @@ export function ArViewer({
   fabric,
   zoneFabrics,
   legFinish,
+  turned = false,
   firmSlug = null,
   className = "",
 }: {
@@ -33,6 +34,7 @@ export function ArViewer({
   /** Arms, cushions… in their own fabric. */
   zoneFabrics?: Partial<Record<Zone, Fabric>>;
   legFinish?: LegFinish;
+  turned?: boolean;
   firmSlug?: string | null;
   className?: string;
 }) {
@@ -50,7 +52,7 @@ export function ArViewer({
   useEffect(() => {
     let alive = true;
     let url: string | null = null;
-    Promise.all([import("@google/model-viewer"), arGlb(model, fabric, zones.current, legFinish)])
+    Promise.all([import("@google/model-viewer"), arGlb(model, fabric, zones.current, legFinish, turned)])
       .then(([, glb]) => {
         if (!alive) return;
         url = URL.createObjectURL(glb);
@@ -63,7 +65,7 @@ export function ArViewer({
       alive = false;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [model, fabric, zoneKey, legFinish]);
+  }, [model, fabric, zoneKey, legFinish, turned]);
 
   useEffect(() => {
     const el = ref.current;

@@ -56,6 +56,16 @@ Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 E
 - [x] Müşteri telefonu: ORMEN'de kalıyor (Fatih Bey'in kararı). Protokol sözü ve onay cümlesi avukatta.
 - [x] Kiosk sadeleştirildi (yalnızca kumaş denenir); ana sayfanın altına küçük "Yönetim" bağlantısı.
 
+## Tasarımcılar ve İnegöl (10 Ekim acil toplantı, `TOPLANTI-2026-10-10-acil.md`)
+
+- [x] Bölgeler ustanın diliyle: Kasa, Kollar, Oturak, Sırt, Biye (eski bağlantılar çalışıyor).
+- [x] Telefonda bölge seçimi tek satır.
+- [x] Açılış: koltuk önden üç çeyrek açıyla açılıyor, dönüş kısa.
+- [x] Desen yönü: Düz / Dönük; bağlantıya, AR'a ve föye geçiyor (dönükte metrajı usta hesaplar).
+- [ ] Bölge başına metraj (pilot firmanın modelleri girilirken; yeni veritabanı dosyası gerekecek).
+- [ ] Panelden katalog görseli: her ORMEN kumaşında beyaz fonlu ürün görseli (pilottan sonra, Fatih Bey onaylarsa).
+- [ ] Daha yumuşak minder görünümü.
+
 ## Yön değişikliği: Kesim masası (5 Ekim, 2. toplantı)
 
 Ayrıntı: `TOPLANTI-2026-10-05-2.md`. Araç showroomdaki deneme ekranından, **siparişin ORMEN koduyla, doğru metreyle ve doğru partiden verildiği yere** dönüşüyor. Fiyat, sepet ve üyelik yine yok; metrajı biz uydurmuyoruz.

@@ -54,11 +54,14 @@ export function prefetchFabric(fabric: Fabric, size: TextureSize): void {
   loadFabricTextures(fabric, size).catch(() => undefined);
 }
 
-function withRepeat(tex: THREE.Texture | undefined, repeat: THREE.Vector2): THREE.Texture | undefined {
+function withRepeat(tex: THREE.Texture | undefined, repeat: THREE.Vector2, turned = false): THREE.Texture | undefined {
   if (!tex) return undefined;
   // Clones share the image source, so GPU memory is not duplicated.
   const t = tex.clone();
   t.repeat.copy(repeat);
+  // railroaded ("dönük"): the pattern runs the other way. The normal map turns with
+  // it correctly, as three.js derives the tangent frame from the transformed UVs.
+  t.rotation = turned ? Math.PI / 2 : 0;
   t.needsUpdate = true;
   return t;
 }
@@ -68,7 +71,7 @@ function withRepeat(tex: THREE.Texture | undefined, repeat: THREE.Vector2): THRE
  * entirely from the albedo map (colour = white) so the swatch, the photo and
  * the render agree.
  */
-export function createFabricMaterial(fabric: Fabric, tex: FabricTextures, repeat: THREE.Vector2): THREE.MeshPhysicalMaterial {
+export function createFabricMaterial(fabric: Fabric, tex: FabricTextures, repeat: THREE.Vector2, turned = false): THREE.MeshPhysicalMaterial {
   const preset = MATERIAL_PRESETS[fabric.type];
   const [r, g, b] = hexToRgb(fabric.texture.avgColor);
   const lift = preset.sheenLift;
@@ -77,10 +80,10 @@ export function createFabricMaterial(fabric: Fabric, tex: FabricTextures, repeat
   return new THREE.MeshPhysicalMaterial({
     name: `kumas:${fabric.code}`,
     color: 0xffffff,
-    map: withRepeat(tex.albedo, repeat),
-    normalMap: withRepeat(tex.normal, repeat),
+    map: withRepeat(tex.albedo, repeat, turned),
+    normalMap: withRepeat(tex.normal, repeat, turned),
     normalScale: new THREE.Vector2(preset.normalScale, preset.normalScale),
-    roughnessMap: withRepeat(tex.roughness, repeat),
+    roughnessMap: withRepeat(tex.roughness, repeat, turned),
     roughness: tex.roughness ? preset.roughness : preset.roughness * 0.9,
     metalness: 0,
     sheen: fabric.texture.sheen ?? preset.sheen,

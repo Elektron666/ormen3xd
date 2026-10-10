@@ -7,7 +7,8 @@ import { DEFAULTS, applyStil } from "@/lib/parametric/spec";
 
 describe("bölgeye göre kumaş", () => {
   it("parça adları bölgelere ayrılır", () => {
-    expect(["oturum", "oturum-2", "sirt-minder-1", "sirt-dolgu", "puf"].map(zoneOf)).toEqual(Array(5).fill("minder"));
+    expect(["oturum", "oturum-2", "puf"].map(zoneOf)).toEqual(Array(3).fill("oturak"));
+    expect(["sirt-minder-1", "sirt-dolgu"].map(zoneOf)).toEqual(Array(2).fill("sirt"));
     expect(["kol", "kol-sol", "kol-kivrim", "kulak"].map(zoneOf)).toEqual(Array(4).fill("kol"));
     expect(["govde", "sirt-govde", "sirt"].map(zoneOf)).toEqual(Array(3).fill("govde"));
     expect(zoneOf("biye")).toBe("biye");
@@ -33,9 +34,11 @@ describe("bölgeye göre kumaş", () => {
   });
 
   it("bağlantıda saklanır; ana kumaşla aynı olan bölge yazılmaz; eski bağlantılar açılır", () => {
-    const items = decodeLayout("moduler-kanepe.MISSO-06.0.-252.0.kLUMA-06~mMISSO-03")!;
-    expect(items[0].zones).toEqual({ kol: "LUMA-06", minder: "MISSO-03" });
-    expect(encodeLayout(items)).toBe("moduler-kanepe.MISSO-06.0.-252.0.kLUMA-06~mMISSO-03");
+    const items = decodeLayout("moduler-kanepe.MISSO-06.0.-252.0.kLUMA-06~oMISSO-03~sLUMA-01")!;
+    expect(items[0].zones).toEqual({ kol: "LUMA-06", oturak: "MISSO-03", sirt: "LUMA-01" });
+    expect(encodeLayout(items)).toBe("moduler-kanepe.MISSO-06.0.-252.0.kLUMA-06~oMISSO-03~sLUMA-01");
+    // a link from before the seat/back split: "m" dresses both
+    expect(decodeLayout("moduler-kanepe.MISSO-06.0.-252.0.kLUMA-06~mMISSO-03")![0].zones).toEqual({ kol: "LUMA-06", oturak: "MISSO-03", sirt: "MISSO-03" });
     expect(encodeLayout([{ ...items[0], zones: { kol: "MISSO-06" } }])).toBe("moduler-kanepe.MISSO-06.0.-252.0");
     expect(decodeLayout("moduler-kanepe.LUMA-02.0.51.0")![0].zones).toBeUndefined();
     expect(decodeLayout("moduler-kanepe.LUMA-02.0.51.0.xLUMA-01")).toBeNull();
@@ -44,7 +47,7 @@ describe("bölgeye göre kumaş", () => {
   });
 
   it("kombinasyonun bütün kumaşları sayılır", () => {
-    const p = { fabricCode: "MISSO-06", zones: { kol: "LUMA-06", minder: "MISSO-03", biye: "LUMA-06" } };
+    const p = { fabricCode: "MISSO-06", zones: { kol: "LUMA-06", oturak: "MISSO-03", biye: "LUMA-06" } };
     expect(pieceCodes(p)).toEqual(["MISSO-06", "LUMA-06", "MISSO-03"]);
     expect(zoneCode(p, "govde")).toBe("MISSO-06");
     expect(zoneCode(p, null)).toBe("MISSO-06");
@@ -54,13 +57,38 @@ describe("bölgeye göre kumaş", () => {
 describe("ayak rengi", () => {
   it("bağlantıda saklanır; ceviz (varsayılan) yazılmaz; bilinmeyen renk reddedilir", async () => {
     const { hasWoodLegs } = await import("@/lib/three/legs");
-    const items = decodeLayout("moduler-kanepe.LUMA-02.0.51.0.mSIENA-05~asiyah")!;
-    expect(items[0]).toMatchObject({ ayak: "siyah", zones: { minder: "SIENA-05" } });
-    expect(encodeLayout(items)).toBe("moduler-kanepe.LUMA-02.0.51.0.mSIENA-05~asiyah");
+    const items = decodeLayout("moduler-kanepe.LUMA-02.0.51.0.oSIENA-05~asiyah")!;
+    expect(items[0]).toMatchObject({ ayak: "siyah", zones: { oturak: "SIENA-05" } });
+    expect(encodeLayout(items)).toBe("moduler-kanepe.LUMA-02.0.51.0.oSIENA-05~asiyah");
     expect(encodeLayout([{ ...items[0], zones: undefined, ayak: "mese" }])).toBe("moduler-kanepe.LUMA-02.0.51.0.amese");
     expect(encodeLayout([{ ...items[0], zones: undefined, ayak: "ceviz" }])).toBe("moduler-kanepe.LUMA-02.0.51.0");
     expect(decodeLayout("moduler-kanepe.LUMA-02.0.51.0.amor")).toBeNull();
     expect(hasWoodLegs({ source: { kind: "parametric", params: { ...DEFAULTS.uclu, ayak: "metal" } } })).toBe(false);
     expect(hasWoodLegs({ source: { kind: "parametric", params: DEFAULTS.uclu } })).toBe(true);
+  });
+});
+
+describe("desen yönü", () => {
+  it("dönük bağlantıda saklanır, metrajı usta hesaplar", async () => {
+    const { meterageByFabric, TURNED_REASON } = await import("@/lib/metraj");
+    const { buildPhotoFabrics } = await import("@/lib/seed/photo-fabrics");
+    const items = decodeLayout("moduler-kanepe.MISSO-05.0.51.0.yd")!;
+    expect(items[0].yon).toBe("donuk");
+    expect(encodeLayout(items)).toBe("moduler-kanepe.MISSO-05.0.51.0.yd");
+    expect(encodeLayout([{ ...items[0], yon: undefined }])).toBe("moduler-kanepe.MISSO-05.0.51.0");
+    expect(decodeLayout("moduler-kanepe.MISSO-05.0.51.0.yx")).toBeNull();
+    const fabric = { ...buildPhotoFabrics()[4], widthCm: 140, pattern: "duz" as const, cutDirection: "cift" as const };
+    const model = { name: "K", meterage: { metres: 8, refWidthCm: 140 } };
+    expect(meterageByFabric([{ model, fabric }])[0].total).toBe(8);
+    expect(meterageByFabric([{ model, fabric, turned: true }])[0]).toMatchObject({ total: null, reasons: [`K: ${TURNED_REASON}`] });
+  });
+
+  it("AR'da desen UV'ye dönük olarak gömülür", async () => {
+    const THREE = await import("three");
+    const { bakeRepeat } = await import("@/lib/ar/build");
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("uv", new THREE.Float32BufferAttribute([1, 0, 0, 1], 2));
+    bakeRepeat(g, 0, Infinity, { x: 2, y: 3 }, true);
+    expect(Array.from(g.getAttribute("uv").array)).toEqual([0, -3, 2, -0]);
   });
 });

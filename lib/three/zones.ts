@@ -3,19 +3,23 @@
 // part names come from the code-built models (lib/three/procedural); a
 // model from a 3D file has no zones and always takes one fabric.
 
-export const ZONES = ["govde", "kol", "minder", "biye"] as const;
+export const ZONES = ["govde", "kol", "oturak", "sirt", "biye"] as const;
 export type Zone = (typeof ZONES)[number];
 export type ZoneCodes = Partial<Record<Zone, string>>;
 
-export const ZONE_LABELS: Record<Zone, string> = { govde: "Gövde", kol: "Kollar", minder: "Minderler", biye: "Biye" };
-/** One letter per zone in the link (y=slug.CODE.x.z.rot.mCODE~kCODE). */
-const LETTER: Record<Zone, string> = { govde: "g", kol: "k", minder: "m", biye: "b" };
+// the upholsterer's words (meeting of 10 Oct): kasa, not "gövde"; seat and back cushions apart
+export const ZONE_LABELS: Record<Zone, string> = { govde: "Kasa", kol: "Kollar", oturak: "Oturak", sirt: "Sırt", biye: "Biye" };
+/** One letter per zone in the link (y=slug.CODE.x.z.rot.oCODE~kCODE). */
+const LETTER: Record<Zone, string> = { govde: "g", kol: "k", oturak: "o", sirt: "s", biye: "b" };
+/** Links from before the split: "m" (all cushions) means seat and back. */
+const LEGACY: Record<string, Zone[]> = { m: ["oturak", "sirt"] };
 const BY_LETTER = Object.fromEntries(Object.entries(LETTER).map(([z, l]) => [l, z])) as Record<string, Zone>;
 
 /** Zone of a part by its name; null for parts of a model from a file. */
 export function zoneOf(partName: string): Zone | null {
   if (partName === "biye") return "biye";
-  if (/^(oturum|sirt-minder|sirt-dolgu|puf)(-|$)/.test(partName)) return "minder";
+  if (/^(oturum|puf)(-|$)/.test(partName)) return "oturak";
+  if (/^(sirt-minder|sirt-dolgu)(-|$)/.test(partName)) return "sirt";
   if (/^(kol|kulak)(-|$)/.test(partName)) return "kol";
   if (/^(govde|sirt-govde|sirt)(-|$)/.test(partName)) return "govde";
   return null;
@@ -33,14 +37,14 @@ export function encodeZones(zones: ZoneCodes | undefined): string {
   return zones ? ZONES.filter((z) => zones[z]).map((z) => LETTER[z] + zones[z]).join("~") : "";
 }
 
-/** "mMISSO-03~kLUMA-02" → zones; unknown letters or empty codes make it invalid (null). */
+/** "oMISSO-03~kLUMA-02" → zones; unknown letters or empty codes make it invalid (null). */
 export function decodeZones(s: string, upper: (c: string) => string): ZoneCodes | null {
   const out: ZoneCodes = {};
   for (const part of s.split("~")) {
-    const z = BY_LETTER[part[0]];
+    const zones = BY_LETTER[part[0]] ? [BY_LETTER[part[0]]] : LEGACY[part[0]];
     const code = part.slice(1);
-    if (!z || !/^[A-Za-zÇĞİÖŞÜçğıöşü0-9-]{2,24}$/.test(code)) return null;
-    out[z] = upper(code);
+    if (!zones || !/^[A-Za-zÇĞİÖŞÜçğıöşü0-9-]{2,24}$/.test(code)) return null;
+    for (const z of zones) out[z] ??= upper(code);
   }
   return out;
 }
@@ -57,7 +61,7 @@ export function zoneCode(p: { fabricCode: string; zones?: ZoneCodes }, zone: Zon
 
 export interface FabricPart<F> {
   fabric: F;
-  /** The zones it covers ("Gövde, Kollar"); null when the piece wears one fabric. */
+  /** The zones it covers ("Kasa, Kollar"); null when the piece wears one fabric. */
   label: string | null;
   /** True when the piece wears more than one fabric. */
   zoned: boolean;

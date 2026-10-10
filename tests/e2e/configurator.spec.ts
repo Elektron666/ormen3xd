@@ -70,13 +70,13 @@ test("kollara, minderlere ayrı kumaş; bağlantıda kalır, Tümü geri alır",
   test.setTimeout(150_000);
   await page.goto("/?k=LUMA-02");
   await expect.poll(() => fabricOnModel(page)).toEqual(["LUMA-02"]);
-  await page.getByRole("radio", { name: "Minderler" }).click();
+  await page.getByRole("radio", { name: "Oturak" }).click();
   await page.getByRole("radio", { name: /SIENA-05/ }).first().click();
   await page.getByRole("radio", { name: "Kollar" }).click();
   await page.getByRole("radio", { name: /PIETRA-05/ }).first().click();
-  await expect(page).toHaveURL(/y=moduler-kanepe\.LUMA-02\.[-\d]+\.[-\d]+\.\d+\.kPIETRA-05(~|%7E)mSIENA-05/);
+  await expect(page).toHaveURL(/y=moduler-kanepe\.LUMA-02\.[-\d]+\.[-\d]+\.\d+\.kPIETRA-05(~|%7E)oSIENA-05/);
   await expect.poll(async () => (await fabricOnModel(page)).sort()).toEqual(["LUMA-02", "PIETRA-05", "SIENA-05"]);
-  // which parts: the arms really wear PIETRA-05, the seat cushions SIENA-05
+  // which parts: the arms really wear PIETRA-05, the seat cushions SIENA-05, the back cushions keep the main fabric
   const worn = () =>
     page.evaluate(() => {
       const out: Record<string, string> = {};
@@ -90,6 +90,7 @@ test("kollara, minderlere ayrı kumaş; bağlantıda kalır, Tümü geri alır",
   await expect.poll(async () => (await worn())["kol-sol"]).toBe("PIETRA-05");
   expect((await worn())["oturum-1"]).toBe("SIENA-05");
   expect((await worn())["govde"]).toBe("LUMA-02");
+  expect((await worn())["sirt-minder-1"]).toBe("LUMA-02");
 
   // the link opens the same piece with the same zones
   await page.reload();

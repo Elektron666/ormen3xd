@@ -24,6 +24,8 @@ export interface Placement {
   zones?: ZoneCodes;
   /** Finish of wooden legs; missing = ceviz (the default). */
   ayak?: LegFinish;
+  /** "donuk": the fabric is railroaded, its pattern turned 90°; missing = as it comes off the roll. */
+  yon?: "donuk";
 }
 
 export interface Footprint {
@@ -221,7 +223,7 @@ export function overlapping(items: { p: Placement; dims: Dims }[]): Set<string> 
 export function encodeLayout(items: Placement[]): string {
   return items
     .map((p) => {
-      const z = [encodeZones(cleanZones(p.fabricCode, p.zones)), p.ayak && p.ayak !== DEFAULT_LEG ? `a${p.ayak}` : ""].filter(Boolean).join("~");
+      const z = [encodeZones(cleanZones(p.fabricCode, p.zones)), p.ayak && p.ayak !== DEFAULT_LEG ? `a${p.ayak}` : "", p.yon === "donuk" ? "yd" : ""].filter(Boolean).join("~");
       return [p.modelSlug, p.fabricCode, Math.round(p.x * 100), Math.round(p.z * 100), normaliseRot(p.rot), ...(z ? [z] : [])].join(".");
     })
     .join("_");
@@ -237,7 +239,9 @@ export function decodeLayout(value: string | null | undefined): Placement[] | nu
     const bits = zonePart ? zonePart.split("~") : [];
     const leg = bits.find((b) => b[0] === "a");
     if (leg && !isLegFinish(leg.slice(1))) return null;
-    const zoneBits = bits.filter((b) => b[0] !== "a");
+    const turn = bits.find((b) => b[0] === "y");
+    if (turn && turn !== "yd") return null;
+    const zoneBits = bits.filter((b) => b[0] !== "a" && b[0] !== "y");
     const zones = zoneBits.length ? decodeZones(zoneBits.join("~"), codeUpper) : undefined;
     if (zones === null) return null;
     const main = codeUpper(fabricCode);
@@ -245,6 +249,7 @@ export function decodeLayout(value: string | null | undefined): Placement[] | nu
     const clean = cleanZones(main, zones);
     if (clean) item.zones = clean;
     if (leg && leg.slice(1) !== DEFAULT_LEG) item.ayak = leg.slice(1) as LegFinish;
+    if (turn) item.yon = "donuk";
     items.push(item);
   }
   return items.length > 0 && items.length <= 12 ? items : null;

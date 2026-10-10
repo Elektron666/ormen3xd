@@ -21,6 +21,8 @@ export interface FurnitureObjectProps {
   zoneFabrics?: Partial<Record<Zone, Fabric>>;
   /** Finish of wooden legs (models built from code). */
   legFinish?: LegFinish;
+  /** Pattern turned 90° (railroaded). */
+  turned?: boolean;
   textureSize: TextureSize;
   onPrepared?: (prepared: PreparedModel) => void;
   /** Called once a fabric is actually visible on the model. */
@@ -30,7 +32,7 @@ export interface FurnitureObjectProps {
   layer?: number;
 }
 
-function Dressed({ source, model, fabric, zoneFabrics, legFinish, textureSize, onPrepared, onFabricShown, onError, layer = LAYER_PRIMARY }: FurnitureObjectProps & { source: THREE.Object3D }) {
+function Dressed({ source, model, fabric, zoneFabrics, legFinish, turned = false, textureSize, onPrepared, onFabricShown, onError, layer = LAYER_PRIMARY }: FurnitureObjectProps & { source: THREE.Object3D }) {
   const invalidate = useThree((s) => s.invalidate);
   const prepared = useMemo(() => prepareModel(source, model.fabricMaterialNames), [source, model.fabricMaterialNames]);
   const dresser = useMemo(() => new FabricDresser(prepared.root, prepared.slots), [prepared]);
@@ -69,7 +71,7 @@ function Dressed({ source, model, fabric, zoneFabrics, legFinish, textureSize, o
   useEffect(() => {
     let alive = true;
     dresser
-      .apply(fabric, textureSize, { zones: zones.current })
+      .apply(fabric, textureSize, { zones: zones.current, turned })
       .then((applied) => {
         if (!alive || !applied) return;
         const first = !shown.current;
@@ -82,7 +84,7 @@ function Dressed({ source, model, fabric, zoneFabrics, legFinish, textureSize, o
     return () => {
       alive = false;
     };
-  }, [dresser, fabric, zoneKey, textureSize, invalidate]);
+  }, [dresser, fabric, zoneKey, turned, textureSize, invalidate]);
 
   useFrame((_, delta) => {
     if (dresser.tick(Math.min(delta, 0.05))) invalidate();

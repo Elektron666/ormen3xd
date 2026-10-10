@@ -18,6 +18,7 @@ export function ArLanding({
   fabric,
   zoneFabrics,
   legFinish,
+  turned,
   firm,
   backHref,
 }: {
@@ -25,6 +26,7 @@ export function ArLanding({
   fabric: Fabric;
   zoneFabrics?: Partial<Record<Zone, Fabric>>;
   legFinish?: LegFinish;
+  turned?: boolean;
   firm: Firm | null;
   backHref: string;
 }) {
@@ -49,7 +51,7 @@ export function ArLanding({
           </p>
         )}
       </div>
-      <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} legFinish={legFinish} firmSlug={firm?.slug ?? null} className="h-[58dvh] min-h-[320px]" />
+      <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} legFinish={legFinish} turned={turned} firmSlug={firm?.slug ?? null} className="h-[58dvh] min-h-[320px]" />
       <ol className="flex flex-col gap-1 text-[13px] leading-snug text-antrasit-70">
         <li>1. “Odamda gör”e dokunun.</li>
         <li>2. Telefonu yere doğru tutup yavaşça gezdirin; zemin bulununca koltuk gerçek boyutunda yerleşir.</li>

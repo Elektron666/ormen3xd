@@ -742,3 +742,16 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Puf
 
   Chester ikilisiyle birlikte toplam sekiz model var. Canlı için `supabase/modeller-vitrin.sql` dosyası çalıştırılmalı; `modeller-chester.sql` bu dosyanın içine katıldı. Ölçüler Türkiye'de yaygın ölçüler; firma modeli değil, vitrin örneği.
+
+## 10 Ekim acil toplantısının hemen uygulanan kararları
+
+- **Bölgeler:** "Gövde" yerine **Kasa**; "Minderler" ikiye ayrıldı: **Oturak** (oturum minderleri, puf) ve **Sırt** (sırt minderleri, sabit ve kapitone sırt dolgusu). En yaygın iki tonlu koltuk, oturağı ve sırtı farklı kumaştan olan koltuk; tek "Minderler" düğmesiyle bu yapılamıyordu.
+  - Bağlantıda oturak `o`, sırt `s` harfiyle yazılıyor.
+  - Eski bağlantılardaki `m` (bütün minderler) hâlâ okunuyor ve ikisine birden uygulanıyor.
+- **Telefonda bölge seçimi:** Tek satır, yana kayan düğmeler. Açıklama yalnızca bir bölge seçiliyken ya da koltuk karışık kumaşlıyken çıkıyor.
+- **Açılış dönüşü:** Önceden koltuğun yanından (−100°) başlayıp 5,5 saniye dönüyordu; yavaş bilgisayarda ilk saniyeler koltuk yandan görünüyordu. Artık sağdan üç çeyrek açıyla (60°) başlıyor, 3,2 saniyede 29°'ye oturuyor.
+- **Desen yönü (Düz / Dönük):**
+  - Parça başına seçiliyor. Dönükte kumaş 90° çevriliyor; desen raporunun eni ve boyu da yer değiştiriyor, ölçek doğru kalıyor.
+  - Kabarıklık haritası desenle birlikte dönüyor: three.js yüzey yönünü dönmüş doku koordinatlarından hesaplıyor.
+  - AR'da dönüş doku koordinatlarına gömülüyor; dosya formatına doku dönüşü yazılmıyor.
+  - Föyde parça satırında "desen dönük" yazıyor. Firmanın metrajı düz kesim için girildiğinden dönükte sayı verilmiyor, "usta hesaplar" yazıyor.

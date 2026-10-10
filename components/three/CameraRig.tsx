@@ -7,7 +7,10 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import type { PreparedModel } from "@/lib/three/prepare-model";
 
 export const FOV = 30;
-const INTRO = { from: -1.75, to: 0.5, seconds: 5.5 };
+// The first frame is the product shot (meeting of 10 Oct): it opens on the
+// right three-quarter view and settles in a short, small turn, instead of
+// sweeping in from the side, which on a slow computer stayed side-on for seconds.
+const INTRO = { from: 1.05, to: 0.5, seconds: 3.2 };
 const POLAR = 1.2; // ~21° above the horizon
 const MOVE_SECONDS = 0.9;
 /** Distance from the fabric in close-up: close enough to read the weave. */

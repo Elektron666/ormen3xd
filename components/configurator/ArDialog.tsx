@@ -21,6 +21,7 @@ export function ArDialog({
   fabric,
   zoneFabrics,
   legFinish,
+  turned,
   phoneUrl,
   firmSlug = null,
 }: {
@@ -30,6 +31,7 @@ export function ArDialog({
   fabric: Fabric;
   zoneFabrics?: Partial<Record<Zone, Fabric>>;
   legFinish?: LegFinish;
+  turned?: boolean;
   phoneUrl: () => string;
   firmSlug?: string | null;
 }) {
@@ -49,7 +51,7 @@ export function ArDialog({
   if (device !== "desktop") {
     return (
       <Dialog open={open} onClose={onClose} title={`${model.name} · ${fabric.code}`} wide>
-        {open && <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} legFinish={legFinish} firmSlug={firmSlug} className="h-[62dvh]" />}
+        {open && <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} legFinish={legFinish} turned={turned} firmSlug={firmSlug} className="h-[62dvh]" />}
         <p className="mt-3 text-[13px] leading-snug text-antrasit-70">
           “Odamda gör”e dokunun, telefonu yere doğru tutup yavaşça gezdirin. Koltuk gerçek boyutunda yerleşir; parmağınızla kaydırıp döndürebilirsiniz.
         </p>
@@ -70,7 +72,7 @@ export function ArDialog({
         )}
         <p className="text-[12px] text-antrasit-50">iPhone (Safari) ve ARCore destekli Android telefonlarda çalışır.</p>
         {preview ? (
-          <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} legFinish={legFinish} className="h-[46dvh] w-full" />
+          <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} legFinish={legFinish} turned={turned} className="h-[46dvh] w-full" />
         ) : (
           <button type="button" onClick={() => setPreview(true)} className="text-[13px] text-antrasit-70 underline underline-offset-2 hover:text-antrasit">
             AR modelini burada önizle
