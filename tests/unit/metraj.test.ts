@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estimate, formatMetres, meterageByFabric, validateMeterage } from "@/lib/metraj";
+import { ZONED_REASON, estimate, formatMetres, meterageByFabric, validateMeterage } from "@/lib/metraj";
 import type { Fabric } from "@/lib/types";
 
 const plain = { widthCm: 140, pattern: "duz", cutDirection: "cift" } as const;
@@ -48,5 +48,36 @@ describe("validateMeterage", () => {
     expect(validateMeterage({ metres: 8, refWidthCm: 140 })).toBeNull();
     expect(validateMeterage({ metres: 0.1, refWidthCm: 140 })).toMatch(/0,5|0.5/);
     expect(validateMeterage({ metres: 8, refWidthCm: 40 })).toMatch(/en/);
+  });
+});
+
+describe("bölge başına metraj", () => {
+  const zoned = { name: "Üçlü", meterage: { metres: 9, refWidthCm: 140, zones: { govde: 4.5, kol: 1.5, oturak: 1.2, sirt: 1.6 } } };
+
+  it("sums the firm's figures for the zones one fabric covers", () => {
+    expect(estimate(zoned, plain, ["govde", "kol", "biye"])).toEqual({ kind: "metre", metres: 6 });
+    expect(estimate(zoned, plain, ["oturak", "sirt"])).toEqual({ kind: "metre", metres: 2.8 });
+    // still only for the same plain, two-way fabric
+    expect(estimate(zoned, { ...plain, pattern: "desenli" }, ["oturak"]).kind).toBe("usta");
+  });
+
+  it("leaves it to the upholsterer without a split, or for the piping alone", () => {
+    expect(estimate(model, plain, ["oturak"])).toMatchObject({ kind: "usta", reason: ZONED_REASON });
+    expect(estimate(zoned, plain, ["biye"])).toMatchObject({ kind: "usta", reason: expect.stringMatching(/Biye/) });
+  });
+
+  it("gives a total per fabric for a two-tone piece", () => {
+    const r = meterageByFabric([
+      { model: zoned, fabric: fabric("LUMA-02"), zones: ["govde", "kol", "biye"] },
+      { model: zoned, fabric: fabric("SIENA-05"), zones: ["oturak", "sirt"] },
+    ]);
+    expect(r.map((g) => g.total)).toEqual([6, 2.8]);
+  });
+
+  it("rejects figures that do not add up", () => {
+    expect(validateMeterage(zoned.meterage)).toBeNull();
+    expect(validateMeterage({ metres: 5, refWidthCm: 140, zones: { govde: 4.5, kol: 1.5 } })).toMatch(/toplamı/);
+    expect(validateMeterage({ metres: 9, refWidthCm: 140, zones: { govde: 0 } })).toMatch(/Bölge metrajı/);
+    expect(validateMeterage({ metres: 9, refWidthCm: 140, zones: { biye: 1 } as never })).toMatch(/Bilinmeyen/);
   });
 });

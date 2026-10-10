@@ -40,6 +40,7 @@ export const MIGRATIONS = [
   ["20261008000000_storage_limits.sql", "Dosya klasörü sınırları"],
   ["20261009000000_visit_sources.sql", "Ziyaret kaynağı ve etiketler"],
   ["20261010000000_cutting_table.sql", "Kesim masası: numune adımları, lot, kumaş deseni ve yönü"],
+  ["20261011000000_zone_meterage.sql", "Bölge başına metraj (kasa, kollar, oturak, sırt)"],
 ] as const;
 
 export function evaluateSetup(f: SetupFacts): Check[] {

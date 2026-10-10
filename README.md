@@ -108,6 +108,7 @@ Firma sayfasından gelen talepte, firmanın WhatsApp numarası girilmişse, **Ma
   - Föy bu sayıyı yalnızca aynı enli, **düz** ve **çift yönlü** ORMEN kumaşında tekrarlar.
   - Diğer kumaşlarda sayı yerine nedeni yazar ("usta hesaplar").
   - Bunun için kumaşın eni, desen bilgisi ve kesim yönü kumaş sayfasında girilmiş olmalı.
+  - **Bölge başına metraj** (isteğe bağlı): aynı bölümde Kasa, Kollar, Oturak ve Sırt için ayrı metre. Müşteri bölgelere farklı kumaş seçtiğinde föy her kumaş için bu sayıları toplar. Modelde olmayan bölgeyi boş bırakın; biyeyi usta hesaplar.
 - **Her kumaş için:**
   - numunenin zımbalanacağı kutu,
   - müşterinin "bu rengi onaylıyorum" imzası,
@@ -127,7 +128,7 @@ Cihazda: tarayıcıyı tam ekran açın (Chrome'da F11 ya da cihazın “kiosk/e
 
 ## Bölgeye göre kumaş
 
-Konfigüratörde kumaş panelinin başındaki "Kumaşın gideceği yer" ile gövde, kollar, minderler ve biye ayrı kumaş alabilir. Seçim paylaşım bağlantısına, numune talebine, kesim föyüne ve "Odamda gör"e geçer. Bölgelere bölünmüş parçada metrajı usta hesaplar.
+Konfigüratörde kumaş panelinin başındaki "Kumaşın gideceği yer" ile gövde, kollar, minderler ve biye ayrı kumaş alabilir. Seçim paylaşım bağlantısına, numune talebine, kesim föyüne ve "Odamda gör"e geçer. Bölgelere bölünmüş parçada metrajı, firma bölge başına metraj girdiyse föy toplar; girmediyse usta hesaplar.
 
 ## Gerçek cihaz testi
 
@@ -158,7 +159,7 @@ QR kodları sitenin adresini içerir. **Gerçek alan adı bağlanmadan QR bastı
 Panelde eklediğiniz kumaşların ve gelen taleplerin kalıcı olması için Supabase gerekir. Supabase olmadan site örnek veriyle çalışır ama panelde eklenenler sunucu yeniden başlayınca kaybolur.
 
 1. **Proje açın.** [supabase.com](https://supabase.com) → hesabınızla girin → **New project**. Ad: `ormen-atelier`. Bölge: **Central EU (Frankfurt)** (Türkiye’ye en yakın). Veritabanı şifresini güvenli bir yere not edin. Proje birkaç dakikada hazır olur.
-2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/` klasöründeki dosyaları **ad sırasıyla, tek tek** yapıştırıp **Run**’a basın: önce `20261004000000_init.sql`, sonra `20261005000000_parametric_models.sql`, sonra `20261006000000_fabric_series_limits.sql`, `20261007000000_report_function.sql`, `20261008000000_storage_limits.sql`, `20261009000000_visit_sources.sql`, en son `20261010000000_cutting_table.sql`. Her birinde “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
+2. **Tabloları kurun.** Soldaki menüden **SQL Editor** → **New query**. Bu depodaki `supabase/migrations/` klasöründeki dosyaları **ad sırasıyla, tek tek** yapıştırıp **Run**’a basın: önce `20261004000000_init.sql`, sonra `20261005000000_parametric_models.sql`, sonra `20261006000000_fabric_series_limits.sql`, `20261007000000_report_function.sql`, `20261008000000_storage_limits.sql`, `20261009000000_visit_sources.sql`, `20261010000000_cutting_table.sql`, en son `20261011000000_zone_meterage.sql`. Her birinde “Success” görmelisiniz. Bu adım tabloları, güvenlik kurallarını ve dosya klasörünü (`atelier`) oluşturur.
 3. **Örnek kataloğu yükleyin.** Yine **SQL Editor** → **New query** → `supabase/seed.sql` dosyasının tamamını yapıştırın → **Run**. 23 yer tutucu kumaş, 3 örnek model (kanepe, berjer, köşe takımı) ve bir örnek firma (`/f/ornek-mobilya`) gelir. Gerçek kumaşlarınızı ekledikçe bunları panelden gizleyebilirsiniz.
 4. **Anahtarları alın.** **Project Settings** → **API** (yeni arayüzde **API Keys**) sayfasından üç değeri kopyalayın:
    - Project URL → `NEXT_PUBLIC_SUPABASE_URL`

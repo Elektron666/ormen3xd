@@ -76,9 +76,9 @@ Hüseyin Usta ve Emre Bey, bölge adlarının ve sayısının sahadaki dille uyu
 | 2 | Telefonda bölge seçimi tek satır, yana kayan | Hemen |
 | 3 | Açılış dönüşü önden üç çeyrek açıya yakın başlar, kısa sürer | Hemen |
 | 4 | Parça başına desen yönü: Düz / Dönük (bağlantı, AR, föy) | Hemen |
-| 5 | Bölge başına metraj (firmanın ustasından) | Pilot firmanın modelleri girilirken |
-| 6 | Panelden katalog görseli (her ORMEN kumaşında beyaz fonlu ürün görseli) | Pilottan sonra, Fatih Bey onaylarsa |
-| 7 | Daha yumuşak minder görünümü | Sırada |
+| 5 | Bölge başına metraj (firmanın ustasından) | ✅ Yapıldı (pilot öncesine çekildi) |
+| 6 | Panelden katalog görseli (her ORMEN kumaşında beyaz fonlu ürün görseli) | ❌ Fatih Bey düşürdü |
+| 7 | Daha yumuşak minder görünümü | ✅ Yapıldı |
 
 ## Akşam
 Ekip ve misafirler Nişantaşı'nda yemekte. Hüseyin Usta hesabı ödemek için ısrar etti, Selin izin vermedi.

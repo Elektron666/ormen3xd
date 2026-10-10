@@ -23,6 +23,11 @@ test("usta föyü firmanın metrajını yalnızca uygun kumaşta gösterir; ger�
   await page.getByRole("link", { name: "Köşe Takımı", exact: true }).click();
   await page.getByLabel("Bir adet için kumaş (m)").fill("14");
   await page.getByLabel("Hangi kumaş eninde (cm)").fill("140");
+  // split by zone (meeting of 10 Oct): the frame and the cushions apart
+  await page.getByText("Bölge başına metraj").click();
+  await page.getByLabel("Kasa metrajı").fill("9");
+  await page.getByLabel("Oturak metrajı").fill("2,5");
+  await page.getByLabel("Sırt metrajı").fill("2");
   await page.getByRole("button", { name: "Kaydet" }).click();
   await expect(page).toHaveURL(/kaydedildi=/);
 
@@ -43,6 +48,18 @@ test("usta föyü firmanın metrajını yalnızca uygun kumaşta gösterir; ger�
   // no partial total: one piece has no figure
   await expect(sheet).toContainText("usta hesaplar");
   await expect(sheet).toContainText("NUMUNE");
+
+  // seat cushions in another fabric: the frame row gets the firm's zone figure
+  const two = await s.context().newPage();
+  await two.goto("/?y=kose-takimi.LUMA-02.0.113.0.oSIENA-05");
+  await expect.poll(() => sceneFabrics(two), { timeout: 45_000 }).toContain("SIENA-05");
+  await two.getByRole("button", { name: "Paylaş" }).click();
+  await two.getByRole("button", { name: /Föyü yazdır/ }).click();
+  await two.emulateMedia({ media: "print" });
+  const zoned = two.getByTestId("usta-foyu");
+  await expect(zoned.getByRole("row").filter({ hasText: "LUMA-02" })).toContainText("11 m");
+  await expect(zoned.getByRole("row").filter({ hasText: "SIENA-05" })).not.toContainText(/\d m$/);
+  await two.close();
 
   // the upholsterer scans the QR after cutting and writes the real metres
   const feedback = (await s.getByTestId("gercek-metre-qr").getAttribute("data-href"))!;

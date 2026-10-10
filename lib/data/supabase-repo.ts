@@ -69,6 +69,7 @@ interface ModelRow {
   fabric_series: string[] | null;
   meterage_m: number | null;
   meterage_ref_width_cm: number | null;
+  meterage_zones?: Record<string, number> | null;
   cover_path: string | null;
   is_active: boolean;
   sort_order: number;
@@ -142,7 +143,7 @@ function modelFromRow(r: ModelRow): FurnitureModel {
     dimensionsCm: { w: Number(r.width_cm), d: Number(r.depth_cm), h: Number(r.height_cm) },
     defaultFabricCode: und(r.default_fabric_code),
     fabricSeries: r.fabric_series ?? [],
-    meterage: r.meterage_m != null && r.meterage_ref_width_cm != null ? { metres: Number(r.meterage_m), refWidthCm: Number(r.meterage_ref_width_cm) } : undefined,
+    meterage: r.meterage_m != null && r.meterage_ref_width_cm != null ? { metres: Number(r.meterage_m), refWidthCm: Number(r.meterage_ref_width_cm), ...zonesOf(r.meterage_zones) } : undefined,
     coverUrl: publicFileUrl(r.cover_path),
     isActive: r.is_active,
     sortOrder: r.sort_order,
@@ -173,6 +174,14 @@ function firmFromRow(r: FirmRow): Firm {
     presets: cleanPresets(r.presets),
     isActive: r.is_active,
   };
+}
+
+/** Zone metres as stored: only known zones with a number (anything else is dropped). */
+function zonesOf(raw: Record<string, unknown> | null | undefined): { zones?: Partial<Record<"govde" | "kol" | "oturak" | "sirt", number>> } {
+  if (!raw || typeof raw !== "object") return {};
+  const zones: Partial<Record<"govde" | "kol" | "oturak" | "sirt", number>> = {};
+  for (const z of ["govde", "kol", "oturak", "sirt"] as const) if (typeof raw[z] === "number") zones[z] = raw[z] as number;
+  return Object.keys(zones).length ? { zones } : {};
 }
 
 function check<T>(res: { data: T; error: { message: string; code?: string } | null }): T {
@@ -291,13 +300,21 @@ export class SupabaseRepository implements Repository {
       fabric_series: input.fabricSeries ?? [],
       meterage_m: input.meterage?.metres ?? null,
       meterage_ref_width_cm: input.meterage?.refWidthCm ?? null,
+      meterage_zones: input.meterage?.zones ?? null,
       cover_path: toStored(input.coverUrl),
       is_active: input.isActive,
       sort_order: input.sortOrder,
     };
-    const res = input.id
-      ? await this.db.from("models").update(row).eq("id", input.id).select("*").single()
-      : await this.db.from("models").insert(row).select("*").single();
+    const write = (r: Partial<typeof row>) =>
+      input.id ? this.db.from("models").update(r).eq("id", input.id).select("*").single() : this.db.from("models").insert(r).select("*").single();
+    let res = await write(row);
+    // the zone-metres column comes with a later migration; a model without zone figures saves without it
+    if (res.error && /meterage_zones/.test(res.error.message)) {
+      if (input.meterage?.zones) throw new Error("Bölge metrajı için Supabase'te 20261011000000_zone_meterage.sql dosyasını çalıştırın.");
+      const rest: Partial<typeof row> = { ...row };
+      delete rest.meterage_zones;
+      res = await write(rest);
+    }
     return modelFromRow(check(res) as ModelRow);
   }
 

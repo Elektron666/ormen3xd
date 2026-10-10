@@ -723,7 +723,7 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Paylaşım metni ve görseli "Modüler Kanepe: minderler" gibi yazıyor.
   - Paylaşım sayfası bütün kumaşları sayıyor.
   - "Odamda gör" (AR) dosyası her bölgeyi kendi kumaşıyla içeriyor ve 4 MB sınırının altında kalıyor.
-- **Metraj:** Firmanın metrajı tek kumaşlı parça için. Bölgelere bölünmüş parçada föy her kumaşı ayrı satırda, bölgesiyle gösteriyor. Metre yerine "Bölgelere farklı kumaş seçildi; hangi kumaştan kaç metre gideceğini usta hesaplar" yazıyor. Uydurma bölme yok.
+- **Metraj:** Firmanın metrajı tek kumaşlı parça için. Bölgelere bölünmüş parçada föy her kumaşı ayrı satırda, bölgesiyle gösteriyor. Metre yerine "usta hesaplar" yazıyor. Uydurma bölme yok. (10 Ekim'den sonra: firma bölge başına metraj girdiyse föy onu topluyor; aşağıda.)
 - **Karşılaştırma modunda** bölge seçimi gizli; karşılaştırma bütün parçayı tek kumaşta gösteriyor.
 
 ## Ayak rengi, "tümüne uygula" ve yeni vitrin modelleri (10 Ekim)
@@ -755,3 +755,14 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Kabarıklık haritası desenle birlikte dönüyor: three.js yüzey yönünü dönmüş doku koordinatlarından hesaplıyor.
   - AR'da dönüş doku koordinatlarına gömülüyor; dosya formatına doku dönüşü yazılmıyor.
   - Föyde parça satırında "desen dönük" yazıyor. Firmanın metrajı düz kesim için girildiğinden dönükte sayı verilmiyor, "usta hesaplar" yazıyor.
+
+## Bölge başına metraj (10 Ekim toplantısı, 5. karar)
+
+Fatih Bey katalog görseli fikrini düşürdü; toplantının kalanı yapıldı. Pilot öncesine çekildi, çünkü pilot firmanın modelleri girilirken alan hazır olmalı.
+
+- **Ne:** Panelde modelin metrajının altında "Bölge başına metraj": Kasa, Kollar, Oturak, Sırt için ayrı metre. Aynı kumaş eni için. Biye yok; biyeyi usta artan kumaştan çıkarır, onu usta hesaplar.
+- **Föy:** Müşteri bölgelere farklı kumaş seçtiyse her kumaş satırı, kapladığı bölgelerin firma sayılarının toplamını gösteriyor (ör. kasa 9 + sırt 2 = 11 m). Sayı yine yalnızca aynı enli, düz, çift yönlü kumaşta; dönükte yine usta.
+- **Boş bölge:** Modelde olmayan bölge demek (kolsuz koltukta Kollar). Panelde böyle yazıyor. Firma bölge sayısı girmediyse bölgeli parçada eskisi gibi "usta hesaplar".
+- **Denetim:** Her bölge 0,1–40 m. Bölgelerin toplamı bir adetin metrajını %10'dan fazla geçemez (parçalar biraz daha fire verebilir, çok daha fazla değil). Toplamın altında kalması serbest: bütün koltuk kesiminde artandan da biçilir.
+- **Veritabanı:** `20261011000000_zone_meterage.sql` modele `meterage_zones` (jsonb, yalnızca dört bölge adı) ekliyor. Dosya çalıştırılmadan da model kaydı çalışıyor; yalnızca bölge sayısı girilirse "dosyayı çalıştırın" hatası çıkıyor. Kurulum sayfası dosyayı yokluyor.
+

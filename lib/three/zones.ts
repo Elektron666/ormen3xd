@@ -65,6 +65,8 @@ export interface FabricPart<F> {
   label: string | null;
   /** True when the piece wears more than one fabric. */
   zoned: boolean;
+  /** The zones it covers (all of them for a single-fabric piece). */
+  zones: Zone[];
 }
 
 /** The fabrics a piece wears, each with the zones it covers; one row for a single-fabric piece. Unknown codes count as the main fabric. */
@@ -77,8 +79,8 @@ export function fabricParts<F extends { code: string }>(main: F, zones: ZoneCode
   }
   // the main fabric first
   const list = [...groups.values()].sort((a, b) => (a.fabric.code === main.code ? -1 : b.fabric.code === main.code ? 1 : 0));
-  if (list.length === 1) return [{ fabric: main, label: null, zoned: false }];
-  return list.map((g) => ({ fabric: g.fabric, label: g.zones.map((z) => ZONE_LABELS[z]).join(", "), zoned: true }));
+  if (list.length === 1) return [{ fabric: main, label: null, zoned: false, zones: [...ZONES] }];
+  return list.map((g) => ({ fabric: g.fabric, label: g.zones.map((z) => ZONE_LABELS[z]).join(", "), zoned: true, zones: g.zones }));
 }
 
 /** The zone whose fabric a part wears: piping follows the part it is sewn on unless it has its own fabric. */

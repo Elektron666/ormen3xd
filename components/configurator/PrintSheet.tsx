@@ -7,7 +7,7 @@ import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import type { RoomSpec } from "@/lib/room/spec";
 import { FABRIC_TYPE_LABELS } from "@/lib/i18n/tr";
 import { PlanSvg, type PlanSvgPiece } from "./PlanSvg";
-import { TURNED_REASON, ZONED_REASON, estimate, formatMetres, meterageByFabric } from "@/lib/metraj";
+import { formatMetres, meterageByFabric, rowEstimate } from "@/lib/metraj";
 import type { FabricPart } from "@/lib/three/zones";
 import { encodeCutJob } from "@/lib/cut-report";
 import { BrandMark } from "./BrandMark";
@@ -124,12 +124,12 @@ function Sheet({ data }: { data: PrintData }) {
 /** One row per fabric a piece wears (a piece in one fabric is one row). */
 function rowsOf(data: PrintData) {
   return data.pieces.flatMap(({ p, model, fabric, parts }) =>
-    (parts ?? [{ fabric, label: null, zoned: false }]).map((part, i) => ({
+    (parts ?? [{ fabric, label: null, zoned: false, zones: undefined }]).map((part, i) => ({
       key: `${p.id}:${i}`,
       model,
       fabric: part.fabric,
       label: [part.label, p.yon === "donuk" ? "desen dönük" : null].filter(Boolean).join(" · ") || null,
-      zoned: part.zoned,
+      zones: part.zoned ? part.zones : undefined,
       turned: p.yon === "donuk",
     })),
   );
@@ -137,7 +137,7 @@ function rowsOf(data: PrintData) {
 
 function CutterSheet({ data }: { data: PrintData }) {
   const rows = rowsOf(data);
-  const groups = meterageByFabric(rows.map(({ model, fabric, zoned, turned }) => ({ model, fabric, zoned, turned })));
+  const groups = meterageByFabric(rows.map(({ model, fabric, zones, turned }) => ({ model, fabric, zones, turned })));
   const job = encodeCutJob({
     firm: data.firm?.slug ?? null,
     rows: groups.map((g) => ({ code: g.fabric.code, models: [...new Set(rows.filter((x) => x.fabric.code === g.fabric.code).map((x) => x.model.slug))], estimate: g.total })),
@@ -172,8 +172,8 @@ function CutterSheet({ data }: { data: PrintData }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map(({ key, model, fabric, label, zoned, turned }) => {
-            const e = zoned ? ({ kind: "usta", reason: ZONED_REASON } as const) : turned ? ({ kind: "usta", reason: TURNED_REASON } as const) : estimate(model, fabric);
+          {rows.map(({ key, model, fabric, label, zones, turned }) => {
+            const e = rowEstimate({ model, fabric, zones, turned });
             return (
               <tr key={key} className="border-b border-black/30 align-top">
                 <td className="py-1.5 pr-3">

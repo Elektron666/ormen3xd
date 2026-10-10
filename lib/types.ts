@@ -112,7 +112,7 @@ export interface FurnitureModel {
   /** Fabric series offered on this model; empty or missing = all. */
   fabricSeries?: string[];
   /** The firm's own fabric metres for one piece, for the cutter's sheet (lib/metraj.ts). */
-  meterage?: { metres: number; refWidthCm: number };
+  meterage?: { metres: number; refWidthCm: number; zones?: Partial<Record<"govde" | "kol" | "oturak" | "sirt", number>> };
   coverUrl?: string;
   isActive: boolean;
   sortOrder: number;
