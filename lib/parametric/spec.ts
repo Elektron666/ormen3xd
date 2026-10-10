@@ -7,7 +7,7 @@
 
 export const TIPLER = ["ikili", "uclu", "dortlu", "kose", "berjer", "puf"] as const;
 export type Tip = (typeof TIPLER)[number];
-export const KOLLAR = ["ince", "kalin", "yuvarlak", "yok"] as const;
+export const KOLLAR = ["ince", "kalin", "yuvarlak", "kivrik", "yok"] as const;
 export type Kol = (typeof KOLLAR)[number];
 export const SIRTLAR = ["alcak", "orta", "yuksek"] as const;
 export type Sirt = (typeof SIRTLAR)[number];
@@ -62,7 +62,7 @@ export const TIP_LABELS: Record<Tip, string> = {
   berjer: "Berjer",
   puf: "Puf",
 };
-export const KOL_LABELS: Record<Kol, string> = { ince: "İnce", kalin: "Kalın", yuvarlak: "Yuvarlak", yok: "Kolsuz" };
+export const KOL_LABELS: Record<Kol, string> = { ince: "İnce", kalin: "Kalın", yuvarlak: "Yuvarlak", kivrik: "Kıvrık (Chester)", yok: "Kolsuz" };
 export const SIRT_LABELS: Record<Sirt, string> = { alcak: "Alçak", orta: "Orta", yuksek: "Yüksek" };
 export const AYAK_LABELS: Record<Ayak, string> = { konik: "Ahşap konik", metal: "İnce metal", gizli: "Gizli kaide" };
 export const SIRT_TIPI_LABELS: Record<SirtTipi, string> = { minderli: "Ayrı minderli", sabit: "Sabit (tek parça)", kapitone: "Kapitone (düğmeli)" };

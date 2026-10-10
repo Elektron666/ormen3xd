@@ -15,6 +15,7 @@ const ARM: Record<Kol, { w: number; rise: number; r: number }> = {
   ince: { w: 0.1, rise: 0.2, r: 0.03 },
   kalin: { w: 0.22, rise: 0.18, r: 0.06 },
   yuvarlak: { w: 0.19, rise: 0.2, r: 0.09 },
+  kivrik: { w: 0.2, rise: 0.19, r: 0.03 },
   yok: { w: 0, rise: 0, r: 0 },
 };
 const LEG_H = { konik: 0.13, metal: 0.13, gizli: 0.04 } as const;
@@ -43,6 +44,26 @@ interface Ctx {
 /** Top of the back frame: a loose cushion rises 6 cm over it unless the back is low or fixed. */
 const frameTopOf = (c: Ctx) => (c.low || c.fixed ? c.H : c.H - 0.06);
 
+/**
+ * One arm, centred on x, on side s (-1 left, +1 right), d deep around z.
+ * A rolled (Chester) arm is a slimmer body under a round roll that overhangs
+ * it outwards, as on the real thing; the outer edge stays where a plain arm's is.
+ */
+function armParts(c: Ctx, x: number, s: -1 | 1, d: number, z: number): Part[] {
+  const { legH, seatTop, arm } = c;
+  const armH = seatTop + arm.rise - legH;
+  if (c.p.kol !== "kivrik") return [{ name: "kol", w: arm.w, h: armH, d, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [x, legH + armH / 2, z] }];
+  const top = seatTop + arm.rise;
+  const roll = 0.17;
+  const bodyW = arm.w - 0.045;
+  const bodyH = top - roll * 0.6 - legH;
+  return [
+    { name: "kol", w: bodyW, h: bodyH, d, r: 0.03, bulge: { x: 0.008 }, at: [x - s * 0.0225, legH + bodyH / 2, z] },
+    // nearly a cylinder along the depth: the radius is almost half of its width and height
+    { name: "kol-kivrim", w: arm.w, h: roll, d, r: roll / 2 - 0.002, at: [x, top - roll / 2, z] },
+  ];
+}
+
 /** A straight run centred on x, back towards -z. */
 function straightRun(c: Ctx, len: number, armStart: boolean, armEnd: boolean, seats: number, back = true): Part[] {
   const { D, legH, baseTop, seatTop, arm } = c;
@@ -54,9 +75,8 @@ function straightRun(c: Ctx, len: number, armStart: boolean, armEnd: boolean, se
   const bd = back ? BACK_D : 0;
   const parts: Part[] = [{ name: "govde", w: innerW + 0.02, h: baseTop - legH, d: D, r: 0.035, at: [cx, legH + (baseTop - legH) / 2, 0] }];
 
-  const armH = seatTop + arm.rise - legH;
-  if (armStart) parts.push({ name: "kol", w: aw, h: armH, d: D, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [-len / 2 + aw / 2, legH + armH / 2, 0] });
-  if (armEnd) parts.push({ name: "kol", w: aw, h: armH, d: D, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [len / 2 - aw / 2, legH + armH / 2, 0] });
+  if (armStart) parts.push(...armParts(c, -len / 2 + aw / 2, -1, D, 0));
+  if (armEnd) parts.push(...armParts(c, len / 2 - aw / 2, 1, D, 0));
 
   if (back && c.p.kulak) {
     // wings (kulak): from the arm's top (or the seat) up to the back's top, standing on the arms' outer part
@@ -221,8 +241,7 @@ function addChaise(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1
     backCushion(c, cw - aw, innerCx, -D / 2 + BACK_D + 0.08),
   ];
   if (hasArms) {
-    const armH = c.seatTop + c.arm.rise - c.legH;
-    parts.push({ name: "kol", w: aw, h: armH, d: L, r: c.arm.r, bulge: { y: 0.01, x: 0.006 }, at: [s * (W / 2 - aw / 2), c.legH + armH / 2, zc] });
+    parts.push(...armParts(c, s * (W / 2 - aw / 2), s, L, zc));
   }
   group.add(partsGroup(parts, fabric));
   const xa = s * (W / 2 - cw);

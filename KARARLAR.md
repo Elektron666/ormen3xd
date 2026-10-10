@@ -625,4 +625,5 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 - **Kapitone ve kulaklı berjer (ek):**
   - **Kapitone:** Sırt tipine "Kapitone (düğmeli)" eklendi. Sabit sırt panelinde, yaklaşık bir el aralığıyla elmas dizilimli düğme çukurları var. Ayrı bir görsel kullanılmıyor; çukurlar geometrinin kendisinde, bu yüzden kumaş deseni çukura doğru ölçüyle iniyor.
   - **Kulaklı berjer:** Berjere "Kulaklı" seçeneği eklendi. Kanatlar kolun içinden yükseliyor.
-- **Hâlâ çıkmayanlar:** Özel kol kıvrımı (Chester'ın dışa kıvrık kolu) ve dikiş detayı.
+- **Kıvrık kol (Chester):** Kol tiplerine eklendi. İnce bir gövdenin üstünde dışa taşan yuvarlak bir rulo var; dış ölçü düz kolla aynı kalıyor. Kapitone sırtla birlikte Chester takımı kurulabiliyor.
+- **Hâlâ çıkmayanlar:** Dikiş ve biye detayı, kolun önündeki sarmal yüzü (Chester kolunun ön kıvrımı düz görünüyor).

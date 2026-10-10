@@ -25,6 +25,10 @@ const cases: ParametricParams[] = [
   { ...DEFAULTS.uclu, sirtTipi: "kapitone", kol: "yuvarlak", yukseklikCm: 78 },
   { ...DEFAULTS.berjer, kulak: true, sirtTipi: "kapitone", yukseklikCm: 105 },
   { ...DEFAULTS.berjer, kulak: true, kol: "yok" },
+  // Chester: rolled arms with a tufted back, on a sofa, an armchair and a chaise set
+  { ...DEFAULTS.uclu, kol: "kivrik", sirtTipi: "kapitone", yukseklikCm: 76, ayak: "konik" },
+  { ...DEFAULTS.berjer, kol: "kivrik", kulak: true, sirtTipi: "kapitone" },
+  { ...DEFAULTS.kose, kol: "kivrik", solUc: "kol", sagUc: "sezlong", genislikCm: 270, sagBoyCm: 165 },
   { ...DEFAULTS.kose, sirtTipi: "kapitone", solUc: "kose", sagUc: "sezlong", genislikCm: 330, solBoyCm: 230, sagBoyCm: 170 },
 ];
 
