@@ -12,7 +12,25 @@
       "mcp__Supabase__search_docs",
       "mcp__Supabase__generate_typescript_types",
       "mcp__Supabase__execute_sql",
-      "mcp__Supabase__apply_migration"
+      "mcp__Supabase__apply_migration",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)",
+      "Bash(find:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(mkdir:*)",
+      "Bash(pkill:*)",
+      "Bash(timeout:*)",
+      "Bash(PW_CHROMIUM_PATH=*)",
+      "Bash(E2E_BASE_URL=*)"
     ]
   }
 }
