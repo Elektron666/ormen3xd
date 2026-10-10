@@ -52,10 +52,13 @@ export class FabricDresser {
     const materialFor = (slot: FabricSlot) => {
       const cmPerUv = Number.isFinite(slot.cmPerUv) ? slot.cmPerUv : 100;
       const rep = textureRepeat(cmPerUv, fabric.texture.repeatCm);
-      const key = `${rep.x.toFixed(3)}:${rep.y.toFixed(3)}`;
+      // baked occlusion (models built from code) is a vertex colour; other geometry must not read one
+      const ao = !!slot.mesh.geometry.userData.ao;
+      const key = `${rep.x.toFixed(3)}:${rep.y.toFixed(3)}:${ao}`;
       let mat = byRepeat.get(key);
       if (!mat) {
         mat = createFabricMaterial(fabric, tex, new THREE.Vector2(rep.x, rep.y));
+        mat.vertexColors = ao;
         byRepeat.set(key, mat);
       }
       return mat;

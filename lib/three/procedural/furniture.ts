@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { createCushionGeometry, type CushionOptions } from "./cushion";
+import { createCushionGeometry, createWeltGeometry, type Axis, type CushionOptions } from "./cushion";
 
 // Placeholder furniture built from code (metres). Upholstered parts use the
 // material named FABRIC_MATERIAL so they go through exactly the same fabric
@@ -11,15 +11,28 @@ export interface Part extends CushionOptions {
   name: string;
   at: [number, number, number];
   rotX?: number;
+  /** Piping (biye) around these faces: [axis 0=x 1=y 2=z, side]. */
+  welt?: [Axis, 1 | -1][];
 }
+
+/** Piping on the faces a real cushion is sewn on: top and bottom of a seat, front and back of a back cushion. */
+export const WELT = { seat: [[1, 1], [1, -1]] as [Axis, 1 | -1][], back: [[2, 1], [2, -1]] as [Axis, 1 | -1][], front: [[2, 1]] as [Axis, 1 | -1][] };
 
 export function buildParts(parts: Part[], fabric: THREE.Material): THREE.Group {
   const group = new THREE.Group();
   for (const part of parts) {
     const mesh = new THREE.Mesh(createCushionGeometry(part), fabric);
     mesh.name = part.name;
+    // the box itself, for baking occlusion (ao.ts)
+    mesh.userData.cushion = { w: part.w, h: part.h, d: part.d, r: part.r };
     mesh.position.set(...part.at);
     if (part.rotX) mesh.rotation.x = part.rotX;
+    for (const [axis, side] of part.welt ?? []) {
+      const welt = new THREE.Mesh(createWeltGeometry(part, axis, side), fabric);
+      welt.name = "biye";
+      welt.userData.aoTarget = true;
+      mesh.add(welt);
+    }
     group.add(mesh);
   }
   return group;
@@ -68,12 +81,14 @@ export function createModularSofa(): THREE.Group {
     { name: "sirt-govde", w: innerW + 0.02, h: 0.38, d: 0.18, r: 0.07, bulge: { z: 0.006 }, at: [0, baseTop + 0.19, -D / 2 + 0.09] },
     ...[-1, 0, 1].map<Part>((k) => ({
       name: `oturum-${k + 2}`,
+      welt: WELT.seat,
       w: seatW, h: seatH, d: seatD, r: 0.06,
       bulge: { y: 0.024, z: 0.01, x: 0.006 },
       at: [k * (seatW + 0.008), baseTop + seatH / 2, D / 2 + 0.005 - seatD / 2],
     })),
     ...[-1, 0, 1].map<Part>((k) => ({
       name: `sirt-minder-${k + 2}`,
+      welt: WELT.back,
       w: seatW, h: 0.48, d: 0.2, r: 0.085,
       bulge: { z: 0.03, x: 0.008, y: 0.01 },
       rotX: -0.17,
@@ -107,9 +122,9 @@ export function createArmchair(): THREE.Group {
       bulge: { y: 0.008, x: 0.006 },
       at: [s * (W / 2 - 0.06), seatTop + 0.15, 0.04],
     })),
-    { name: "oturum", w: W - 0.25, h: 0.13, d: 0.66, r: 0.05, bulge: { y: 0.022, z: 0.008 }, at: [0, seatTop + 0.065, 0.06] },
+    { name: "oturum", welt: WELT.seat, w: W - 0.25, h: 0.13, d: 0.66, r: 0.05, bulge: { y: 0.022, z: 0.008 }, at: [0, seatTop + 0.065, 0.06] },
     { name: "sirt", w: W, h: 0.64, d: 0.15, r: 0.075, bulge: { z: 0.018 }, rotX: -0.14, at: [0, seatTop + 0.3, -D / 2 + 0.1] },
-    { name: "sirt-minder", w: W - 0.26, h: 0.44, d: 0.13, r: 0.06, bulge: { z: 0.03, y: 0.008 }, rotX: -0.16, at: [0, seatTop + 0.3, -0.2] },
+    { name: "sirt-minder", welt: WELT.back, w: W - 0.26, h: 0.44, d: 0.13, r: 0.06, bulge: { z: 0.03, y: 0.008 }, rotX: -0.16, at: [0, seatTop + 0.3, -0.2] },
   ];
   const group = buildParts(parts, fabric);
   for (const x of [-1, 1]) {

@@ -45,7 +45,7 @@ export function tuftPoints(w: number, h: number, spacing: number): [number, numb
   return pts;
 }
 
-type Axis = 0 | 1 | 2;
+export type Axis = 0 | 1 | 2;
 
 interface AxisSamples {
   /** Box-space coordinate fed to the rounding map. */
@@ -188,4 +188,56 @@ export function smoothNormalsAcrossSeams(g: THREE.BufferGeometry): void {
     for (const i of list) nor.setXYZ(i, n.x, n.y, n.z);
   }
   nor.needsUpdate = true;
+}
+
+/**
+ * Piping (biye) along the seam around one face of a cushion: the face whose
+ * normal is `axis` with `sign`. The seam is where the cushion's sides meet
+ * that face (the 45° line of the rounded edges); the pillow bulge is zero
+ * there, so the cord sits exactly on the surface. UVs are in metres (along
+ * the cord, around it), like the cushion's, so the fabric keeps its scale.
+ */
+export function createWeltGeometry(o: CushionOptions, axis: Axis, sign: 1 | -1, cord = 0.0045): THREE.BufferGeometry {
+  const half = [o.w / 2, o.h / 2, o.d / 2];
+  const r = Math.min(o.r, ...half.map((v) => v * 0.98));
+  const inner = half.map((hv) => Math.max(0, hv - r));
+  const [u, v] = ([0, 1, 2] as Axis[]).filter((a) => a !== axis);
+  // the face's outline in box space (before rounding): a rectangle at the far end of its samples
+  const hu = inner[u] + r;
+  const hv = inner[v] + r;
+  const corners: [number, number][] = [
+    [hu, hv],
+    [-hu, hv],
+    [-hu, -hv],
+    [hu, -hv],
+  ];
+  const pts: THREE.Vector3[] = [];
+  const step = 0.01;
+  for (let k = 0; k < 4; k++) {
+    const [u0, v0] = corners[k];
+    const [u1, v1] = corners[(k + 1) % 4];
+    const len = Math.hypot(u1 - u0, v1 - v0);
+    const n = Math.max(2, Math.ceil(len / step));
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      // sample densely near the rectangle's corners, where the rounding bends the line most
+      const e = t < 0.5 ? 0.5 * (2 * t) ** 1.6 : 1 - 0.5 * (2 - 2 * t) ** 1.6;
+      const p = [0, 0, 0];
+      p[axis] = sign * (inner[axis] + r);
+      p[u] = u0 + (u1 - u0) * e;
+      p[v] = v0 + (v1 - v0) * e;
+      const c = [0, 1, 2].map((a) => Math.min(inner[a], Math.max(-inner[a], p[a])));
+      const dir = new THREE.Vector3(p[0] - c[0], p[1] - c[1], p[2] - c[2]);
+      dir.normalize();
+      pts.push(new THREE.Vector3(c[0], c[1], c[2]).addScaledVector(dir, r));
+    }
+  }
+  const curve = new THREE.CatmullRomCurve3(pts, true, "centripetal");
+  const length = curve.getLength();
+  // a cord this thin needs few sides; along it, one ring per 1.5 cm still follows the corners
+  const g = new THREE.TubeGeometry(curve, Math.ceil(length / 0.015), cord, 6, true);
+  // TubeGeometry's UVs run 0..1 along and around; turn them into metres
+  const uv = g.getAttribute("uv");
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * length, uv.getY(i) * 2 * Math.PI * cord);
+  return g;
 }

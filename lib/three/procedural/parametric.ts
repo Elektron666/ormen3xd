@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { SEAT_HEIGHT_CM, SEZLONG_EN_CM, heightCm, lowBack, seatCount, type Kol, type ParametricParams, type Uc } from "@/lib/parametric/spec";
-import { buildParts, materials, taperedLeg, type Part } from "./furniture";
+import { WELT, buildParts, materials, taperedLeg, type Part } from "./furniture";
 
 // Builds a parametric sofa / corner sofa / armchair / pouf in metres.
 // Every upholstered part is a cushion primitive with UVs in metres, so the
@@ -52,7 +52,7 @@ const frameTopOf = (c: Ctx) => (c.low || c.fixed ? c.H : c.H - 0.06);
 function armParts(c: Ctx, x: number, s: -1 | 1, d: number, z: number): Part[] {
   const { legH, seatTop, arm } = c;
   const armH = seatTop + arm.rise - legH;
-  if (c.p.kol !== "kivrik") return [{ name: "kol", w: arm.w, h: armH, d, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [x, legH + armH / 2, z] }];
+  if (c.p.kol !== "kivrik") return [{ name: "kol", welt: WELT.front, w: arm.w, h: armH, d, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [x, legH + armH / 2, z] }];
   const top = seatTop + arm.rise;
   const roll = 0.17;
   const bodyW = arm.w - 0.045;
@@ -101,7 +101,7 @@ function straightRun(c: Ctx, len: number, armStart: boolean, armEnd: boolean, se
     return Array.from({ length: n }, (_, k) => ({ w, x: x0 + w / 2 + k * (w + GAP) }));
   };
   for (const { w, x } of row(c.bench ? 1 : seats))
-    parts.push({ name: "oturum", w, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.01, x: 0.006 }, at: [x, baseTop + SEAT_T / 2, -D / 2 + bd + seatD / 2 + 0.005] });
+    parts.push({ name: "oturum", welt: WELT.seat, w, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.01, x: 0.006 }, at: [x, baseTop + SEAT_T / 2, -D / 2 + bd + seatD / 2 + 0.005] });
   if (back) for (const { w, x } of row(c.fixed ? 1 : seats)) parts.push(backCushion(c, w, x, -D / 2 + BACK_D + 0.08));
   return parts;
 }
@@ -121,13 +121,14 @@ function backCushion(c: Ctx, w: number, x: number, z: number): Part {
       bulge: { z: c.tufted ? 0.012 : 0.018, x: 0.004, y: 0.006 },
       // buttons about a hand apart, as on a Chester back
       tufts: c.tufted ? { spacing: 0.15, depth: 0.018 } : undefined,
+      welt: WELT.front,
       rotX: -0.07,
       at: [x, bottom + h / 2, z - 0.035],
     };
   }
   const top = c.H + (c.low ? -0.02 : 0.01);
   const h = Math.max(0.2, top - bottom);
-  return { name: "sirt-minder", w, h, d: 0.17, r: 0.07, bulge: { z: 0.028, x: 0.008, y: 0.01 }, rotX: -0.15, at: [x, bottom + h / 2, z] };
+  return { name: "sirt-minder", welt: WELT.back, w, h, d: 0.17, r: 0.07, bulge: { z: 0.028, x: 0.008, y: 0.01 }, rotX: -0.15, at: [x, bottom + h / 2, z] };
 }
 
 function partsGroup(parts: Part[], fabric: THREE.Material): THREE.Group {
@@ -193,7 +194,7 @@ function addCorner(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1
     partsGroup(
       [
         { name: "govde", w: D, h: c.baseTop - c.legH, d: D, r: 0.035, at: [cx, c.legH + (c.baseTop - c.legH) / 2, 0] },
-        { name: "oturum", w: seatD, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.008, x: 0.008 }, at: [cx - s * (BACK_D / 2), c.baseTop + SEAT_T / 2, BACK_D / 2] },
+        { name: "oturum", welt: WELT.seat, w: seatD, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.008, x: 0.008 }, at: [cx - s * (BACK_D / 2), c.baseTop + SEAT_T / 2, BACK_D / 2] },
         { name: "sirt-govde", w: D, h: frameH, d: BACK_D, r: 0.06, at: [cx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] },
         // side-wall back of the corner square (sized, not rotated)
         { name: "sirt-govde", w: BACK_D, h: frameH, d: D - BACK_D, r: 0.06, at: [s * (W / 2 - BACK_D / 2), c.baseTop + frameH / 2, BACK_D / 2] },
@@ -237,7 +238,7 @@ function addChaise(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1
   const parts: Part[] = [
     { name: "govde", w: cw - aw + 0.02, h: c.baseTop - c.legH, d: L, r: 0.035, at: [innerCx, c.legH + (c.baseTop - c.legH) / 2, zc] },
     { name: "sirt-govde", w: cw - aw + 0.02, h: frameH, d: BACK_D, r: 0.06, bulge: { z: 0.006 }, at: [innerCx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] },
-    { name: "oturum", w: cw - aw, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.01, x: 0.006 }, at: [innerCx, c.baseTop + SEAT_T / 2, -D / 2 + BACK_D + seatD / 2 + 0.005] },
+    { name: "oturum", welt: WELT.seat, w: cw - aw, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.01, x: 0.006 }, at: [innerCx, c.baseTop + SEAT_T / 2, -D / 2 + BACK_D + seatD / 2 + 0.005] },
     backCushion(c, cw - aw, innerCx, -D / 2 + BACK_D + 0.08),
   ];
   if (hasArms) {
@@ -275,7 +276,7 @@ export function buildParametric(p: ParametricParams): THREE.Group {
   if (p.tip === "puf") {
     const top = new THREE.Group();
     top.add(
-      partsGroup([{ name: "puf", w: W, h: c.H - legH, d: D, r: Math.min(0.08, W / 6), bulge: { y: 0.02, x: 0.008, z: 0.008 }, at: [0, legH + (c.H - legH) / 2, 0] }], fabric),
+      partsGroup([{ name: "puf", welt: WELT.seat, w: W, h: c.H - legH, d: D, r: Math.min(0.08, W / 6), bulge: { y: 0.02, x: 0.008, z: 0.008 }, at: [0, legH + (c.H - legH) / 2, 0] }], fabric),
     );
     group.add(top);
     addSupports(group, c, [{ x0: -W / 2, x1: W / 2, z0: -D / 2, z1: D / 2 }], wood);

@@ -629,3 +629,22 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 - **Hazır stiller:** Formun başında Chester, Modern, İskandinav ve Blok / minimal düğmeleri var. Her biri kol, sırt, oturum ve ayağı birlikte seçiyor; tip ve ölçüler olduğu gibi kalıyor. Fotoğraftan model kuran kişi en yakın stille başlayıp gerisini tek tek değiştiriyor. Bir seçim değişince stil düğmesi sönüyor; ekran yalnızca gerçekten o stilde olanı stil diye gösteriyor.
 - **Firmanın fotoğrafı yanında:** Önizlemenin altında "Firmanın fotoğrafını koy" düğmesi var. Fotoğraf önizlemenin altında gösteriliyor ya da saydamlığı ayarlanarak üstüne bindiriliyor; koltuk fotoğraftaki açıya çevrilince oranlar karşılaştırılabiliyor. Önizlemenin köşesinde "Soldan çapraz / Önden / Sağdan çapraz / Yandan" düğmeleri kamerayı ürün fotoğraflarının çoğunun çekildiği açılara (oturma yüksekliğinin biraz üstünden) çeviriyor; uzaklık korunuyor. Fotoğraf tarayıcıdan çıkmıyor: yüklenmiyor, kaydedilmiyor. Böylece müşteri firmanın görseli için ayrı bir izin ve saklama sorusu doğmuyor.
 - **Hâlâ çıkmayanlar:** Dikiş ve biye detayı, kolun önündeki sarmal yüzü (Chester kolunun ön kıvrımı düz görünüyor).
+
+## Kumaş yapay duruyordu: ezik gölgesi ve biye (Fatih Bey, 10 Ekim)
+
+- **Şikâyet:** "Koltuğun üstünde kumaş çok yapay duruyor."
+- **Teşhis (malzeme değil, şekil ve ışık):** Kumaş malzemesi zaten doğru kuruluydu: gerçek ölçüde doku, kabarıklık haritası, mat yüzey, kadife parlaması. Yapaylığın üç sebebi vardı:
+  1. **Ezik gölgesi yoktu.** Minder araları, oturumun kolla ve sırtla birleştiği yer, oturumun altı açık yüzeylerle aynı aydınlıktaydı; koltuk şişirilmiş plastik gibi duruyordu.
+  2. **Dikiş ve biye yoktu.** Minderler kusursuz yuvarlatılmış kutulardı.
+  3. **Örnek kumaş görselleri bilgisayar üretimiydi**; desen fazla düzenliydi. Bunu gerçek kumaş fotoğrafları çözecek.
+- **Çözüm 1, ezik gölgesi:**
+  - Kodla çizilen her modelde, model bir kez kurulurken her noktanın ne kadar içe kapandığı hesaplanıyor; kapalı yerlerin kumaşı en fazla %58 koyulaşıyor.
+  - Parçalar yuvarlatılmış kutu olduğu için hesap kesin ve hızlı: üçlü kanepede yaklaşık 0,2 saniye.
+  - Yeni kütüphane yok, ekran kartına her karede ek yük yok.
+  - Sonuç modele gömülü bir gri tonu olarak saklanıyor. Kumaş malzemesi bunu yalnızca bu işareti taşıyan modellerde okuyor, yüklenen GLB modeller etkilenmiyor.
+  - AR dosyasına da giriyor: glTF'de bu renk kumaşla çarpılır.
+- **Çözüm 2, biye:** Oturum minderlerinin altı ve üstünde, sırt minderlerinin önü ve arkasında, sabit ve kapitone sırtın önünde, düz kolların ön yüzünde 4,5 mm'lik kumaş biye var.
+  - Biye, minderin kabarıklığının sıfırlandığı dikiş çizgisine oturuyor.
+  - Dokusu metre cinsinden; kumaş deseni biyede de gerçek ölçüsünde.
+- **AR boyutu:** Biyeler ilk denemede AR dosyasını 4,7 MB'a çıkardı, sınır 4 MB. Biye örgüsü seyreltildi (1,5 cm'de bir halka, 6 yüz); görüntüde fark yok, dosya sınırın altına indi.
+- **Renk doğruluğu:** Renk testleri geçiyor. Ekranda ölçülen renk açık yüzeyden alındığı için ezik gölgesi rengi bozmuyor.
