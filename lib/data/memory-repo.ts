@@ -3,6 +3,7 @@ import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { buildSeedFabrics } from "@/lib/seed/fabrics";
 import { buildPhotoFabrics } from "@/lib/seed/photo-fabrics";
 import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
+import { SHOWCASE_MODELS } from "@/lib/seed/showcase-models";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
 import { cleanLot, newSampleCode, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
 import { buildReport, type StoredEvent, type UsageEvent } from "@/lib/events";
@@ -17,7 +18,7 @@ export class MemoryRepository implements Repository {
   readonly kind = "memory" as const;
   readonly persistent = false;
   private fabrics: Fabric[] = [...buildSeedFabrics(), ...buildPhotoFabrics()];
-  private models: FurnitureModel[] = structuredClone(SEED_MODELS);
+  private models: FurnitureModel[] = structuredClone([...SEED_MODELS, ...SHOWCASE_MODELS]);
   private firms: Firm[] = structuredClone(SEED_FIRMS);
   private firmShowcase = new Map<string, string[]>();
   private samples: SampleRequest[] = [];
