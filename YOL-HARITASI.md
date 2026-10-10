@@ -20,7 +20,8 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 
 ## Yayından önce (ORMEN tarafı)
 
-- [ ] Supabase projesi, tablolar, örnek veri, panel kullanıcısı (README, "Supabase kurulumu").
+- [x] Supabase projesi, tablolar, örnek ve MISSO kumaşları, 11 model (`ormen-atelier`, Frankfurt; dosyalar `supabase/BENIOKU.md`).
+- [ ] Panel kullanıcısı (README, "Supabase kurulumu", 6. adım).
 - [ ] Vercel'de alan adı `atelier.ormentekstil.com.tr` ve `NEXT_PUBLIC_SITE_URL`. **QR'lar bundan sonra basılmalı.**
 - [ ] `NEXT_PUBLIC_ORMEN_WHATSAPP` numarası.
 - [ ] Gerçek ORMEN logosu (şu an yazıyla yazılmış yer tutucu).
@@ -47,7 +48,8 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 Ekim, şartlar tamamlanınca.
 
 - [ ] Pilot firmanın 6–8 kumaşı gerçek fotoğraf, kod, en, desen ve yönle; gerçek ORMEN logosu; yer tutucular gizli (Kumaşlar sayfasında "Yer tutucuları yayından kaldır" düğmesi hazır).
-- [ ] Vercel Pro, alan adı (CNAME), Supabase yedeği ve "uyumama". Alan adından önce hiçbir QR basılmaz.
+- [x] Supabase "uyumama": Vercel her gün 04:17'de (UTC) `/api/canli-tut` adresini çağırıyor, bir satır okunuyor.
+- [ ] Vercel Pro, alan adı (CNAME), Supabase yedeği. Alan adından önce hiçbir QR basılmaz.
 - [ ] Avukat: saklama süresi, yurt dışı aktarım (Frankfurt), firma protokolü (müşteri telefonu sözü dahil). Avukata verilecek bilgi: `AVUKAT-PAKETI.md`.
 - [x] Sunucu Frankfurt'a sabitlendi (`vercel.json`, `fra1`); Kurulum sayfası bölgeyi denetliyor.
 - [ ] Pilot firmanın 2 modeli parametrik olarak, metrajıyla.
@@ -65,8 +67,8 @@ Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 E
 - [x] Bölge başına metraj: panelde Kasa / Kollar / Oturak / Sırt; föy bölgeli koltukta firmanın sayılarını topluyor (`20261011000000_bolge_metraji.sql` çalıştırılmalı).
 - [x] Daha yumuşak minder görünümü.
 - ~~Panelden katalog görseli~~: Fatih Bey düşürdü.
-- [ ] Panelden katalog görseli: her ORMEN kumaşında beyaz fonlu ürün görseli (pilottan sonra, Fatih Bey onaylarsa).
-- [ ] Daha yumuşak minder görünümü.
+- ~~Panelden katalog görseli~~: Fatih Bey düşürdü.
+- [x] Daha yumuşak minder görünümü.
 
 ## Yön değişikliği: Kesim masası (5 Ekim, 2. toplantı)
 

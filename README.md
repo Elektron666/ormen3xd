@@ -190,6 +190,8 @@ npm run dev        # http://localhost:3000
 
 Supabase anahtarı gerekmez. Anahtarlar yokken uygulama `lib/seed/` içindeki örnek veriyle çalışır; panele `demo@ormen.local` / `ormen-demo` ile girilir (yalnızca geliştirme ortamında).
 
+**Supabase'in uyumaması:** Ücretsiz Supabase projesi bir hafta istek gelmezse uyur, site açılmaz. Vercel her gün bir kez `/api/canli-tut` adresini çağırıp bir satır okur (`vercel.json` → `crons`). İsterseniz Vercel'e `CRON_SECRET` adıyla rastgele uzun bir değer ekleyin; o zaman bu adresi yalnızca Vercel çağırabilir.
+
 İsteğe bağlı ayarlar `.env.example` dosyasında. Örneğin numune talebinden sonra çıkan WhatsApp düğmesi için `NEXT_PUBLIC_ORMEN_WHATSAPP`. Bu dosyayı `.env.local` adıyla kopyalayıp doldurun; Vercel'de aynı adlarla **Settings → Environment Variables** bölümüne girin.
 
 ## Komutlar
