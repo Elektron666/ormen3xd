@@ -2,25 +2,31 @@ import type { ColorFamily, Fabric } from "@/lib/types";
 
 // ORMEN fabrics prepared from photos sent by Fatih Bey (10 Oct): the MISSO
 // zigzag jacquards. Textures were made with scripts/prepare-photo-fabric.ts
-// (levelled, cut to whole teeth, lighting flattened, edges cross-faded) and
-// are served from /seed/fabrics/misso.
+// (levelled, cut at the pattern's own repeat, lighting flattened, only thin
+// edge bands cross-faded) and are served from /seed/fabrics/misso.
+//
+// Scale is measured, not assumed: one photo (MISSO-05) has a ruler in it,
+// 14.25 px per cm, which makes one zigzag tooth 4.4 cm. The other colourways
+// are the same weave and take the same tooth size. MISSO-01, 02, 04, 05 and
+// 06 come from photos taken flat from above; MISSO-03 still from a photo on
+// the roll (a flat one was sent but did not arrive as a file).
 //
 // Open items, deliberately not invented:
-//   - codes MISSO-01…05 follow the order the photos were sent in;
+//   - codes MISSO-01…06 are ours (photo order; 06 is the grey-black one that
+//     arrived later);
 //   - colour names are descriptive placeholders until ORMEN names them;
-//   - the scale assumes one zigzag tooth is 6 cm wide (PROVISIONAL_TOOTH_CM):
-//     measure a tooth on the fabric and re-run the script with --tooth-cm;
 //   - width, pattern repeat and cut direction are unknown and left empty.
 
-export const PROVISIONAL_TOOTH_CM = 6;
+export const TOOTH_CM = 4.4;
 
 // colour family by the dominant colour: the average of a multicoloured fabric comes out grey
 const MISSO: { colorName: string; family: ColorFamily; repeatCm: { w: number; h: number }; avgColor: string }[] = [
-  { colorName: "Mercan Çok Renkli", family: "kirmizi-bordo", repeatCm: { w: 22.8, h: 22.8 }, avgColor: "#A7988F" },
-  { colorName: "Gri Bej", family: "gri", repeatCm: { w: 23.7, h: 26.3 }, avgColor: "#9E9692" },
-  { colorName: "Siyah Pembe", family: "pembe", repeatCm: { w: 43.1, h: 37.3 }, avgColor: "#8B6B66" },
-  { colorName: "Kahve Altın", family: "kahve", repeatCm: { w: 34.2, h: 32.7 }, avgColor: "#7B695D" },
-  { colorName: "Gri Pastel", family: "gri", repeatCm: { w: 44.2, h: 55.5 }, avgColor: "#98857E" },
+  { colorName: "Mercan Çok Renkli", family: "kirmizi-bordo", repeatCm: { w: 75, h: 67.5 }, avgColor: "#A8998E" },
+  { colorName: "Gri Bej", family: "gri", repeatCm: { w: 59.8, h: 62.3 }, avgColor: "#A49A93" },
+  { colorName: "Siyah Pembe", family: "pembe", repeatCm: { w: 31.6, h: 27.4 }, avgColor: "#8B6B66" },
+  { colorName: "Kahve Altın", family: "kahve", repeatCm: { w: 79.5, h: 121.7 }, avgColor: "#80766E" },
+  { colorName: "Gri Pastel", family: "gri", repeatCm: { w: 52.5, h: 91.3 }, avgColor: "#A18D79" },
+  { colorName: "Gri Siyah", family: "gri", repeatCm: { w: 72.5, h: 70.4 }, avgColor: "#A29992" },
 ];
 
 export function buildPhotoFabrics(startOrder = 100): Fabric[] {

@@ -41,6 +41,10 @@ const outRoot = opt("out", path.join(process.cwd(), "public/seed/fabrics"));
 const configPath = opt("config", "");
 interface Shot {
   file: string;
+  /** Fabric code; default: series and the photo's position. */
+  code?: string;
+  /** Pixels per cm read off a ruler in this photo; then the scale comes from it, not from --tooth-cm. */
+  pxPerCm?: number;
   angle?: number;
   crop?: [number, number, number, number];
   toothPx?: number;
@@ -254,7 +258,7 @@ async function main() {
   mkdirSync(dir, { recursive: true });
 
   for (const [i, file] of photos.entries()) {
-    const code = `${series}-${String(i + 1).padStart(2, "0")}`;
+    const code = shots[i].code ?? `${series}-${String(i + 1).padStart(2, "0")}`;
     const src = sharp(file).rotate(); // honour EXIF orientation
     const shot = shots[i];
     const angle = shot.angle ?? (await levelAngle(src));
@@ -292,7 +296,7 @@ async function main() {
       height: tile.info.height,
     };
     const before = seamScore(px);
-    const repeatW = Math.round(((tileW / period) * toothCm) * 10) / 10;
+const repeatW = Math.round((shot.pxPerCm ? tileW / shot.pxPerCm : (tileW / period) * toothCm) * 10) / 10;
     const repeatH = Math.round(((repeatW * px.height) / px.width) * 10) / 10;
     const { normal, roughness } = deriveMaps(px, type, repeatW);
 
@@ -353,10 +357,16 @@ async function main() {
     console.log(JSON.stringify(row));
     out.push(row);
   }
-  writeFileSync(
-    path.join(dir, "olcum.json"),
-    JSON.stringify(out, null, 2) + "\n",
-  );
+  // keep the rows of fabrics not prepared in this run
+  const file = path.join(dir, "olcum.json");
+  let previous: { code: string }[] = [];
+  try {
+    previous = JSON.parse(readFileSync(file, "utf8"));
+  } catch {
+    previous = [];
+  }
+  const merged = [...previous.filter((r) => !out.some((o) => o.code === r.code)), ...out].sort((a, b) => String(a.code).localeCompare(String(b.code)));
+  writeFileSync(file, JSON.stringify(merged, null, 2) + "\n");
 }
 
 main().catch((e) => {

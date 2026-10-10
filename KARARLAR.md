@@ -651,7 +651,7 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
 
 ## İlk gerçek kumaşlar: MISSO serisi, fotoğraftan (10 Ekim)
 
-- **Ne:** Fatih Bey'in gönderdiği beş zikzak jakar fotoğrafı MISSO-01…05 olarak eklendi. Görseller sitede (`public/seed/fabrics/misso/`).
+- **Ne:** Fatih Bey'in gönderdiği zikzak jakar fotoğrafları MISSO-01…06 olarak eklendi. Görseller sitede (`public/seed/fabrics/misso/`).
   - Yerel demoda hemen görünüyor.
   - Canlı sitede görünmesi için `supabase/kumaslar-misso.sql` Supabase SQL Editor'de bir kez çalıştırılmalı.
 - **Fotoğraflar kumaş üzerinde açılı ve hafif dökümlü çekilmişti; panelin tek tuşluk işlemesi bu fotoğraflarda yetmedi.** Bunun için `scripts/prepare-photo-fabric.ts` yazıldı. Betik her fotoğrafta şunları yapıyor:
@@ -667,7 +667,9 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Düşük kontrastlı renkte eğim yanlış çıkıyordu.
   - Bu yüzden eğim, kesilecek alan ve diş boyu göz kararıyla verildi (`--config`). Betik dişi bu tahminin ±%20'si içinde kesinleştiriyor.
 - **Uydurulmayanlar, açık kalanlar:**
-  - **Ölçek geçici:** Bir zikzak dişi 6 cm varsayıldı. Önce 3 cm denendi, koltukta çizgili kumaş gibi duruyordu. Gerçek diş boyu ölçülünce betik `--tooth-cm` ile yeniden çalıştırılacak.
+  - **Ölçek (güncellendi, ölçüldü):** İlk sürümde bir diş 6 cm varsayılmıştı; önce 3 cm denenmiş, koltukta çizgili kumaş gibi durmuştu. Fatih Bey ardından kumaşı masaya serip tepeden çekti, bir fotoğrafa da metre koydu: 80 cm, 1140 piksel tutuyor, yani santimetre başına 14,25 piksel. Bu fotoğraftan bir zikzak dişi 4,4 cm çıktı. Diğer renkler aynı dokuma olduğu için aynı diş boyunu aldı. MISSO-05'in ölçeği doğrudan metreden hesaplanıyor (`pxPerCm`).
+  - **Düz fotoğraflar:** MISSO-01, 02, 04, 05 ve yeni gelen gri-siyah renk (MISSO-06) düz fotoğraftan yeniden hazırlandı. MISSO-03'ün düz fotoğrafı dosya olarak ulaşmadığı için o renk hâlâ ilk, açılı fotoğraftan; ölçeği 4,4 cm'ye göre düzeltildi.
+  - **SQL yeniden çalıştırılabilir:** `kumaslar-misso.sql` tekrar çalıştırılınca kumaş satırlarına (panelde değiştirilmiş adlar dahil) dokunmuyor, yalnızca görsel ve ölçek satırlarını bu sürüme güncelliyor.
   - **Kodlar:** Fotoğrafların geliş sırasına göre verildi.
   - **Renk adları:** Tarif amaçlı, geçici.
   - **Renk ailesi:** Baskın renge göre seçildi; çok renkli kumaşın ortalaması gri çıkıyordu.
