@@ -5,6 +5,7 @@ import { useThree, type ThreeEvent } from "@react-three/fiber";
 import { Html, Line } from "@react-three/drei";
 import * as THREE from "three";
 import type { Fabric, FurnitureModel, TextureSize } from "@/lib/types";
+import type { Zone } from "@/lib/three/zones";
 import type { Placement } from "@/lib/room/layout";
 import type { PreparedModel } from "@/lib/three/prepare-model";
 import { LAYER_COMPARE, LAYER_PRIMARY } from "@/lib/three/constants";
@@ -104,6 +105,7 @@ export interface PlacedFurnitureProps {
   p: Placement;
   model: FurnitureModel;
   fabric: Fabric;
+  zoneFabrics?: Partial<Record<Zone, Fabric>>;
   compareFabric: Fabric | null;
   textureSize: TextureSize;
   selected: boolean;
@@ -190,6 +192,7 @@ export function PlacedFurniture(props: PlacedFurnitureProps) {
         <FurnitureObject
           model={model}
           fabric={fabric}
+          zoneFabrics={props.zoneFabrics}
           textureSize={textureSize}
           // in compare mode only the selected piece is split; the rest is shared by both halves
           layer={compareFabric && !selected ? 0 : LAYER_PRIMARY}

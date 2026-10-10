@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { zoneFabricsOf } from "@/lib/three/zones";
 import { loadCatalogue } from "@/lib/data";
 import { decodeShare } from "@/lib/share";
 import { initialStateFrom } from "@/lib/page-state";
@@ -19,7 +20,8 @@ async function resolve(id: string, parca: unknown) {
   const piece = layout[i] ?? layout[0];
   const model = cat.models.find((m) => m.slug === piece.modelSlug)!;
   const fabric = cat.fabrics.find((f) => f.code === piece.fabricCode)!;
-  return { model, fabric, firm: cat.firm };
+  const zoneFabrics = zoneFabricsOf(piece, new Map(cat.fabrics.map((f) => [f.code, f])));
+  return { model, fabric, zoneFabrics, firm: cat.firm };
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps<"/ar/[id]">): Promise<Metadata> {
@@ -37,7 +39,7 @@ export default async function ArPage({ params, searchParams }: PageProps<"/ar/[i
   if (!r) notFound();
   return (
     <main>
-      <ArLanding model={r.model} fabric={r.fabric} firm={r.firm} backHref={`/p/${id}`} />
+      <ArLanding model={r.model} fabric={r.fabric} zoneFabrics={r.zoneFabrics} firm={r.firm} backHref={`/p/${id}`} />
     </main>
   );
 }

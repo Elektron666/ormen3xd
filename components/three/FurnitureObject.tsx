@@ -10,10 +10,13 @@ import { prepareModel, type PreparedModel } from "@/lib/three/prepare-model";
 import { FabricDresser } from "@/lib/three/fabric-dresser";
 import { setObjectLayer } from "@/lib/three/layers";
 import { LAYER_PRIMARY } from "@/lib/three/constants";
+import { ZONES, type Zone } from "@/lib/three/zones";
 
 export interface FurnitureObjectProps {
   model: FurnitureModel;
   fabric: Fabric;
+  /** Single zones (arms, cushions…) in their own fabric. */
+  zoneFabrics?: Partial<Record<Zone, Fabric>>;
   textureSize: TextureSize;
   onPrepared?: (prepared: PreparedModel) => void;
   /** Called once a fabric is actually visible on the model. */
@@ -23,7 +26,7 @@ export interface FurnitureObjectProps {
   layer?: number;
 }
 
-function Dressed({ source, model, fabric, textureSize, onPrepared, onFabricShown, onError, layer = LAYER_PRIMARY }: FurnitureObjectProps & { source: THREE.Object3D }) {
+function Dressed({ source, model, fabric, zoneFabrics, textureSize, onPrepared, onFabricShown, onError, layer = LAYER_PRIMARY }: FurnitureObjectProps & { source: THREE.Object3D }) {
   const invalidate = useThree((s) => s.invalidate);
   const prepared = useMemo(() => prepareModel(source, model.fabricMaterialNames), [source, model.fabricMaterialNames]);
   const dresser = useMemo(() => new FabricDresser(prepared.root, prepared.slots), [prepared]);
@@ -46,10 +49,17 @@ function Dressed({ source, model, fabric, textureSize, onPrepared, onFabricShown
     return () => dresser.dispose();
   }, [prepared, dresser]);
 
+  // compared by codes, so a new object with the same fabrics does not re-dress
+  const zoneKey = ZONES.map((z) => zoneFabrics?.[z]?.code ?? "").join(",");
+  const zones = useRef(zoneFabrics);
+  // runs before the dressing effect below (effects run in order)
+  useEffect(() => {
+    zones.current = zoneFabrics;
+  });
   useEffect(() => {
     let alive = true;
     dresser
-      .apply(fabric, textureSize)
+      .apply(fabric, textureSize, { zones: zones.current })
       .then((applied) => {
         if (!alive || !applied) return;
         const first = !shown.current;
@@ -62,7 +72,7 @@ function Dressed({ source, model, fabric, textureSize, onPrepared, onFabricShown
     return () => {
       alive = false;
     };
-  }, [dresser, fabric, textureSize, invalidate]);
+  }, [dresser, fabric, zoneKey, textureSize, invalidate]);
 
   useFrame((_, delta) => {
     if (dresser.tick(Math.min(delta, 0.05))) invalidate();

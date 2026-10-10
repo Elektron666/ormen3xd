@@ -1,6 +1,7 @@
 "use client";
 
 import type { Fabric, Firm } from "@/lib/types";
+import type { FabricPart } from "@/lib/three/zones";
 
 // The picture that travels on WhatsApp: the scene as the customer set it up,
 // with a strip carrying the firm, the furniture and the ORMEN fabric codes.
@@ -8,6 +9,8 @@ import type { Fabric, Firm } from "@/lib/types";
 export interface SharePiece {
   modelName: string;
   fabric: Fabric;
+  /** A piece in several fabrics: each with the zones it covers. */
+  parts?: FabricPart<Fabric>[];
 }
 
 const W = 1600;
@@ -33,12 +36,14 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
 /** Distinct fabrics in order, each with the furniture it is on. */
 export function groupByFabric(pieces: SharePiece[]): { fabric: Fabric; models: string[] }[] {
   const out: { fabric: Fabric; models: string[] }[] = [];
-  for (const p of pieces) {
-    const g = out.find((x) => x.fabric.code === p.fabric.code);
-    if (g) {
-      if (!g.models.includes(p.modelName)) g.models.push(p.modelName);
-    } else out.push({ fabric: p.fabric, models: [p.modelName] });
-  }
+  for (const piece of pieces)
+    for (const part of piece.parts ?? [{ fabric: piece.fabric, label: null }]) {
+      const name = part.label ? `${piece.modelName}: ${part.label.toLocaleLowerCase("tr-TR")}` : piece.modelName;
+      const g = out.find((x) => x.fabric.code === part.fabric.code);
+      if (g) {
+        if (!g.models.includes(name)) g.models.push(name);
+      } else out.push({ fabric: part.fabric, models: [name] });
+    }
   return out;
 }
 

@@ -3,6 +3,7 @@ import type { Fabric, FurnitureModel } from "@/lib/types";
 import { textureRepeat } from "@/lib/fabric/scale";
 import { prepareModel, type PreparedModel } from "@/lib/three/prepare-model";
 import { createFabricMaterial, type FabricTextures } from "@/lib/three/fabric-material";
+import { ZONES, wornZone, type Zone } from "@/lib/three/zones";
 
 // AR export: one piece of furniture, dressed in one fabric, as a standalone
 // .glb the phone's AR viewer can place in the room at real size.
@@ -48,9 +49,22 @@ function arMaterial(fabric: Fabric, tex: FabricTextures): THREE.MeshPhysicalMate
  * scene): placed on the floor, centred, fabric applied with baked repeat.
  * Geometries are copied, the source is left untouched.
  */
-export function buildArScene(source: THREE.Object3D, model: FurnitureModel, fabric: Fabric, tex: FabricTextures): PreparedModel {
+export function buildArScene(
+  source: THREE.Object3D,
+  model: FurnitureModel,
+  fabric: Fabric,
+  tex: FabricTextures,
+  zones: Partial<Record<Zone, { fabric: Fabric; tex: FabricTextures }>> = {},
+): PreparedModel {
   const prepared = prepareModel(source, model.fabricMaterialNames);
-  const material = arMaterial(fabric, tex);
+  const materials = new Map<string, THREE.MeshPhysicalMaterial>();
+  const forSlot = (mesh: THREE.Mesh) => {
+    const z = wornZone(mesh.name, mesh.parent?.name, zones);
+    const pick = (z && zones[z]) || { fabric, tex };
+    let m = materials.get(pick.fabric.code);
+    if (!m) materials.set(pick.fabric.code, (m = arMaterial(pick.fabric, pick.tex)));
+    return { material: m, fabric: pick.fabric };
+  };
   const done = new Map<THREE.Mesh, THREE.BufferGeometry>();
 
   for (const slot of prepared.slots) {
@@ -65,8 +79,9 @@ export function buildArScene(source: THREE.Object3D, model: FurnitureModel, fabr
       mesh.material = Array.isArray(mesh.material) ? [...mesh.material] : mesh.material;
       done.set(mesh, geo);
     }
+    const { material, fabric: worn } = forSlot(mesh);
     const cmPerUv = Number.isFinite(slot.cmPerUv) ? slot.cmPerUv : 100;
-    const rep = textureRepeat(cmPerUv, fabric.texture.repeatCm);
+    const rep = textureRepeat(cmPerUv, worn.texture.repeatCm);
     if (slot.materialIndex >= 0) {
       for (const g of geo.groups) if (g.materialIndex === slot.materialIndex) bakeRepeat(geo, g.start, g.count, rep);
       (mesh.material as THREE.Material[])[slot.materialIndex] = material;
@@ -105,14 +120,20 @@ async function loadSource(model: FurnitureModel): Promise<THREE.Object3D> {
 const glbCache = new Map<string, Promise<Blob>>();
 
 /** The AR file for a model in a fabric (built once per pair and kept for the visit). */
-export function arGlb(model: FurnitureModel, fabric: Fabric): Promise<Blob> {
-  const key = `${model.id}:${fabric.id}:${fabric.texture.maps.albedo["1k"]}`;
+export function arGlb(model: FurnitureModel, fabric: Fabric, zoneFabrics: Partial<Record<Zone, Fabric>> = {}): Promise<Blob> {
+  const zoneKey = ZONES.map((z) => zoneFabrics[z]?.code ?? "").join(",");
+  const key = `${model.id}:${fabric.id}:${fabric.texture.maps.albedo["1k"]}:${zoneKey}`;
   let entry = glbCache.get(key);
   if (!entry) {
     entry = (async () => {
       const { loadFabricTextures } = await import("@/lib/three/fabric-material");
       const [source, tex] = await Promise.all([loadSource(model), loadFabricTextures(fabric, "1k")]);
-      return exportGlb(buildArScene(source, model, fabric, tex).root);
+      const zones: Partial<Record<Zone, { fabric: Fabric; tex: FabricTextures }>> = {};
+      for (const z of ZONES) {
+        const f = zoneFabrics[z];
+        if (f) zones[z] = { fabric: f, tex: await loadFabricTextures(f, "1k") };
+      }
+      return exportGlb(buildArScene(source, model, fabric, tex, zones).root);
     })();
     entry.catch(() => glbCache.delete(key));
     glbCache.set(key, entry);

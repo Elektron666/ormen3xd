@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import QRCode from "qrcode";
-import type { Firm, FurnitureModel } from "@/lib/types";
+import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import type { RoomSpec } from "@/lib/room/spec";
 import { FABRIC_TYPE_LABELS } from "@/lib/i18n/tr";
 import { PlanSvg, type PlanSvgPiece } from "./PlanSvg";
-import { estimate, formatMetres, meterageByFabric } from "@/lib/metraj";
+import { ZONED_REASON, estimate, formatMetres, meterageByFabric } from "@/lib/metraj";
+import type { FabricPart } from "@/lib/three/zones";
 import { encodeCutJob } from "@/lib/cut-report";
 import { BrandMark } from "./BrandMark";
 
@@ -20,7 +21,7 @@ export interface PrintData {
   snapshot: string;
   url: string;
   room: RoomSpec;
-  pieces: (PlanSvgPiece & { model: FurnitureModel })[];
+  pieces: (PlanSvgPiece & { model: FurnitureModel; parts?: FabricPart<Fabric>[] })[];
   firm?: Firm | null;
 }
 
@@ -63,10 +64,11 @@ function Sheet({ data }: { data: PrintData }) {
             </tr>
           </thead>
           <tbody>
-            {data.pieces.map(({ p, model, fabric }) => (
-              <tr key={p.id} className="border-b border-cizgi align-top">
+            {rowsOf(data).map(({ key, model, fabric, label }) => (
+              <tr key={key} className="border-b border-cizgi align-top">
                 <td className="py-2 pr-3">
                   <p className="text-[12px] text-antrasit">{model.name}</p>
+                  {label && <p className="text-antrasit-70">{label}</p>}
                   <p className="text-antrasit-50">
                     {model.dimensionsCm.w} × {model.dimensionsCm.d} × {model.dimensionsCm.h} cm
                   </p>
@@ -119,11 +121,19 @@ function Sheet({ data }: { data: PrintData }) {
  * opens /gercek-metre/<job>, where the upholsterer types that figure in.
  * Black on white on purpose: colour is judged on the stapled sample, not on paper.
  */
+/** One row per fabric a piece wears (a piece in one fabric is one row). */
+function rowsOf(data: PrintData) {
+  return data.pieces.flatMap(({ p, model, fabric, parts }) =>
+    (parts ?? [{ fabric, label: null, zoned: false }]).map((part, i) => ({ key: `${p.id}:${i}`, model, fabric: part.fabric, label: part.label, zoned: part.zoned })),
+  );
+}
+
 function CutterSheet({ data }: { data: PrintData }) {
-  const groups = meterageByFabric(data.pieces.map(({ model, fabric }) => ({ model, fabric })));
+  const rows = rowsOf(data);
+  const groups = meterageByFabric(rows.map(({ model, fabric, zoned }) => ({ model, fabric, zoned })));
   const job = encodeCutJob({
     firm: data.firm?.slug ?? null,
-    rows: groups.map((g) => ({ code: g.fabric.code, models: data.pieces.filter((x) => x.fabric.code === g.fabric.code).map((x) => x.model.slug), estimate: g.total })),
+    rows: groups.map((g) => ({ code: g.fabric.code, models: [...new Set(rows.filter((x) => x.fabric.code === g.fabric.code).map((x) => x.model.slug))], estimate: g.total })),
   });
   const feedbackUrl = `${new URL(data.url).origin}/gercek-metre/${job}`;
   const qr = useQr(feedbackUrl);
@@ -155,12 +165,13 @@ function CutterSheet({ data }: { data: PrintData }) {
           </tr>
         </thead>
         <tbody>
-          {data.pieces.map(({ p, model, fabric }) => {
-            const e = estimate(model, fabric);
+          {rows.map(({ key, model, fabric, label, zoned }) => {
+            const e = zoned ? ({ kind: "usta", reason: ZONED_REASON } as const) : estimate(model, fabric);
             return (
-              <tr key={p.id} className="border-b border-black/30 align-top">
+              <tr key={key} className="border-b border-black/30 align-top">
                 <td className="py-1.5 pr-3">
                   {model.name}
+                  {label && <span className="block text-[10px] font-medium">{label}</span>}
                   <span className="block text-[10px]">
                     {model.dimensionsCm.w} × {model.dimensionsCm.d} × {model.dimensionsCm.h} cm
                   </span>

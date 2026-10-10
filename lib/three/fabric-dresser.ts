@@ -3,6 +3,7 @@ import type { Fabric, TextureSize } from "@/lib/types";
 import { textureRepeat } from "@/lib/fabric/scale";
 import { createFabricMaterial, disposeFabricMaterial, loadFabricTextures } from "./fabric-material";
 import type { FabricSlot } from "./prepare-model";
+import { ZONES, wornZone, type Zone } from "./zones";
 
 const FADE_SECONDS = 0.32;
 
@@ -41,23 +42,32 @@ export class FabricDresser {
     return this.fade !== null;
   }
 
-  /** Resolves true when this fabric was applied, false when superseded. */
-  async apply(fabric: Fabric, size: TextureSize, opts: { instant?: boolean } = {}): Promise<boolean> {
+  /**
+   * Resolves true when this fabric was applied, false when superseded.
+   * `zones` gives single zones (arms, cushions…) their own fabric; parts
+   * without a zone (models from a file) always take `fabric`.
+   */
+  async apply(fabric: Fabric, size: TextureSize, opts: { instant?: boolean; zones?: Partial<Record<Zone, Fabric>> } = {}): Promise<boolean> {
     const id = ++this.request;
-    const tex = await loadFabricTextures(fabric, size);
+    const zones = opts.zones ?? {};
+    const all = [fabric, ...ZONES.flatMap((z) => (zones[z] ? [zones[z]!] : []))];
+    const loaded = new Map(await Promise.all(all.map(async (f) => [f.code, await loadFabricTextures(f, size)] as const)));
     if (id !== this.request) return false;
     this.finishFade();
 
     const byRepeat = new Map<string, THREE.MeshPhysicalMaterial>();
     const materialFor = (slot: FabricSlot) => {
+      const zone = wornZone(slot.mesh.name, slot.mesh.parent?.name, zones);
+      const f = (zone && zones[zone]) || fabric;
+      const tex = loaded.get(f.code)!;
       const cmPerUv = Number.isFinite(slot.cmPerUv) ? slot.cmPerUv : 100;
-      const rep = textureRepeat(cmPerUv, fabric.texture.repeatCm);
+      const rep = textureRepeat(cmPerUv, f.texture.repeatCm);
       // baked occlusion (models built from code) is a vertex colour; other geometry must not read one
       const ao = !!slot.mesh.geometry.userData.ao;
-      const key = `${rep.x.toFixed(3)}:${rep.y.toFixed(3)}:${ao}`;
+      const key = `${f.code}:${rep.x.toFixed(3)}:${rep.y.toFixed(3)}:${ao}`;
       let mat = byRepeat.get(key);
       if (!mat) {
-        mat = createFabricMaterial(fabric, tex, new THREE.Vector2(rep.x, rep.y));
+        mat = createFabricMaterial(f, tex, new THREE.Vector2(rep.x, rep.y));
         mat.vertexColors = ao;
         byRepeat.set(key, mat);
       }

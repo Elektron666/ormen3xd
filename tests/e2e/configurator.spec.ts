@@ -65,6 +65,43 @@ test("?olcum gerçek cihaz testi için ölçüm panelini açar; normal ziyarette
   await expect(panel.getByRole("button", { name: "Kopyala" })).toBeVisible();
 });
 
+test("kollara, minderlere ayrı kumaş; bağlantıda kalır, Tümü geri alır", async ({ page, isMobile }) => {
+  test.skip(isMobile, "masaüstü");
+  test.setTimeout(150_000);
+  await page.goto("/?k=LUMA-02");
+  await expect.poll(() => fabricOnModel(page)).toEqual(["LUMA-02"]);
+  await page.getByRole("radio", { name: "Minderler" }).click();
+  await page.getByRole("radio", { name: /SIENA-05/ }).first().click();
+  await page.getByRole("radio", { name: "Kollar" }).click();
+  await page.getByRole("radio", { name: /PIETRA-05/ }).first().click();
+  await expect(page).toHaveURL(/y=moduler-kanepe\.LUMA-02\.[-\d]+\.[-\d]+\.\d+\.kPIETRA-05(~|%7E)mSIENA-05/);
+  await expect.poll(async () => (await fabricOnModel(page)).sort()).toEqual(["LUMA-02", "PIETRA-05", "SIENA-05"]);
+  // which parts: the arms really wear PIETRA-05, the seat cushions SIENA-05
+  const worn = () =>
+    page.evaluate(() => {
+      const out: Record<string, string> = {};
+      (window as unknown as { __ormenStage: { get(): { scene: { traverse(cb: (o: { isMesh?: boolean; name: string; material?: { name?: string } }) => void): void } } } }).__ormenStage
+        .get()
+        .scene.traverse((o) => {
+          if (o.isMesh && o.material?.name?.startsWith("kumas:")) out[o.name] = o.material.name.slice(6);
+        });
+      return out;
+    });
+  await expect.poll(async () => (await worn())["kol-sol"]).toBe("PIETRA-05");
+  expect((await worn())["oturum-1"]).toBe("SIENA-05");
+  expect((await worn())["govde"]).toBe("LUMA-02");
+
+  // the link opens the same piece with the same zones
+  await page.reload();
+  await expect.poll(async () => (await fabricOnModel(page)).sort(), { timeout: 30_000 }).toEqual(["LUMA-02", "PIETRA-05", "SIENA-05"]);
+
+  // "Tümü" puts one fabric back on the whole piece
+  await page.getByRole("radio", { name: "Tümü" }).click();
+  await page.getByRole("radio", { name: /VERSO-02/ }).first().click();
+  await expect.poll(() => fabricOnModel(page)).toEqual(["VERSO-02"]);
+  await expect(page).not.toHaveURL(/kPIETRA/);
+});
+
 test("arama Türkçe karakterlere duyarsız çalışır", async ({ page }) => {
   await page.goto("/");
   const sheetHandle = page.getByRole("button", { name: "Kumaşları göster" });

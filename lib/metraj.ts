@@ -50,7 +50,10 @@ export const formatMetres = (m: number) => `${nf.format(m)} m`;
  * piece in it has a figure; otherwise the reasons are listed and no partial
  * sum is shown (a partial sum reads like the answer).
  */
-export function meterageByFabric(pieces: { model: Pick<FurnitureModel, "meterage" | "name">; fabric: Fabric }[]): {
+/** The firm's figure is for the whole piece in one fabric; split over zones it is the upholsterer's call. */
+export const ZONED_REASON = "Bölgelere farklı kumaş seçildi; hangi kumaştan kaç metre gideceğini usta hesaplar.";
+
+export function meterageByFabric(pieces: { model: Pick<FurnitureModel, "meterage" | "name">; fabric: Fabric; zoned?: boolean }[]): {
   fabric: Fabric;
   pieces: number;
   total: number | null;
@@ -59,7 +62,7 @@ export function meterageByFabric(pieces: { model: Pick<FurnitureModel, "meterage
   const groups = new Map<string, { fabric: Fabric; estimates: Estimate[]; names: string[] }>();
   for (const p of pieces) {
     const g = groups.get(p.fabric.code) ?? { fabric: p.fabric, estimates: [], names: [] };
-    g.estimates.push(estimate(p.model, p.fabric));
+    g.estimates.push(p.zoned ? { kind: "usta", reason: ZONED_REASON } : estimate(p.model, p.fabric));
     g.names.push(p.model.name);
     groups.set(p.fabric.code, g);
   }

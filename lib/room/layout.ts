@@ -9,6 +9,7 @@ import { codeUpper } from "@/lib/i18n/tr";
 import { paramFloorRects, type FloorRect } from "@/lib/parametric/spec";
 import type { FurnitureModel } from "@/lib/types";
 import { L_NOTCH, type RoomSpec } from "./spec";
+import { cleanZones, decodeZones, encodeZones, type ZoneCodes } from "@/lib/three/zones";
 
 export interface Placement {
   id: string;
@@ -18,6 +19,8 @@ export interface Placement {
   z: number;
   /** Rotation about the vertical axis, degrees. */
   rot: number;
+  /** Fabrics of single zones (arms, cushions…) that differ from fabricCode. */
+  zones?: ZoneCodes;
 }
 
 export interface Footprint {
@@ -214,7 +217,10 @@ export function overlapping(items: { p: Placement; dims: Dims }[]): Set<string> 
 
 export function encodeLayout(items: Placement[]): string {
   return items
-    .map((p) => [p.modelSlug, p.fabricCode, Math.round(p.x * 100), Math.round(p.z * 100), normaliseRot(p.rot)].join("."))
+    .map((p) => {
+      const z = encodeZones(cleanZones(p.fabricCode, p.zones));
+      return [p.modelSlug, p.fabricCode, Math.round(p.x * 100), Math.round(p.z * 100), normaliseRot(p.rot), ...(z ? [z] : [])].join(".");
+    })
     .join("_");
 }
 
@@ -222,9 +228,15 @@ export function decodeLayout(value: string | null | undefined): Placement[] | nu
   if (!value) return null;
   const items: Placement[] = [];
   for (const [i, part] of value.split("_").entries()) {
-    const [modelSlug, fabricCode, x, z, rot] = part.split(".");
-    if (!modelSlug || !fabricCode || [x, z, rot].some((v) => v === undefined || !/^-?\d+$/.test(v))) return null;
-    items.push({ id: `m${i + 1}`, modelSlug, fabricCode: codeUpper(fabricCode), x: Number(x) / 100, z: Number(z) / 100, rot: normaliseRot(Number(rot)) });
+    const [modelSlug, fabricCode, x, z, rot, zonePart, ...extra] = part.split(".");
+    if (!modelSlug || !fabricCode || extra.length || [x, z, rot].some((v) => v === undefined || !/^-?\d+$/.test(v))) return null;
+    const zones = zonePart ? decodeZones(zonePart, codeUpper) : undefined;
+    if (zones === null) return null;
+    const main = codeUpper(fabricCode);
+    const item: Placement = { id: `m${i + 1}`, modelSlug, fabricCode: main, x: Number(x) / 100, z: Number(z) / 100, rot: normaliseRot(Number(rot)) };
+    const clean = cleanZones(main, zones);
+    if (clean) item.zones = clean;
+    items.push(item);
   }
   return items.length > 0 && items.length <= 12 ? items : null;
 }

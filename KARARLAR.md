@@ -703,3 +703,25 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Kalan küçük eğim, şeridin iki kenar sütunu karşılaştırılarak alınıyor; yan kenarda yalnızca ince bir geçiş var.
   - Yükseklikte tile fotoğrafın neredeyse tamamı (yaklaşık 1 m). Renk bantlarının döndüğü yerde ince bir geçişle kapanıyor; dikey ek çok seyrek.
 - **Ölçek:** Bir diş 4,6 cm (MISSO-05'in metreli fotoğrafından), tile genişliği 18,4 cm.
+
+## Bölgeye göre kumaş: gövde, kollar, minderler, biye (Fatih Bey, 10 Ekim)
+
+- **İstek:** "Kollar ve alt kasa kumaşını farklı seçmemiz gerekiyor, sadece minderleri de seçebilelim… istenilen bölgeye istenilen kumaşı uygulayalım."
+- **Ne:** Kumaş panelinin başında "Kumaşın gideceği yer" seçimi var: Tümü, Gövde, Kollar, Minderler, Biye. Her düğmede o bölgenin şu an giydiği kumaşın küçük örneği görünüyor.
+  - Bir bölge seçiliyken tıklanan kumaş yalnızca o bölgeye gidiyor.
+  - "Tümü" seçiliyken tıklanan kumaş parçanın her yerine gidiyor ve bölge kumaşları kalkıyor.
+- **Bölgeler (kodla çizilen modellerde parça adından):**
+  - Gövde: alt kasa ve sırt kasası.
+  - Kollar: kulaklar ve Chester kolunun rulosu dahil.
+  - Minderler: oturum, sırt minderi, sabit ve kapitone sırt dolgusu, puf.
+  - Biye: ayrıca kumaş verilmezse dikildiği parçanın kumaşını alıyor; minder değişince biyesi de değişiyor.
+
+  Panelden yüklenen 3B model dosyalarında parça adları bilinmediği için bölge seçimi çıkmıyor; tek kumaş giyiyorlar.
+- **Bağlantı:** Parça kodunun sonuna eklendi, örneğin `moduler-kanepe.LUMA-06.0.51.0.kPIETRA-05~mSIENA-05`. Ana kumaşla aynı olan bölge yazılmıyor. Eski bağlantılar aynen açılıyor. Katalogdan kalkmış bir kumaş bölgede ana kumaşa dönüyor.
+- **Bağlantının dışında da geçerli olduğu yerler:**
+  - Numune talebi bölgelerin bütün kumaşlarını içeriyor.
+  - Paylaşım metni ve görseli "Modüler Kanepe: minderler" gibi yazıyor.
+  - Paylaşım sayfası bütün kumaşları sayıyor.
+  - "Odamda gör" (AR) dosyası her bölgeyi kendi kumaşıyla içeriyor ve 4 MB sınırının altında kalıyor.
+- **Metraj:** Firmanın metrajı tek kumaşlı parça için. Bölgelere bölünmüş parçada föy her kumaşı ayrı satırda, bölgesiyle gösteriyor. Metre yerine "Bölgelere farklı kumaş seçildi; hangi kumaştan kaç metre gideceğini usta hesaplar" yazıyor. Uydurma bölme yok.
+- **Karşılaştırma modunda** bölge seçimi gizli; karşılaştırma bütün parçayı tek kumaşta gösteriyor.

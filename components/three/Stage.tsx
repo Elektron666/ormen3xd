@@ -16,6 +16,7 @@ import { CameraRig, FOV } from "./CameraRig";
 import { PlanView } from "./PlanView";
 import { PlacedFurniture, type PieceActions } from "./PlacedFurniture";
 import { enableAllLayers, renderSplit, showPrimary } from "@/lib/three/layers";
+import { zoneFabricsOf } from "@/lib/three/zones";
 
 /** Imperative handle for the page: grab a clean picture of the current view. */
 export interface StageApi {
@@ -289,6 +290,7 @@ export function Stage({
             p={p}
             model={model}
             fabric={fabric}
+            zoneFabrics={zoneFabricsOf(p, fabrics)}
             compareFabric={selected ? compareFabric : compareFabric ? fabric : null}
             textureSize={textureSize}
             selected={selected}

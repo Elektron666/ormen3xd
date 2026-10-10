@@ -1,6 +1,7 @@
 import type { Fabric, FurnitureModel } from "@/lib/types";
 import { decodeLayout } from "@/lib/room/layout";
 import { decodeShare } from "@/lib/share";
+import { pieceCodes } from "@/lib/three/zones";
 
 export interface ShareSummary {
   pieces: { model: FurnitureModel; fabric: Fabric }[];
@@ -22,6 +23,8 @@ export function summariseShare(id: string, models: FurnitureModel[], fabrics: Fa
   });
   if (pieces.length === 0) return null;
   const seen = new Set<string>();
-  const distinct = pieces.map((p) => p.fabric).filter((f) => (seen.has(f.code) ? false : (seen.add(f.code), true)));
+  // zone fabrics (arms, cushions…) are part of the combination too
+  const all = layout.flatMap((p) => (bySlug.has(p.modelSlug) ? pieceCodes(p) : [])).flatMap((c) => byCode.get(c) ?? []);
+  const distinct = all.filter((f) => (seen.has(f.code) ? false : (seen.add(f.code), true)));
   return { pieces, fabrics: distinct };
 }

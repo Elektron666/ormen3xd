@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import QRCode from "qrcode";
 import type { Fabric, FurnitureModel } from "@/lib/types";
+import type { Zone } from "@/lib/three/zones";
 import { currentArDevice } from "@/lib/ar/device";
 import { Dialog } from "@/components/ui/Dialog";
 
@@ -17,6 +18,7 @@ export function ArDialog({
   onClose,
   model,
   fabric,
+  zoneFabrics,
   phoneUrl,
   firmSlug = null,
 }: {
@@ -24,6 +26,7 @@ export function ArDialog({
   onClose: () => void;
   model: FurnitureModel;
   fabric: Fabric;
+  zoneFabrics?: Partial<Record<Zone, Fabric>>;
   phoneUrl: () => string;
   firmSlug?: string | null;
 }) {
@@ -43,7 +46,7 @@ export function ArDialog({
   if (device !== "desktop") {
     return (
       <Dialog open={open} onClose={onClose} title={`${model.name} · ${fabric.code}`} wide>
-        {open && <ArViewer model={model} fabric={fabric} firmSlug={firmSlug} className="h-[62dvh]" />}
+        {open && <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} firmSlug={firmSlug} className="h-[62dvh]" />}
         <p className="mt-3 text-[13px] leading-snug text-antrasit-70">
           “Odamda gör”e dokunun, telefonu yere doğru tutup yavaşça gezdirin. Koltuk gerçek boyutunda yerleşir; parmağınızla kaydırıp döndürebilirsiniz.
         </p>
@@ -64,7 +67,7 @@ export function ArDialog({
         )}
         <p className="text-[12px] text-antrasit-50">iPhone (Safari) ve ARCore destekli Android telefonlarda çalışır.</p>
         {preview ? (
-          <ArViewer model={model} fabric={fabric} className="h-[46dvh] w-full" />
+          <ArViewer model={model} fabric={fabric} zoneFabrics={zoneFabrics} className="h-[46dvh] w-full" />
         ) : (
           <button type="button" onClick={() => setPreview(true)} className="text-[13px] text-antrasit-70 underline underline-offset-2 hover:text-antrasit">
             AR modelini burada önizle

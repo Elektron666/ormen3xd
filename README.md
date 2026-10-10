@@ -125,6 +125,10 @@ Kumaş panelinin en üstünde **“Elinizdeki kartelanın kodu”** kutusu var. 
 
 Cihazda: tarayıcıyı tam ekran açın (Chrome'da F11 ya da cihazın “kiosk/ekran sabitleme” ayarı) ve ekranın kendiliğinden kararmasını kapatın.
 
+## Bölgeye göre kumaş
+
+Konfigüratörde kumaş panelinin başındaki "Kumaşın gideceği yer" ile gövde, kollar, minderler ve biye ayrı kumaş alabilir. Seçim paylaşım bağlantısına, numune talebine, kesim föyüne ve "Odamda gör"e geçer. Bölgelere bölünmüş parçada metrajı usta hesaplar.
+
 ## Gerçek cihaz testi
 
 Pilottan önce site 3 gerçek cihazda denenir. Adresin sonuna `?olcum` yazılınca sayfanın altında bir ölçüm kutusu çıkar; kutu kare hızını, ilk kumaşın kaç saniyede geldiğini ve AR'ın açılıp açılmadığını gösterir. Adımlar ve geçme ölçütleri `CIHAZ-TESTI.md` dosyasında.

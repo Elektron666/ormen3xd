@@ -41,6 +41,20 @@ test("masaüstünde QR çıkar, AR modeli önizlenir", async ({ page, isMobile }
   expect(glb.mb).toBeLessThan(4);
 });
 
+test("bölgelere ayrı kumaş verilen parça AR'da da öyle", async ({ page, isMobile }) => {
+  test.skip(isMobile, "masaüstü akışı");
+  test.setTimeout(120_000);
+  await page.goto("/?y=moduler-kanepe.LUMA-02.0.51.0.kPIETRA-05~mSIENA-05");
+  await page.getByRole("button", { name: "Odamda gör" }).click({ timeout: 60_000 });
+  await expect(page.getByRole("img", { name: "Telefonda açmak için QR kod" })).toBeVisible();
+  await page.getByRole("button", { name: "AR modelini burada önizle" }).click();
+  await expect(page.getByTestId("ar-viewer")).toBeVisible({ timeout: 60_000 });
+  await expect.poll(async () => (await inspectGlb(page)).loaded, { timeout: 60_000 }).toBe(true);
+  const glb = await inspectGlb(page);
+  expect([...glb.materials].sort()).toEqual(expect.arrayContaining(["kumas:LUMA-02", "kumas:PIETRA-05", "kumas:SIENA-05"]));
+  expect(glb.mb).toBeLessThan(4);
+});
+
 test("telefonda AR sayfası seçilen parçayı kumaşıyla açar", async ({ page, isMobile }) => {
   test.skip(!isMobile, "telefon akışı");
   test.setTimeout(120_000);

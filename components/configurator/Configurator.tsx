@@ -10,6 +10,8 @@ import { QuickStrip } from "./QuickStrip";
 import { PresetStrip } from "./PresetStrip";
 import { KioskCodeEntry } from "@/components/kiosk/KioskCodeEntry";
 import { MeasurePanel } from "./MeasurePanel";
+import { ZonePicker } from "./ZonePicker";
+import { cleanZones, fabricParts, pieceCodes, zoneCode, zoneFabricsOf, type Zone } from "@/lib/three/zones";
 import { useMedia } from "@/lib/use-media";
 import { FabricPicker } from "./FabricPicker";
 import { BrandMark } from "./BrandMark";
@@ -100,6 +102,11 @@ export function Configurator({
   const selectedItem = items.find((p) => p.id === selectedId) ?? items[0];
   const selectedModel = bySlug.get(selectedItem.modelSlug) ?? models[0];
   const selected = byCode.get(selectedItem.fabricCode) ?? fabrics[0];
+  // a zone (arms, cushions…) takes its own fabric; null = the whole piece
+  const [zone, setZone] = useState<Zone | null>(null);
+  const zonable = (bySlug.get(selectedItem.modelSlug) ?? models[0]).source.kind !== "glb";
+  const activeZone = zonable ? zone : null;
+  const active = byCode.get(zoneCode(selectedItem, activeZone)) ?? selected;
   const overlapIds = useMemo(() => overlapping(items.map((p) => ({ p, dims: dimsOf(p.modelSlug) }))), [items, dimsOf]);
 
   // write the layout to the link, debounced (browsers limit history updates)
@@ -157,10 +164,17 @@ export function Configurator({
         setCompare({ ...compare, right: f });
         return;
       }
-      commit(items.map((p) => (p.id === selectedItem.id ? { ...p, fabricCode: f.code } : p)));
+      commit(
+        items.map((p) => {
+          if (p.id !== selectedItem.id) return p;
+          // the whole piece: one fabric again; a zone: only that zone changes
+          if (!activeZone) return { ...p, fabricCode: f.code, zones: undefined };
+          return { ...p, zones: cleanZones(p.fabricCode, { ...p.zones, [activeZone]: f.code }) };
+        }),
+      );
       track("kumas_denendi", { firmSlug: firm?.slug, modelSlug: selectedItem.modelSlug, fabricCode: f.code });
     },
-    [compare, commit, items, selectedItem.id, selectedItem.modelSlug, firm],
+    [compare, commit, items, selectedItem.id, selectedItem.modelSlug, firm, activeZone],
   );
 
   // fabrics offered on the selected piece's model (a model can be limited to some series)
@@ -223,7 +237,7 @@ export function Configurator({
     setTab("kumas");
   };
 
-  const shownFabric = compare?.active === "sag" ? compare.right : selected;
+  const shownFabric = compare?.active === "sag" ? compare.right : active;
 
   const intent = useCallback((f: Fabric) => prefetchFabric(f, preferredTextureSize()), []);
 
@@ -255,7 +269,7 @@ export function Configurator({
     items.flatMap((p) => {
       const model = bySlug.get(p.modelSlug);
       const fabric = byCode.get(p.fabricCode);
-      return model && fabric ? [{ p, model, fabric, dims: modelDims(model), modelName: model.name }] : [];
+      return model && fabric ? [{ p, model, fabric, dims: modelDims(model), modelName: model.name, parts: fabricParts(fabric, p.zones, byCode) }] : [];
     });
   const shareText = () =>
     "ORMEN kumaşlarıyla hazırladığım kombinasyon: " +
@@ -288,7 +302,7 @@ export function Configurator({
   };
 
   const layoutFabrics = (() => {
-    const list = [selected, ...items.map((p) => byCode.get(p.fabricCode)).filter((f): f is Fabric => !!f)];
+    const list = [selected, ...items.flatMap((p) => pieceCodes(p).map((c) => byCode.get(c))).filter((f): f is Fabric => !!f)];
     const seen = new Set<string>();
     return list.filter((f) => (seen.has(f.code) ? false : (seen.add(f.code), true)));
   })();
@@ -422,9 +436,9 @@ export function Configurator({
       <FabricSheet
         header={
           <>
-            {kiosk && <KioskCodeEntry fabrics={modelFabrics} selectedCode={selected.code} onSelect={select} />}
+            {kiosk && <KioskCodeEntry fabrics={modelFabrics} selectedCode={active.code} onSelect={select} />}
             <div className="flex items-start justify-between gap-3">
-              <FabricHeadline fabric={shownFabric} loading={loading && ready && shownFabric === selected} />
+              <FabricHeadline fabric={shownFabric} loading={loading && ready && shownFabric === active} />
               <div className="-mr-2 mt-3 flex shrink-0 items-center">
                 <button
                   type="button"
@@ -440,7 +454,7 @@ export function Configurator({
                 <CopyCodeButton code={shownFabric.code} />
               </div>
             </div>
-            {phone && <QuickStrip fabrics={modelFabrics} selectedCode={selected.code} onSelect={select} />}
+            {phone && <QuickStrip fabrics={modelFabrics} selectedCode={active.code} onSelect={select} />}
             <div role="tablist" aria-label="Panel" className="mt-4 grid grid-cols-2 border-b border-cizgi">
               {(
                 [
@@ -469,6 +483,7 @@ export function Configurator({
       >
         <div id="bolum-kumas" role="tabpanel" aria-labelledby="sekme-kumas" hidden={tab !== "kumas"}>
           <PresetStrip presets={firm?.presets ?? []} fabrics={byCode} />
+          {zonable && !compare && <ZonePicker piece={selectedItem} fabrics={byCode} zone={activeZone} onZone={setZone} />}
           {compare && (
             <div className="mb-6 rounded-xl border border-cizgi p-3">
               <div className="mb-2 flex items-center justify-between">
@@ -623,7 +638,7 @@ export function Configurator({
           url={takeHome}
         />
       )}
-      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
+      {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>
   );
 }

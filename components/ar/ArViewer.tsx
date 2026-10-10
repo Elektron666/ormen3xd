@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Fabric, FurnitureModel } from "@/lib/types";
 import { arGlb } from "@/lib/ar/build";
+import { ZONES, type Zone } from "@/lib/three/zones";
 import { currentArDevice } from "@/lib/ar/device";
 import { track } from "@/lib/track";
 import { record, snapshot as measured } from "@/lib/olcum";
@@ -18,7 +19,25 @@ interface ModelViewerElement extends HTMLElement {
   canActivateAR?: boolean;
 }
 
-export function ArViewer({ model, fabric, firmSlug = null, className = "" }: { model: FurnitureModel; fabric: Fabric; firmSlug?: string | null; className?: string }) {
+export function ArViewer({
+  model,
+  fabric,
+  zoneFabrics,
+  firmSlug = null,
+  className = "",
+}: {
+  model: FurnitureModel;
+  fabric: Fabric;
+  /** Arms, cushions… in their own fabric. */
+  zoneFabrics?: Partial<Record<Zone, Fabric>>;
+  firmSlug?: string | null;
+  className?: string;
+}) {
+  const zoneKey = ZONES.map((z) => zoneFabrics?.[z]?.code ?? "").join(",");
+  const zones = useRef(zoneFabrics);
+  useEffect(() => {
+    zones.current = zoneFabrics;
+  });
   const [state, setState] = useState<State>({ kind: "loading" });
   const [arReady, setArReady] = useState<boolean | null>(null);
   const [arFailed, setArFailed] = useState(false);
@@ -28,7 +47,7 @@ export function ArViewer({ model, fabric, firmSlug = null, className = "" }: { m
   useEffect(() => {
     let alive = true;
     let url: string | null = null;
-    Promise.all([import("@google/model-viewer"), arGlb(model, fabric)])
+    Promise.all([import("@google/model-viewer"), arGlb(model, fabric, zones.current)])
       .then(([, glb]) => {
         if (!alive) return;
         url = URL.createObjectURL(glb);
@@ -41,7 +60,7 @@ export function ArViewer({ model, fabric, firmSlug = null, className = "" }: { m
       alive = false;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [model, fabric]);
+  }, [model, fabric, zoneKey]);
 
   useEffect(() => {
     const el = ref.current;
