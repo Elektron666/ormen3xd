@@ -166,7 +166,7 @@ test.describe("firma sayfaları", () => {
 
     await page.goto(`/f/${slug}`);
     await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).not.toEqual([]);
-    const codes = await page.getByRole("radio").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label") ?? e.textContent ?? ""));
+    const codes = await page.locator("[role=radio][data-code]").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label") ?? e.textContent ?? ""));
     expect(codes.some((c) => /SIENA/.test(c))).toBe(true);
     expect(codes.some((c) => /LUMA|VERSO/.test(c))).toBe(false);
 
@@ -174,7 +174,7 @@ test.describe("firma sayfaları", () => {
     await page.goto(`/?y=${modelSlug}.PIETRA-01.0.51.0`);
     await expect.poll(() => sceneFabrics(page), { timeout: 45_000 }).toEqual(["PIETRA-01"]);
     await expect(page.getByText(/bu serilerle sunuluyor: PIETRA\./)).toBeVisible();
-    const modelCodes = await page.getByRole("radio").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label") ?? e.textContent ?? ""));
+    const modelCodes = await page.locator("[role=radio][data-code]").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label") ?? e.textContent ?? ""));
     expect(modelCodes.length).toBeGreaterThan(0);
     expect(modelCodes.every((c) => /PIETRA/.test(c))).toBe(true);
   });

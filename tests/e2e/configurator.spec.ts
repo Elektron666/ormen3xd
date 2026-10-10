@@ -107,8 +107,10 @@ test("arama Türkçe karakterlere duyarsız çalışır", async ({ page }) => {
   const sheetHandle = page.getByRole("button", { name: "Kumaşları göster" });
   if (await sheetHandle.isVisible()) await sheetHandle.press("Enter");
   await page.getByRole("searchbox").fill("lacıvert");
-  await expect(page.getByRole("radio")).toHaveCount(1);
-  await expect(page.getByRole("radio")).toHaveAccessibleName(/SIENA-06/);
+  // fabric swatches only (the zone choices above them are radios too)
+  const swatches = page.locator("[role=radio][data-code]");
+  await expect(swatches).toHaveCount(1);
+  await expect(swatches).toHaveAccessibleName(/SIENA-06/);
 });
 
 test("oda bağlantısı aynı odayı açar, araçlar çalışır", async ({ page, isMobile }) => {
