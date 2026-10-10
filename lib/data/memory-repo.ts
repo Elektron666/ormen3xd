@@ -1,6 +1,7 @@
 import { codeUpper } from "@/lib/i18n/tr";
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { buildSeedFabrics } from "@/lib/seed/fabrics";
+import { buildPhotoFabrics } from "@/lib/seed/photo-fabrics";
 import { SEED_FIRMS, SEED_MODELS } from "@/lib/seed/models";
 import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInput, type ModelInput, type Repository } from "./repository";
 import { cleanLot, newSampleCode, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
@@ -15,7 +16,7 @@ import type { CutReport } from "@/lib/cut-report";
 export class MemoryRepository implements Repository {
   readonly kind = "memory" as const;
   readonly persistent = false;
-  private fabrics: Fabric[] = buildSeedFabrics();
+  private fabrics: Fabric[] = [...buildSeedFabrics(), ...buildPhotoFabrics()];
   private models: FurnitureModel[] = structuredClone(SEED_MODELS);
   private firms: Firm[] = structuredClone(SEED_FIRMS);
   private firmShowcase = new Map<string, string[]>();

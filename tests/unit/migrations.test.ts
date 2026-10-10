@@ -112,6 +112,15 @@ describe("seed.sql", () => {
     expect(await count("fabric_textures")).toBe(23);
     expect(await count("models")).toBe(3);
     expect(await count("firms")).toBe(1);
+
+    // the MISSO fabrics from photos, added afterwards on the live database
+    const misso = readFileSync(path.join(process.cwd(), "supabase/kumaslar-misso.sql"), "utf8");
+    await fresh.exec(misso);
+    await fresh.exec(misso);
+    expect(await count("fabrics")).toBe(28);
+    expect(await count("fabric_textures")).toBe(28);
+    const mf = await fresh.query<{ pattern: string; is_placeholder: boolean; width_cm: number | null }>("select pattern, is_placeholder, width_cm from fabrics where code = 'MISSO-03'");
+    expect(mf.rows[0]).toEqual({ pattern: "desenli", is_placeholder: false, width_cm: null });
     const m = await fresh.query<{ fabric_material_names: string[]; default_fabric_code: string }>("select fabric_material_names, default_fabric_code from models where slug = 'berjer'");
     expect(m.rows[0]).toEqual({ fabric_material_names: ["kumas"], default_fabric_code: "SIENA-04" });
 

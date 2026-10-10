@@ -648,3 +648,28 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - Dokusu metre cinsinden; kumaş deseni biyede de gerçek ölçüsünde.
 - **AR boyutu:** Biyeler ilk denemede AR dosyasını 4,7 MB'a çıkardı, sınır 4 MB. Biye örgüsü seyreltildi (1,5 cm'de bir halka, 6 yüz); görüntüde fark yok, dosya sınırın altına indi.
 - **Renk doğruluğu:** Renk testleri geçiyor. Ekranda ölçülen renk açık yüzeyden alındığı için ezik gölgesi rengi bozmuyor.
+
+## İlk gerçek kumaşlar: MISSO serisi, fotoğraftan (10 Ekim)
+
+- **Ne:** Fatih Bey'in gönderdiği beş zikzak jakar fotoğrafı MISSO-01…05 olarak eklendi. Görseller sitede (`public/seed/fabrics/misso/`).
+  - Yerel demoda hemen görünüyor.
+  - Canlı sitede görünmesi için `supabase/kumaslar-misso.sql` Supabase SQL Editor'de bir kez çalıştırılmalı.
+- **Fotoğraflar kumaş üzerinde açılı ve hafif dökümlü çekilmişti; panelin tek tuşluk işlemesi bu fotoğraflarda yetmedi.** Bunun için `scripts/prepare-photo-fabric.ts` yazıldı. Betik her fotoğrafta şunları yapıyor:
+  - deseni yataya çeviriyor;
+  - fotoğrafın düz orta bölümünü alıyor;
+  - zikzak dişinin aralığını ölçüyor;
+  - fotoğraftaki ışık farkını düzleştiriyor;
+  - genişlik ve yükseklikte kumaşın kendini tekrar ettiği yeri arıyor ve yalnızca ince bir kenar şeridini karıştırıyor;
+  - kabarıklık ve parlaklık haritalarını panelin kendi koduyla (`deriveMaps`) çıkarıyor.
+- **Neden panelin kenar birleştirmesi kullanılmadı:** Panelin `makeSeamless` işlemi deseni yarım kaydırıp üst üste karıştırıyor. Düz kumaşta bu fark edilmiyor, zikzakta bulanık hayalet lekeler bırakıyordu.
+- **Otomatik ölçüm yetmedi:**
+  - Simetrik zikzak her satırı bir dişte iki kez kestiği için yarım diş de tekrar gibi görünüyor.
+  - Düşük kontrastlı renkte eğim yanlış çıkıyordu.
+  - Bu yüzden eğim, kesilecek alan ve diş boyu göz kararıyla verildi (`--config`). Betik dişi bu tahminin ±%20'si içinde kesinleştiriyor.
+- **Uydurulmayanlar, açık kalanlar:**
+  - **Ölçek geçici:** Bir zikzak dişi 6 cm varsayıldı. Önce 3 cm denendi, koltukta çizgili kumaş gibi duruyordu. Gerçek diş boyu ölçülünce betik `--tooth-cm` ile yeniden çalıştırılacak.
+  - **Kodlar:** Fotoğrafların geliş sırasına göre verildi.
+  - **Renk adları:** Tarif amaçlı, geçici.
+  - **Renk ailesi:** Baskın renge göre seçildi; çok renkli kumaşın ortalaması gri çıkıyordu.
+  - **Boş bırakılanlar:** En, desen raporu ve kesim yönü.
+- **Boyut:** Normal haritaları ilk denemede kayıpsız kaydedildi, kumaş başına 4–5 MB'tı. Panel gibi kayıplı kaydedilince tüm seri 11 MB oldu; telefon kumaş başına yaklaşık 0,8 MB indiriyor.

@@ -32,6 +32,8 @@ Konfigüratördeki kumaşın gerçeğe benzemesi, büyük ölçüde fotoğrafa b
 5. Telefonun yakınlaştırmasını değil, kendinizi yaklaştırın. Portre modu, filtre ve "güzelleştirme" kapalı olsun.
 6. Netlik kumaşın ortasında olsun; bulanık fotoğraf koltukta "boyanmış" gibi görünür.
 
+**Desenli kumaşta özellikle:** MISSO fotoğrafları kumaş topun üzerindeyken, açılı ve dökümlü çekilmişti. Ancak elle düzeltilerek kullanılabildi. Desenli kumaşı düz bir masaya serin, tepeden çekin, cetvelle bir desen dişinin (ya da raporunun) boyunu ölçüp not edin. Bu ölçü olmadan desen koltukta doğru büyüklükte görünmez.
+
 ## Panele yüklemeden önce
 
 - Fotoğrafı **kare** kırpın (cetvel kadrajın dışında kalsın) ve kırptığınız karenin **kaç cm geldiğini** not edin. Panelde "Fotoğraftaki alanın eni (cm)" bu değerdir. Bu değer yanlışsa ilmekler koltukta dev ya da minicik görünür.
