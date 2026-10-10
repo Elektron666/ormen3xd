@@ -675,3 +675,20 @@ Bir tam test koşusunda, makine yük altındayken mobilya sürükleme testi bir 
   - **Renk ailesi:** Baskın renge göre seçildi; çok renkli kumaşın ortalaması gri çıkıyordu.
   - **Boş bırakılanlar:** En, desen raporu ve kesim yönü.
 - **Boyut:** Normal haritaları ilk denemede kayıpsız kaydedildi, kumaş başına 4–5 MB'tı. Panel gibi kayıplı kaydedilince tüm seri 11 MB oldu; telefon kumaş başına yaklaşık 0,8 MB indiriyor.
+
+## Desen kaymaları: kumaş parçanın etrafına tek parça sarılıyor (10 Ekim)
+
+- **Şikâyet (Fatih Bey):** "Desenlerde kaymalar var." MISSO gibi çizgili ve zikzak desenlerde belirgin.
+- **Sebep:** Kodla çizilen her minderin altı yüzü ayrı bir kumaş parçası gibi kaplanıyordu ve her yüzde desen kendi ortasından başlıyordu. Bu yüzden:
+  - ön yüzden üst yüze geçerken çizgiler kırılıyordu;
+  - kolun yan yüzünde çizgiler boyuna, üst yüzünde enine gidiyordu, kenarda 90° kırılıyordu.
+
+  Düz kumaşta fark edilmiyordu, desenlide hemen göze batıyordu.
+- **Çözüm, ustanın yaptığı gibi:**
+  - Kumaş parçanın etrafına tek şerit olarak sarılıyor; ön, üst, arka ve alt yüz kesintisiz.
+  - İki yan kapak, ön yüzün kenarından köşeyi dönerek devam ediyor; yan kapaktaki çizgiler ön yüzdekilerle aynı hizada.
+  - Oturum, sırt ve gövdede kumaş enine eksenin etrafında dönüyor.
+  - Kollarda boyuna eksenin etrafında dönüyor: dış yüzden üstten aşıp iç yüze iniyor.
+  - Halkanın kapandığı tek ek yeri arka-alt kenarda, görünmeyen yerde.
+- **Doğrulama:** Yeni test, ön-üst, ön-alt, ön-yan ve kol üst kenarlarında doku koordinatının kesintisiz olduğunu denetliyor. Kumaşın gerçek ölçüsü (1 doku birimi = 1 m) değişmedi.
+- **Hâlâ olan:** Üst yüz ile yan kapak arasında desen buluşmuyor; gerçek döşemede de bu dikiş çizgisidir. Her minderde desen, minderin ortasına ortalanıyor; usta da genelde böyle yapar.

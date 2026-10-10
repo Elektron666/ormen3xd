@@ -25,6 +25,32 @@ export interface CushionOptions {
    * grid, `spacing` apart, `depth` deep, kept `spacing / 2` inside the edges.
    */
   tufts?: { spacing: number; depth: number };
+  /**
+   * The axis the fabric is wrapped around, as an upholsterer does: one
+   * continuous strip over front, top, back and bottom, with the two end
+   * panels continuing round the corners. 0 (x, default): seats, backs,
+   * bodies; 2 (z): arms, where the fabric runs from the outside over the
+   * top to the inside. Without this every face started the pattern afresh
+   * and stripes broke at each edge.
+   */
+  wrap?: 0 | 2;
+}
+
+/**
+ * UV (metres) of a point on a rounded box, given its arc-length coordinates
+ * on the two axes in its face. Faces round the wrap axis share one running
+ * v; the end panels take u on from the front's edge.
+ */
+function wrapUv(n: Axis, s: 1 | -1, arc: number[], H: number[], wrap: 0 | 2): [number, number] {
+  const A = wrap;
+  const D: Axis = wrap === 0 ? 2 : 0; // the "front" face is +D
+  // keep the pattern the right way round seen from the front face
+  const su = wrap === 0 ? 1 : -1;
+  if (n === D)
+    return s > 0 ? [su * arc[A], arc[1]] : [su * arc[A], H[1] + 2 * H[D] + (H[1] - arc[1])];
+  if (n === 1) return s > 0 ? [su * arc[A], H[1] + (H[D] - arc[D])] : [su * arc[A], -H[1] - (H[D] - arc[D])];
+  // end panels: across the corner from the front, rows level with the front's
+  return [su * s * (H[A] + (H[D] - arc[D])), arc[1]];
 }
 
 /** Button points of a diamond grid inside a w × h face, centred. */
@@ -105,6 +131,8 @@ export function createCushionGeometry(o: CushionOptions): THREE.BufferGeometry {
   const indices: number[] = [];
   const p = [0, 0, 0];
 
+  const H = samples.map((a) => a.arc[a.arc.length - 1]);
+  const arcAt = [0, 0, 0];
   for (const f of FACES) {
     const su = samples[f.u];
     const sv = samples[f.v];
@@ -134,7 +162,9 @@ export function createCushionGeometry(o: CushionOptions): THREE.BufferGeometry {
           q[2] -= o.tufts!.depth * pull;
         }
         positions.push(q[0], q[1], q[2]);
-        uvs.push(f.us * su.arc[i], f.vs * sv.arc[j]);
+        arcAt[f.u] = su.arc[i];
+        arcAt[f.v] = sv.arc[j];
+        uvs.push(...wrapUv(f.n, f.s, arcAt, H, o.wrap ?? 0));
       }
     }
     // orient triangles outward

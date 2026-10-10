@@ -52,15 +52,15 @@ const frameTopOf = (c: Ctx) => (c.low || c.fixed ? c.H : c.H - 0.06);
 function armParts(c: Ctx, x: number, s: -1 | 1, d: number, z: number): Part[] {
   const { legH, seatTop, arm } = c;
   const armH = seatTop + arm.rise - legH;
-  if (c.p.kol !== "kivrik") return [{ name: "kol", welt: WELT.front, w: arm.w, h: armH, d, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [x, legH + armH / 2, z] }];
+  if (c.p.kol !== "kivrik") return [{ name: "kol", welt: WELT.front, wrap: 2, w: arm.w, h: armH, d, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [x, legH + armH / 2, z] }];
   const top = seatTop + arm.rise;
   const roll = 0.17;
   const bodyW = arm.w - 0.045;
   const bodyH = top - roll * 0.6 - legH;
   return [
-    { name: "kol", w: bodyW, h: bodyH, d, r: 0.03, bulge: { x: 0.008 }, at: [x - s * 0.0225, legH + bodyH / 2, z] },
+    { name: "kol", wrap: 2, w: bodyW, h: bodyH, d, r: 0.03, bulge: { x: 0.008 }, at: [x - s * 0.0225, legH + bodyH / 2, z] },
     // nearly a cylinder along the depth: the radius is almost half of its width and height
-    { name: "kol-kivrim", w: arm.w, h: roll, d, r: roll / 2 - 0.002, at: [x, top - roll / 2, z] },
+    { name: "kol-kivrim", wrap: 2, w: arm.w, h: roll, d, r: roll / 2 - 0.002, at: [x, top - roll / 2, z] },
   ];
 }
 

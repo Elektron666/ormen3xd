@@ -74,6 +74,7 @@ export function createModularSofa(): THREE.Group {
     { name: "govde", w: innerW + 0.02, h: 0.22, d: D, r: 0.035, at: [0, legH + 0.11, 0] },
     ...[-1, 1].map<Part>((s) => ({
       name: s < 0 ? "kol-sol" : "kol-sag",
+      wrap: 2,
       w: armW, h: 0.56, d: D, r: 0.095,
       bulge: { y: 0.012, x: 0.008 },
       at: [s * (W / 2 - armW / 2), legH + 0.28, 0],
@@ -118,6 +119,7 @@ export function createArmchair(): THREE.Group {
     { name: "govde", w: W, h: 0.15, d: D, r: 0.05, bulge: { x: 0.006, z: 0.006 }, at: [0, legH + 0.075, 0] },
     ...[-1, 1].map<Part>((s) => ({
       name: s < 0 ? "kol-sol" : "kol-sag",
+      wrap: 2,
       w: 0.12, h: 0.3, d: 0.68, r: 0.055,
       bulge: { y: 0.008, x: 0.006 },
       at: [s * (W / 2 - 0.06), seatTop + 0.15, 0.04],
