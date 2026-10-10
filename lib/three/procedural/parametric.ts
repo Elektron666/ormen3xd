@@ -101,7 +101,7 @@ function straightRun(c: Ctx, len: number, armStart: boolean, armEnd: boolean, se
     return Array.from({ length: n }, (_, k) => ({ w, x: x0 + w / 2 + k * (w + GAP) }));
   };
   for (const { w, x } of row(c.bench ? 1 : seats))
-    parts.push({ name: "oturum", welt: WELT.seat, w, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.01, x: 0.006 }, at: [x, baseTop + SEAT_T / 2, -D / 2 + bd + seatD / 2 + 0.005] });
+    parts.push({ name: "oturum", welt: WELT.seat, w, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.03, z: 0.01, x: 0.006 }, soft: 0.006, at: [x, baseTop + SEAT_T / 2, -D / 2 + bd + seatD / 2 + 0.005] });
   if (back) for (const { w, x } of row(c.fixed ? 1 : seats)) parts.push(backCushion(c, w, x, -D / 2 + BACK_D + 0.08));
   return parts;
 }
@@ -128,7 +128,7 @@ function backCushion(c: Ctx, w: number, x: number, z: number): Part {
   }
   const top = c.H + (c.low ? -0.02 : 0.01);
   const h = Math.max(0.2, top - bottom);
-  return { name: "sirt-minder", welt: WELT.back, w, h, d: 0.17, r: 0.07, bulge: { z: 0.028, x: 0.008, y: 0.01 }, rotX: -0.15, at: [x, bottom + h / 2, z] };
+  return { name: "sirt-minder", welt: WELT.back, w, h, d: 0.17, r: 0.07, bulge: { z: 0.028, x: 0.008, y: 0.01 }, soft: 0.004, rotX: -0.15, at: [x, bottom + h / 2, z] };
 }
 
 function partsGroup(parts: Part[], fabric: THREE.Material): THREE.Group {
@@ -194,7 +194,7 @@ function addCorner(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1
     partsGroup(
       [
         { name: "govde", w: D, h: c.baseTop - c.legH, d: D, r: 0.035, at: [cx, c.legH + (c.baseTop - c.legH) / 2, 0] },
-        { name: "oturum", welt: WELT.seat, w: seatD, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.008, x: 0.008 }, at: [cx - s * (BACK_D / 2), c.baseTop + SEAT_T / 2, BACK_D / 2] },
+        { name: "oturum", welt: WELT.seat, w: seatD, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.03, z: 0.008, x: 0.008 }, soft: 0.006, at: [cx - s * (BACK_D / 2), c.baseTop + SEAT_T / 2, BACK_D / 2] },
         { name: "sirt-govde", w: D, h: frameH, d: BACK_D, r: 0.06, at: [cx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] },
         // side-wall back of the corner square (sized, not rotated)
         { name: "sirt-govde", w: BACK_D, h: frameH, d: D - BACK_D, r: 0.06, at: [s * (W / 2 - BACK_D / 2), c.baseTop + frameH / 2, BACK_D / 2] },
@@ -238,7 +238,7 @@ function addChaise(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1
   const parts: Part[] = [
     { name: "govde", w: cw - aw + 0.02, h: c.baseTop - c.legH, d: L, r: 0.035, at: [innerCx, c.legH + (c.baseTop - c.legH) / 2, zc] },
     { name: "sirt-govde", w: cw - aw + 0.02, h: frameH, d: BACK_D, r: 0.06, bulge: { z: 0.006 }, at: [innerCx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] },
-    { name: "oturum", welt: WELT.seat, w: cw - aw, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.022, z: 0.01, x: 0.006 }, at: [innerCx, c.baseTop + SEAT_T / 2, -D / 2 + BACK_D + seatD / 2 + 0.005] },
+    { name: "oturum", welt: WELT.seat, w: cw - aw, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.03, z: 0.01, x: 0.006 }, soft: 0.006, at: [innerCx, c.baseTop + SEAT_T / 2, -D / 2 + BACK_D + seatD / 2 + 0.005] },
     backCushion(c, cw - aw, innerCx, -D / 2 + BACK_D + 0.08),
   ];
   if (hasArms) {

@@ -84,7 +84,8 @@ export function createModularSofa(): THREE.Group {
       name: `oturum-${k + 2}`,
       welt: WELT.seat,
       w: seatW, h: seatH, d: seatD, r: 0.06,
-      bulge: { y: 0.024, z: 0.01, x: 0.006 },
+      bulge: { y: 0.03, z: 0.01, x: 0.006 },
+      soft: 0.006,
       at: [k * (seatW + 0.008), baseTop + seatH / 2, D / 2 + 0.005 - seatD / 2],
     })),
     ...[-1, 0, 1].map<Part>((k) => ({
@@ -92,6 +93,7 @@ export function createModularSofa(): THREE.Group {
       welt: WELT.back,
       w: seatW, h: 0.48, d: 0.2, r: 0.085,
       bulge: { z: 0.03, x: 0.008, y: 0.01 },
+      soft: 0.004,
       rotX: -0.17,
       at: [k * (seatW + 0.008), baseTop + 0.29, -0.3],
     })),

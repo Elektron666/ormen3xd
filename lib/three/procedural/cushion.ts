@@ -26,6 +26,12 @@ export interface CushionOptions {
    */
   tufts?: { spacing: number; depth: number };
   /**
+   * Softness: a gentle, uneven settling of the stuffed faces (metres of
+   * amplitude), as a filled cushion never sits perfectly flat. Zero at the
+   * seams like the bulge, so piping and neighbouring parts still meet.
+   */
+  soft?: number;
+  /**
    * The axis the fabric is wrapped around, as an upholsterer does: one
    * continuous strip over front, top, back and bottom, with the two end
    * panels continuing round the corners. 0 (x, default): seats, backs,
@@ -153,7 +159,15 @@ export function createCushionGeometry(o: CushionOptions): THREE.BufferGeometry {
         if (bulge[f.n] !== 0) {
           const a = p[f.u] / half[f.u];
           const b = p[f.v] / half[f.v];
-          q[f.n] += f.s * bulge[f.n] * (1 - a * a) * (1 - b * b);
+          const env = (1 - a * a) * (1 - b * b);
+          q[f.n] += f.s * bulge[f.n] * env;
+          if (o.soft) {
+            // a few long, slow waves (15–35 cm) in fixed phases: deterministic, so the AO bake and AR match
+            const x = p[f.u];
+            const y = p[f.v];
+            const wave = 0.5 * Math.sin(x * 21 + y * 7 + 1.3) + 0.3 * Math.sin(x * 9 - y * 23 + 0.4) + 0.2 * Math.sin((x + y) * 37 + 2.1);
+            q[f.n] += f.s * o.soft * env * wave;
+          }
         }
         if (buttons.length && f.n === 2 && f.s === 1) {
           // each button pulls the face in; overlapping pulls do not add up past one button's depth
