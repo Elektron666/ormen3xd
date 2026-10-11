@@ -9,7 +9,7 @@ import { overdueCount } from "@/lib/pilot-metrics";
 
 export default async function PanelHome() {
   // checked here, not only in the layout: a layout check does not stop the page from rendering
-  await requirePanelUser();
+  const user = await requirePanelUser();
   const repo = getRepository();
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 86_400_000);
@@ -37,6 +37,11 @@ export default async function PanelHome() {
       {(setup === "error" || setup === "warn") && (
         <Link href="/panel/durum" className="mb-6 block rounded-xl border border-[#e7c3bd] bg-[#fbeeec] px-4 py-3 text-[14px] hover:border-[#b4483c]">
           Kurulumda {setup === "error" ? "yapılması gereken" : "eksik"} adımlar var. <span className="underline">Kurulum durumunu gör</span>
+        </Link>
+      )}
+      {user.mode === "supabase" && !user.twoFactor && (
+        <Link href="/panel/guvenlik" className="mb-6 block rounded-xl border border-[#e7c3bd] bg-[#fbeeec] px-4 py-3 text-[14px] hover:border-[#b4483c]">
+          Hesabınızda iki adımlı doğrulama kapalı. <span className="underline">Güvenlik sayfasından açın</span> (2 dakika, telefon gerekir).
         </Link>
       )}
       {overdue > 0 && (

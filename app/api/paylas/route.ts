@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRepository } from "@/lib/data";
+import { allow, callerKey } from "@/lib/rate-limit";
 import { decodeShare } from "@/lib/share";
 import { shortCode } from "@/lib/short-link";
 
@@ -9,6 +10,7 @@ import { shortCode } from "@/lib/short-link";
 //   POST { id } → { path: "/s/Ab3dE9xK" }
 
 export async function POST(request: Request) {
+  if (!allow("paylas", callerKey(request.headers), 60, 10 * 60_000)) return NextResponse.json({ error: "Çok sık istek." }, { status: 429 });
   const text = await request.text();
   if (text.length > 2000) return NextResponse.json({ error: "İstek çok büyük." }, { status: 413 });
   let id: unknown;

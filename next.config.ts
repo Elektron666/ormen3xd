@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
+          // always https once seen (two years); not preloaded, so it can still be undone
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           // AR (WebXR) needs xr-spatial-tracking; nothing here uses the microphone or location
           { key: "Permissions-Policy", value: "microphone=(), geolocation=(), xr-spatial-tracking=(self)" },

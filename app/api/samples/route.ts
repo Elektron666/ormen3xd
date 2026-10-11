@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { getRepository } from "@/lib/data";
+import { allow, callerKey } from "@/lib/rate-limit";
 import { validateSample } from "@/lib/samples";
 
 // Receives a sample request from the configurator form. No IP or device data
 // is stored with it; only what the customer typed and the chosen fabrics.
 
 export async function POST(request: Request) {
+  if (!allow("numune", callerKey(request.headers), 5, 10 * 60_000)) return NextResponse.json({ error: "Çok sık gönderildi; biraz sonra tekrar deneyin." }, { status: 429 });
   const text = await request.text();
   if (text.length > 4000) return NextResponse.json({ error: "İstek çok büyük." }, { status: 413 });
   let body: unknown;

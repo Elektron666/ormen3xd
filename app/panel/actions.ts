@@ -9,7 +9,9 @@ import { validateFirm, type FirmErrors, type FirmFields } from "@/lib/firm";
 import { normaliseParams, paramDimensions, validateParams, type ParamErrors, type ParametricParams } from "@/lib/parametric/spec";
 import { FABRIC_MATERIAL } from "@/lib/three/constants";
 import { cleanSeries, seriesOf } from "@/lib/fabric/allowed";
-import { getPanelUser, signIn, signOut } from "@/lib/auth/panel";
+import { headers } from "next/headers";
+import { allow, callerKey } from "@/lib/rate-limit";
+import { changePassword, confirmTwoFactor, disableTwoFactor, getPanelUser, signIn, signOut, startTwoFactor, verifyLoginCode } from "@/lib/auth/panel";
 import { validateFabricFields, type FabricFieldErrors, type FabricFields } from "@/lib/panel/fabric-form";
 import { STORAGE_BUCKET, SUPABASE_URL } from "@/lib/supabase/config";
 import type { FurnitureModel, TextureMapSet } from "@/lib/types";
@@ -19,10 +21,50 @@ import { MAX_PRESETS, cleanPresets, parsePresetLink, type FirmPreset } from "@/l
 
 // ------------------------------------------------------------------ session
 
+/** Password and code guessing: 10 tries per 15 minutes per caller (Supabase sees only the server's address). */
+async function tooManyTries(scope: string): Promise<boolean> {
+  return !allow(scope, callerKey(await headers()), 10, 15 * 60_000);
+}
+
 export async function loginAction(_prev: { error?: string } | null, form: FormData): Promise<{ error?: string }> {
+  if (await tooManyTries("giris")) return { error: "Çok fazla deneme. 15 dakika sonra tekrar deneyin." };
   const res = await signIn(String(form.get("email") ?? ""), String(form.get("password") ?? ""));
   if (!res.ok) return { error: res.error };
+  redirect(res.needsCode ? "/panel/giris/dogrulama" : "/panel");
+}
+
+/** Second step of the login: the code from the authenticator app. */
+export async function verifyCodeAction(_prev: { error?: string } | null, form: FormData): Promise<{ error?: string }> {
+  if (await tooManyTries("kod")) return { error: "Çok fazla deneme. 15 dakika sonra tekrar deneyin." };
+  const res = await verifyLoginCode(String(form.get("code") ?? ""));
+  if (!res.ok) return { error: res.error };
   redirect("/panel");
+}
+
+export async function startTwoFactorAction() {
+  return startTwoFactor();
+}
+
+export async function confirmTwoFactorAction(factorId: string, code: string) {
+  if (await tooManyTries("kod")) return { ok: false as const, error: "Çok fazla deneme. 15 dakika sonra tekrar deneyin." };
+  const res = await confirmTwoFactor(String(factorId).slice(0, 64), String(code));
+  if (res.ok) revalidatePath("/panel", "layout");
+  return res;
+}
+
+export async function disableTwoFactorAction(code: string) {
+  if (await tooManyTries("kod")) return { ok: false as const, error: "Çok fazla deneme. 15 dakika sonra tekrar deneyin." };
+  const res = await disableTwoFactor(String(code));
+  if (res.ok) revalidatePath("/panel", "layout");
+  return res;
+}
+
+export async function changePasswordAction(_prev: { error?: string; ok?: boolean } | null, form: FormData): Promise<{ error?: string; ok?: boolean }> {
+  if (await tooManyTries("sifre")) return { error: "Çok fazla deneme. 15 dakika sonra tekrar deneyin." };
+  const next = String(form.get("next") ?? "");
+  if (next !== String(form.get("again") ?? "")) return { error: "Yeni şifreler aynı değil." };
+  const res = await changePassword(String(form.get("current") ?? ""), next);
+  return res.ok ? { ok: true } : { error: res.error };
 }
 
 export async function logoutAction(): Promise<void> {

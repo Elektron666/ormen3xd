@@ -1,5 +1,6 @@
 import { getRepository } from "@/lib/data";
 import { parseEvent } from "@/lib/events";
+import { allow, callerKey } from "@/lib/rate-limit";
 
 // Anonymous usage events from the configurator (sent with sendBeacon).
 // Nothing about the visitor is read from the request: no IP, no user agent.
@@ -12,6 +13,8 @@ function fromPanelUser(request: Request): boolean {
 
 export async function POST(request: Request) {
   if (fromPanelUser(request)) return new Response(null, { status: 204 });
+  // a visit sends a few dozen events at most; a flood would only skew the report
+  if (!allow("olay", callerKey(request.headers), 600, 10 * 60_000)) return new Response(null, { status: 204 });
   const text = await request.text();
   if (text.length > 1000) return new Response(null, { status: 413 });
   let body: unknown;

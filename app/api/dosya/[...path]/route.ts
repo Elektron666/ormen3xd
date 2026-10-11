@@ -12,5 +12,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/dosya/[...path]
   if (repo.kind !== "memory") return new Response("Bulunamadı", { status: 404 });
   const file = (repo as MemoryRepository).files.get(path.join("/"));
   if (!file) return new Response("Bulunamadı", { status: 404 });
-  return new Response(file.data, { headers: { "content-type": file.type, "cache-control": "public, max-age=31536000, immutable" } });
+  // an uploaded file is only ever an image or a model: never let it run as a page
+  return new Response(file.data, {
+    headers: { "content-type": file.type, "cache-control": "public, max-age=31536000, immutable", "content-security-policy": "default-src 'none'; sandbox", "x-content-type-options": "nosniff" },
+  });
 }

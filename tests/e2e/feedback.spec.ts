@@ -24,3 +24,14 @@ test("ziyaretçi geri bildirim gönderir, panelde görünür", async ({ page, br
   await page.getByRole("link", { name: "Geri bildirim" }).click();
   await expect(page.getByText(text)).toBeVisible();
 });
+
+test("panelde Güvenlik sayfası: örnek veri modunda iki adımlı doğrulama yok der", async ({ page }) => {
+  await login(page);
+  await page.getByRole("link", { name: "Güvenlik" }).click();
+  await expect(page.getByRole("heading", { name: "İki adımlı doğrulama" })).toBeVisible();
+  await expect(page.getByText("Supabase bağlıyken çalışır")).toBeVisible();
+  // the code step cannot be opened without a password session
+  await page.context().clearCookies();
+  await page.goto("/panel/giris/dogrulama");
+  await expect(page).toHaveURL(/\/panel\/giris$/);
+});

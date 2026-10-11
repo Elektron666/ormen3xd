@@ -799,3 +799,26 @@ Fatih Bey katalog görseli fikrini düşürdü; toplantının kalanı yapıldı.
 - **IP kaydı yok.** Fatih Bey "legal olarak siteye girenlerin bilgisine ulaşmamız lazım" dedi. Bildiğimiz kadarıyla 5651'de IP/trafik kaydı yükümlülüğü yer sağlayıcıda (Vercel, Supabase), bizde (içerik sağlayıcı) değil; IP de KVKK'da kişisel veri. Saklamanın amacı yok, yükü var. Ayrıntı ve avukattan istenen teyit: `AVUKAT-PAKETI.md`. Avukat "saklayın" derse eklenir.
 - **Günlük ziyaret:** Rapor sayfasında zaten gün gün vardı; panelin ana sayfasına "Ziyaret (bugün)" kartı eklendi (altında son 7 gün). Ziyaret, sekmeye özel rastgele numarayla sayılıyor; kişi değil.
 - **Geri bildirim:** Sitenin altındaki renk uyarısının yanında "Geri bildirim" bağlantısı (kioskta yok). Konu (Beğendim / Önerim var / Bir şey çalışmadı / Diğer) + mesaj. Ad, telefon, e-posta, IP alınmıyor; mesajda telefon/e-posta görünürse form uyarıyor. Bot için gizli alan ve aynı kaynaktan 10 dakikada en fazla 5 gönderim (adres yalnızca o an, bellekte, özetlenmiş hâliyle kullanılıyor; yazılmıyor). Panelde "Geri bildirim" sayfasında listeleniyor, tek tek silinebiliyor. Veritabanı: `20261012000000_geri_bildirim.sql` (canlıda çalıştırıldı).
+
+## Panel güvenliği ve güvenlik taraması (11 Ekim)
+
+**İki adımlı doğrulama (Fatih Bey: "çift doğrulama sistemi yapalım").**
+- Supabase Auth'un kendi TOTP desteğiyle; ek paket yok, SMS yok (ücretli olurdu). Google Authenticator, Microsoft Authenticator gibi her doğrulama uygulaması çalışıyor.
+- Panel → **Güvenlik**: "Aç" → QR kod (okutamayana kurulum anahtarı) → uygulamadaki ilk kodla onay. Kapatmak için de güncel kod isteniyor; açık kalmış bir oturum tek başına kapatamaz.
+- Açıldıktan sonra o hesap için zorunlu: şifreden sonra `/panel/giris/dogrulama` sayfası 6 haneli kodu istiyor; kod girilmeden hiçbir panel sayfası, panel API'si ya da işlemi çalışmıyor (oturumun AAL2 olması aranıyor).
+- Kapalıyken panelin ana sayfasında kırmızı hatırlatma duruyor. Zorunlu tutmadık: telefonu olmayan bir ekip üyesi de panele girebilsin; Fatih Bey isterse zorunlu yapılır.
+- Telefon kaybolursa: Supabase → Authentication → Users → kullanıcı → doğrulama faktörünü silmek (ya da Claude'a söylemek) yeterli.
+- **Şifre değiştir** aynı sayfada: şu anki şifre ayrı, geçici bir bağlantıyla doğrulanıyor (panel oturumu bozulmuyor), yeni şifre en az 10 karakter.
+
+**Güvenlik taraması.**
+- `npm audit` (çalışan paketler): 0 açık.
+- Panel API'leri ve panel işlemleri: hepsi oturumu kendisi denetliyor (yalnızca giriş, kod ve çıkış işlemleri oturumsuz; doğası gereği).
+- Depoda gizli anahtar yok.
+- **Bulunan ve kapatılanlar:**
+  - *Şifre/kod deneme sınırı yoktu.* Supabase kendi sınırını IP başına uyguluyor, ama bütün istekler ona Vercel sunucusundan gidiyor; ziyaretçileri ayıramıyor. Şimdi giriş, doğrulama kodu ve şifre değiştirme için aynı kaynaktan 15 dakikada 10 deneme.
+  - *Numune formu, kısa bağlantı ve olay sayacı sınırsızdı* (bir betik veritabanını doldurabilir, raporu bozabilirdi). Numune: 10 dakikada 5; kısa bağlantı: 60; olay: 600. Adres yalnızca bellekte, özetlenmiş hâliyle ve pencere süresince tutuluyor; hiçbir yere yazılmıyor. Yerel sunucuda (adres başlığı yok) sınır uygulanmıyor.
+  - *HSTS başlığı yoktu*: tarayıcı siteyi iki yıl boyunca yalnızca https ile açar.
+  - *Demo modunda yüklenen dosyalar* sayfa gibi çalışamaz (CSP sandbox).
+  - Supabase: `touch_updated_at` sabit search_path (dün); Supabase'in kendi "RLS'yi otomatik aç" fonksiyonunun herkese açık çağrı izni kaldırıldı.
+- **Bilerek bırakılanlar:** `cut_reports` ve `feedback` tablolarına tarayıcıdan erişim yok (yalnızca sunucu yazar); `is_staff()` satır kurallarında kullanıldığı için çağrılabilir, yalnızca "ben personel miyim" der. QR SVG'leri kendi kütüphanemizin çıktısı, kullanıcı metni değil.
+- **Sizde:** Supabase → Authentication → "Leaked password protection" (sızdırılmış şifre listesindeki şifreleri reddeder); planınızda varsa açın. 10 Ekim'de geçici olarak verdiğim panel şifresini Güvenlik sayfasından değiştirin; sohbette yazılı kaldı.

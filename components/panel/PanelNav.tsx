@@ -11,6 +11,7 @@ const LINKS = [
   ["/panel/rapor", "Rapor"],
   ["/panel/geri-bildirim", "Geri bildirim"],
   ["/panel/durum", "Kurulum"],
+  ["/panel/guvenlik", "Güvenlik"],
 ] as const;
 
 export function PanelNav() {

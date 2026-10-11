@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { looksPersonal, parseFeedback } from "@/lib/feedback";
-import { allow } from "@/lib/rate-limit";
+import { allow, callerKey } from "@/lib/rate-limit";
 import { MemoryRepository } from "@/lib/data/memory-repo";
 
 describe("geri bildirim", () => {
@@ -30,6 +30,10 @@ describe("geri bildirim", () => {
     for (let i = 0; i < 5; i++) expect(allow("test", "k", 5, 60_000, t + i)).toBe(true);
     expect(allow("test", "k", 5, 60_000, t + 10)).toBe(false);
     expect(allow("test", "k", 5, 60_000, t + 61_000)).toBe(true);
+    // a local server without a forwarded address: nothing to tell callers apart, no limit
+    for (let i = 0; i < 20; i++) expect(allow("test", null, 5, 60_000, t)).toBe(true);
+    expect(callerKey(new Headers())).toBeNull();
+    expect(callerKey(new Headers({ "x-forwarded-for": "1.2.3.4, 10.0.0.1" }))).toBe(callerKey(new Headers({ "x-forwarded-for": "1.2.3.4" })));
   });
 
   it("panelde en yeni önce listelenir, silinir", async () => {

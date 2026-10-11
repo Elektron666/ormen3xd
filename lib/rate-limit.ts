@@ -7,13 +7,19 @@ import { createHash } from "node:crypto";
 
 const buckets = new Map<string, number[]>();
 
-export function callerKey(headers: Headers): string {
-  const ip = headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip") || "yerel";
-  return createHash("sha256").update(ip).digest("base64url").slice(0, 16);
+/**
+ * The caller, hashed. Null when the request carries no forwarded address:
+ * a local server (development, tests) with nothing to tell callers apart.
+ * Vercel always sets it.
+ */
+export function callerKey(headers: Headers): string | null {
+  const ip = headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip");
+  return ip ? createHash("sha256").update(ip).digest("base64url").slice(0, 16) : null;
 }
 
-/** True if this call is within `max` calls per `windowMs` for the key; records it. */
-export function allow(scope: string, key: string, max: number, windowMs: number, now = Date.now()): boolean {
+/** True if this call is within `max` calls per `windowMs` for the key; records it. No key, no limit. */
+export function allow(scope: string, key: string | null, max: number, windowMs: number, now = Date.now()): boolean {
+  if (key === null) return true;
   const k = `${scope}:${key}`;
   const recent = (buckets.get(k) ?? []).filter((t) => now - t < windowMs);
   if (recent.length >= max) {
