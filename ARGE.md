@@ -46,10 +46,12 @@ Panel → Kumaşlar → kumaş sayfası → **Ölçek ve dikiş kontrolü**:
 - Doku gerçek boyutta gösterilir; pencere, dört tekrarın birleştiği köşeye ortalanır (ince kırmızı çizgiler). Rapor ne kadar büyük olursa olsun dikiş ortada görünür.
 - Altında ekranda 10 cm olması gereken bir cetvel var. Ekranın ölçeği tarayıcıdan kesin bilinmez; bu yüzden araç, 10 cm'yi bir kez gerçek cetvelle ayarlatır ve ayarı o tarayıcıda saklar.
 
-**İlk bulgu (11 Ekim):** MISSO-05'te yatay tekrar çizgisinde belirgin bir parlaklık basamağı var: tekrarın üstü açık, altı koyu. Sebep, fotoğrafın üstten alta eşit aydınlanmamış olması; `flattenLight` bunu tam düzeltmiyor. Koltukta her 91,5 cm'de bir hafif bant olarak görünür.
-- MISSO-06 ve MISSO-01'in tekrarı da 112,5 cm; bunlar da kontrol edilmeli.
-- A1'deki kalibrasyon kartı, aydınlatmayı da ölçerek bunu çözecek.
-- Kısa vadede: dikişte çapraz geçiş bandını genişletmek ya da dikey ışık eğimini daha güçlü düzeltmek denenecek. Önce gerçek kumaşla karşılaştırılması gerekiyor.
+**İlk bulgu (11 Ekim), ölçümle düzeltilmiş:**
+- **Görülen:** MISSO-05'te yatay tekrar çizgisinin üstü ve altı farklı görünüyor: üstte açık bir şerit, altta koyu.
+- **İlk tahmin yanlış çıktı.** Fotoğrafın eşit aydınlanmadığını düşündüm. `scripts/olc-dikis.ts` ile ölçünce, her dokunun yukarıdan aşağı genel parlaklık eğilimi küçük çıktı: 255 üzerinden en fazla 13 (MISSO-04), MISSO-05'te 5,6. Desen şeritleri bu ölçümde ortalamaya karışıp kayboluyor.
+- **Daha olası sebep:** Tekrarın boyu (91,5 cm) desenin gerçek dikey tekrarına tam oturmuyor. Bir tekrar bittiğinde başlayan şerit, bir öncekinin devamı değil.
+- **Doğrulama:** Gerçek kumaşta dikey desen tekrarı cetvelle ölçülmeli (Hakan, numune üzerinden). Ölçü 91,5 cm'den farklıysa doku o boyla yeniden hazırlanır.
+- **Yan dikiş** (sol/sağ) altı kumaşta da temiz: fark 255 üzerinden 1'in altında.
 
 ## Gerçek bir Ar-Ge'ci bulmak
 
