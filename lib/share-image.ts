@@ -47,6 +47,40 @@ export function groupByFabric(pieces: SharePiece[]): { fabric: Fabric; models: s
   return out;
 }
 
+/** Text of the watermark behind the scene (Fatih Bey, 11 Oct: "görselin arkasına ORMEN TEKSTİL imzası"). */
+export const WATERMARK = "ORMEN TEKSTİL";
+
+/**
+ * The signature on the backdrop, drawn before the render: the furniture (a
+ * transparent canvas) covers it, so it never hides the fabric. Large, faint,
+ * on a slant and repeated, so a crop still carries it; plus a small, clearer
+ * one in the corner.
+ */
+function drawWatermark(ctx: CanvasRenderingContext2D, sceneH: number, display: string, body: string) {
+  ctx.save();
+  ctx.fillStyle = "#3A2E26";
+  ctx.globalAlpha = 0.045;
+  ctx.font = `500 64px ${display}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.translate(W / 2, sceneH / 2);
+  ctx.rotate(-Math.PI / 9);
+  const stepX = ctx.measureText(WATERMARK).width + 140;
+  const stepY = 170;
+  const reach = Math.hypot(W, sceneH) / 2 + stepX;
+  for (let y = -reach, row = 0; y <= reach; y += stepY, row++)
+    for (let x = -reach + (row % 2) * (stepX / 2); x <= reach; x += stepX) ctx.fillText(WATERMARK, x, y);
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = "#3A2E26";
+  ctx.globalAlpha = 0.38;
+  ctx.font = `500 15px ${body}`;
+  ctx.textAlign = "right";
+  ctx.fillText(WATERMARK.split("").join("\u200A"), W - PAD, sceneH - 22);
+  ctx.restore();
+}
+
 export async function composeShareImage(snapshotUrl: string, pieces: SharePiece[], firm?: Firm | null): Promise<Blob> {
   const display = cssFont("--font-fraunces", "Georgia, serif");
   const body = cssFont("--font-inter", "system-ui, sans-serif");
@@ -66,6 +100,7 @@ export async function composeShareImage(snapshotUrl: string, pieces: SharePiece[
   grad.addColorStop(1, "#E6DFD4");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, sceneH);
+  drawWatermark(ctx, sceneH, display, body);
   if (shot) {
     const h = (shot.height / shot.width) * W;
     ctx.drawImage(shot, 0, (sceneH - h) / 2, W, h);
