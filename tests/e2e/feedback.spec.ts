@@ -21,7 +21,8 @@ test("ziyaretçi geri bildirim gönderir, panelde görünür", async ({ page, br
   await login(page);
   // the visit count sits on the panel's home page
   await expect(page.getByText("Ziyaret (bugün)")).toBeVisible();
-  await page.getByRole("link", { name: "Geri bildirim" }).click();
+  await expect(page.getByRole("link", { name: /^Geri bildirim \d+ son 7 gün$/ })).toBeVisible();
+  await page.getByRole("navigation", { name: "Panel" }).getByRole("link", { name: "Geri bildirim", exact: true }).click();
   await expect(page.getByText(text)).toBeVisible();
 });
 

@@ -116,3 +116,18 @@ Ayrıntı ve gerekçeler `TOPLANTI-2026-10-05.md` dosyasında. Fotoğraf ve avuk
 ## Bilerek yapılmayanlar
 
 Üyelik, sepet, ödeme ve fiyat; ORMEN dışı kumaş; serbest duvar çizimi, kapı ve pencere; CAD çıktısı. Gerekçeler `KARARLAR.md` ve `REKABET-PLANI.md`'de.
+
+## 11 Ekim toplantısı (`TOPLANTI-2026-10-11.md`)
+
+- [x] Vitrin: L köşe ve U kaldırıldı; Chester yeniden, sabit sırt düzeltildi, yuvarlak puf.
+- [x] Geri bildirim formu (isimsiz), panelde ziyaret ve geri bildirim kartları.
+- [x] Paylaşım görselinde ORMEN TEKSTİL imzası.
+- [x] Panel: iki adımlı doğrulama, şifre değiştir; güvenlik taraması ve düzeltmeler.
+- [x] KVKK metnine barındırma sağlayıcısının teknik kayıtları cümlesi.
+- [ ] Fatih Bey: geçici şifreyi değiştir, iki adımlı doğrulamayı aç; WhatsApp numarasını Vercel'e gir.
+- [ ] Selin'e panel hesabı (doğrulama açık).
+- [ ] Pilot günü: iki adımlı doğrulama zorunlu.
+- [ ] Av. Yalın'ın IP konusundaki yazılı görüşü.
+- [ ] Vercel Pro + Supabase Pro kararı (yedek, sızdırılmış şifre koruması).
+- [ ] Kütük ve yastık kol (firma fotoğrafları gelince).
+
