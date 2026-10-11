@@ -76,6 +76,8 @@ export class FabricDresser {
       return mat;
     };
 
+    // a fade still running (a quick second choice) ends now; otherwise its overlays would stay on the model
+    this.finishFade();
     const previous = this.current;
     this.current = new Set();
     const instant = opts.instant || previous.size === 0;

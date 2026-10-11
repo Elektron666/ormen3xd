@@ -23,3 +23,24 @@ export function idleState(idleMs: number, idleSeconds: number): { remaining: num
   const remaining = Math.max(0, Math.ceil(idleSeconds - idleMs / 1000));
   return { remaining, warn: remaining > 0 && remaining <= KIOSK_WARNING, reset: remaining === 0 };
 }
+
+// Showroom loop (acil toplantı, 11 Oct): while the welcome screen waits for
+// someone, the sofa turns slowly and wears ORMEN's real fabrics in turn, so
+// the screen draws people in. Placeholders never take part: the shop window
+// shows only what can be ordered.
+
+export const ATTRACT_STEP_SECONDS = 6;
+export const ATTRACT_MAX = 12;
+
+/** The fabrics the loop goes through, or none when fewer than two real ones exist. */
+export function attractFabrics<T extends { code: string; isPlaceholder: boolean }>(fabrics: T[]): T[] {
+  const real = fabrics.filter((f) => !f.isPlaceholder).slice(0, ATTRACT_MAX);
+  return real.length >= 2 ? real : [];
+}
+
+/** The fabric after `current` in the loop (the first one when `current` is not in it). */
+export function nextAttract<T extends { code: string }>(list: T[], current: string): T | undefined {
+  if (!list.length) return undefined;
+  const i = list.findIndex((f) => f.code === current);
+  return list[(i + 1) % list.length];
+}

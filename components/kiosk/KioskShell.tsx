@@ -5,6 +5,7 @@ import type { Firm } from "@/lib/types";
 import { idleState, KIOSK_WARNING } from "@/lib/kiosk";
 import { BrandMark } from "@/components/configurator/BrandMark";
 import { accentStyle } from "@/lib/firm";
+import { AttractContext } from "./attract";
 
 // Showroom kiosk around the configurator:
 // - a welcome screen until someone touches it (first touch also goes full screen)
@@ -65,7 +66,7 @@ export function KioskShell({ idleSeconds, firm, children }: { idleSeconds: numbe
 
   return (
     <div className="select-none [touch-action:manipulation]" style={accentStyle(firm) as React.CSSProperties | undefined} data-kiosk>
-      {children}
+      <AttractContext.Provider value={welcome}>{children}</AttractContext.Provider>
 
       {welcome && (
         <button

@@ -77,6 +77,8 @@ export interface StageProps {
   onApi?: (api: StageApi) => void;
   /** Show the selected piece's toolbar (turn, duplicate, remove). */
   pieceToolbar?: boolean;
+  /** Kiosk welcome screen: the camera turns slowly around the furniture. */
+  spin?: boolean;
 }
 
 /**
@@ -94,6 +96,14 @@ function AdaptiveDpr({ onLower }: { onLower: (dpr: number) => void }) {
     intervals.current = [];
     if (next < state.viewport.dpr) onLower(next);
   });
+  return null;
+}
+
+/** The scene renders on demand; while the camera turns by itself, every frame is wanted. */
+function KeepRendering() {
+  useFrame(({ invalidate }) => invalidate());
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => invalidate(), [invalidate]);
   return null;
 }
 
@@ -200,6 +210,7 @@ export function Stage({
   onError,
   onApi,
   pieceToolbar = true,
+  spin = false,
 }: StageProps) {
   const [textureSize] = useState<TextureSize>(preferredTextureSize);
   const [tier] = useState<Tier>(browserTier);
@@ -347,7 +358,10 @@ export function Stage({
         zoomSpeed={0.8}
         minPolarAngle={0.35}
         maxPolarAngle={Math.PI / 2 - 0.06}
+        autoRotate={spin && !plan}
+        autoRotateSpeed={0.6}
       />
+      {spin && !plan && <KeepRendering />}
       <CameraRig
         prepared={items[0] ? prepared[items[0].id] ?? null : null}
         closeTarget={prepared[selectedId] ?? null}

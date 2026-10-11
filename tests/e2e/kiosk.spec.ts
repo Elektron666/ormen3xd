@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { sceneFabrics } from "./helpers";
 
+// the welcome screen's slow turn renders every frame, which a test browser without a
+// graphics card cannot keep up with; reduced motion keeps the fabric loop without it
+test.use({ reducedMotion: "reduce" });
+
 test("kiosk: karşılama, telefona al, uyarı ve ziyaretçi değişince sıfırlanma", async ({ page, isMobile }) => {
   test.skip(isMobile, "showroom ekranı");
   test.setTimeout(150_000);
@@ -56,4 +60,23 @@ test("kiosk: elimdeki kartelanın kodu yazılınca kumaş koltuğa giyer", async
   await expect.poll(() => sceneFabrics(page)).toEqual(["SIENA-04"]);
   await box.fill("XYZ-99");
   await expect(page.getByTestId("kiosk-kod")).toContainText("bulunamadı");
+});
+
+// Acil toplantı (11 Oct): while nobody touches it, the showroom screen turns
+// the sofa and dresses it in ORMEN's real fabrics in turn
+test("kiosk: karşılama ekranında koltuk gerçek kumaşları sırayla giyer", async ({ page, isMobile }) => {
+  test.skip(isMobile, "showroom ekranı");
+  test.setTimeout(120_000);
+  await page.goto("/?kiosk");
+  await expect(page.getByRole("button", { name: "Başlamak için dokunun" })).toBeVisible();
+  // only real fabrics (MISSO) take part; placeholders never do
+  const onlyReal = async () => {
+    const codes = await sceneFabrics(page);
+    return codes.length === 1 && codes[0].startsWith("MISSO-") ? codes[0] : null;
+  };
+  await expect.poll(onlyReal, { timeout: 60_000, intervals: [500] }).not.toBeNull();
+  const first = await onlyReal();
+  await expect.poll(onlyReal, { timeout: 20_000, intervals: [500] }).toMatch(new RegExp(`^MISSO-(?!${first!.slice(6)}$)`));
+  // nothing written to the address: the loop is not a visitor's choice
+  expect(page.url()).not.toContain("y=");
 });

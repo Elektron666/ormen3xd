@@ -856,5 +856,6 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
 - **Acil toplantı (11 Ekim, `TOPLANTI-2026-10-11-acil.md`):**
   - **"Gerçek boyutta gör":** Kumaş ekranda 1:1 gösteriliyor. Ekran bir kez banka kartıyla ayarlanır (ISO/IEC 7810 ID-1, 85,60 × 53,98 mm). Ayar yalnızca o tarayıcıda kalır ve paneldeki düz ölçek kontrolüyle ortaktır. Kişisel veri yok, paket yok.
   - **Panelde "Kamerayla çek":** Telefonda kamera doğrudan açılıyor. "Kalibrasyon kartı var" seçimi cihazda hatırlanıyor.
-  - **Bu hafta:** Numune talebine sonuç (satışa döndü / dönmedi).
-  - **Gerçek kumaşlar gelince:** Vitrin modu.
+  - **Numune sonucu:** "Siparişe döndü / dönmedi" zaten vardı (talep adımları, etiket QR'ı, rapor). Toplantıdan sonra fark edildi; yeni iş yok.
+  - **Showroom ekranında döngü:** Karşılama ekranında koltuk yavaşça döner ve yalnızca gerçek kumaşları sırayla giyer. Kumaş göründükten 6 sn sonra sıradakine geçer. İstatistiğe ve adrese yazılmaz. "Hareketi azalt" açıksa dönme yok.
+  - **Kumaş geçişi hatası:** Geçiş bitmeden ikinci seçim yapılınca eski geçiş katmanı modelde kalıyordu. Yeni geçiş öncekini bitirerek başlıyor.

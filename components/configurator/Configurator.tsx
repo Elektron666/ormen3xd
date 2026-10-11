@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from "react";
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import { prefetchFabric, preferredTextureSize } from "@/lib/three/fabric-material";
 import { t } from "@/lib/i18n/tr";
@@ -9,6 +9,8 @@ import { CopyCodeButton, FabricHeadline, FabricSpecs } from "./FabricInfo";
 import { QuickStrip } from "./QuickStrip";
 import { PresetStrip } from "./PresetStrip";
 import { KioskCodeEntry } from "@/components/kiosk/KioskCodeEntry";
+import { AttractContext } from "@/components/kiosk/attract";
+import { ATTRACT_STEP_SECONDS, attractFabrics, nextAttract } from "@/lib/kiosk";
 import { MeasurePanel } from "./MeasurePanel";
 import { ZonePicker } from "./ZonePicker";
 import { DEFAULT_LEG, hasWoodLegs } from "@/lib/three/legs";
@@ -183,6 +185,23 @@ export function Configurator({
 
   // fabrics offered on the selected piece's model (a model can be limited to some series)
   const modelFabrics = useMemo(() => fabricsForModel(fabrics, selectedModel), [fabrics, selectedModel]);
+  // kiosk welcome screen: turn slowly and wear the real fabrics in turn; not a
+  // visitor's choice, so neither tracked nor written to the address
+  const attract = useContext(AttractContext) && kiosk;
+  // the turn is motion; the fabric change alone is kept for those who ask for less
+  const reducedMotion = useMedia("(prefers-reduced-motion: reduce)");
+  const attractList = useMemo(() => attractFabrics(modelFabrics), [modelFabrics]);
+  // the next fabric 6 s after this one is on screen, so a slow tablet never shows a half-loaded swap
+  useEffect(() => {
+    if (!attract || !attractList.length || loading) return;
+    const t = window.setTimeout(() => {
+      setItems((prev) => {
+        const next = nextAttract(attractList, prev[0]?.fabricCode ?? "");
+        return next ? prev.map((p) => ({ ...p, fabricCode: next.code, zones: undefined })) : prev;
+      });
+    }, ATTRACT_STEP_SECONDS * 1000);
+    return () => window.clearTimeout(t);
+  }, [attract, attractList, loading, selected.code]);
   // phones: the piece toolbar (turn, duplicate) waits until a piece is tapped,
   // so the first screen is the sofa and its fabrics, not tools
   const phone = useMedia("(max-width: 767px)");
@@ -362,6 +381,7 @@ export function Configurator({
       <section className="studio-backdrop relative h-[60dvh] md:h-dvh" aria-label="3B sahne">
         <div className={`absolute inset-0 transition-opacity duration-150 ${fading ? "opacity-0" : "opacity-100"}`}>
           <Stage
+            spin={attract && !reducedMotion}
             models={bySlug}
             fabrics={byCode}
             items={items}
