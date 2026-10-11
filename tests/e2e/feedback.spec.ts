@@ -62,3 +62,18 @@ test("panelde Güvenlik sayfası: örnek veri modunda iki adımlı doğrulama yo
   await page.goto("/panel/giris/dogrulama");
   await expect(page).toHaveURL(/\/panel\/giris$/);
 });
+
+test("panelde kumaşın düz ölçek ve dikiş kontrolü gerçek boyutta açılır", async ({ page, isMobile }) => {
+  test.skip(isMobile, "panel masaüstü");
+  await login(page);
+  await page.goto("/panel/kumaslar");
+  await page.getByRole("link", { name: /MISSO-05/ }).first().click();
+  await page.getByRole("checkbox", { name: "Ölçek kontrol (10 cm)" }).check();
+  const flat = page.getByTestId("duz-olcek");
+  await expect(flat).toBeVisible();
+  // 18.4 cm at the CSS reference size is ≈ 695 px: the window is capped and shows the tile corner
+  const box = (await flat.boundingBox())!;
+  expect(Math.round(box.width)).toBeGreaterThan(500);
+  await expect(page.getByText("Rapor: 18.4 × 91.5 cm.")).toBeVisible();
+  await flat.screenshot({ path: "test-results/duz-olcek.png" });
+});

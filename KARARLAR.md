@@ -836,8 +836,14 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
 
 ## "Bize fikir verin" (11 Ekim, Fatih Bey: "firma adı, isim, telefon ve kısa bir alan")
 
-- "Geri bildirim" bağlantısı **"Bize fikir verin"** oldu. Konu + en fazla 500 karakterlik kısa "Fikriniz" alanı.
+- "Geri bildirim" bağlantısı **"Bize fikir verin"** oldu. Konu + en fazla 1000 karakterlik "Fikriniz" alanı (önce 500 idi; Fatih Bey "ayarla" dedi).
 - Altında **"Size dönelim mi? (isteğe bağlı)"**: Firma adı, Ad soyad, Telefon. Zorunlu yapılmadı: kişisel veri isteyen form, mağazadaki müşteriyi yazmaktan vazgeçirir; isimsiz fikir de değerli. Ad veya telefon yazılırsa ikisi de ve onay kutusu şart ("yalnızca bu mesaja dönüş için"); firma adı isteğe bağlı.
 - Panelde sekmenin adı **Fikirler**. Dönüş isteyen mesajın altında ad, firma, tıklanınca arayan telefon ve WhatsApp bağlantısı; ana sayfa kartında "dönüş bekliyor" sayısı.
 - **Saklama:** Numune talepleriyle aynı süre (`SAMPLE_RETENTION_DAYS`). Süre dolunca ad, firma ve telefon siliniyor, mesaj kalıyor. KVKK metni buna göre güncellendi.
 - Veritabanı: `20261013000000_fikir_iletisim.sql` (canlıda çalıştırıldı). Ad ve telefon ya birlikte ya hiç; telefon `+90…` biçiminde.
+
+## Ar-Ge (11 Ekim, Fatih Bey: "bir tane de argeci bul bize")
+
+- Gerçek bir kişi işe alınamaz. Ekibe temsilî bir Ar-Ge sorumlusu (Dr. Ece Tunalı) eklendi; yol haritası, iş ilanı metni, nereden aranacağı ve başvurulabilecek destekler: `ARGE.md`. Destek programlarının güncel şartları için resmî siteler kontrol edilmeli; tutar uydurulmadı.
+- **İlk adım yapıldı:** Panelde kumaşın **düz ölçek ve dikiş kontrolü** (Ölçek kontrol kutusu açılınca). Gerçek boyutta, dikiş köşesi ortada, cetvelle ayarlanabilir 10 cm.
+- **İlk bulgu:** MISSO-05'te yatay tekrar çizgisinde parlaklık basamağı. Ayrıntı `ARGE.md`'de.

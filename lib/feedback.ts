@@ -11,7 +11,7 @@ export const FEEDBACK_KINDS = ["begendim", "oneri", "hata", "diger"] as const;
 export type FeedbackKind = (typeof FEEDBACK_KINDS)[number];
 export const FEEDBACK_LABELS: Record<FeedbackKind, string> = { begendim: "Beğendim", oneri: "Önerim var", hata: "Bir şey çalışmadı", diger: "Diğer" };
 
-export const FEEDBACK_LIMITS = { min: 3, max: 500 } as const;
+export const FEEDBACK_LIMITS = { min: 3, max: 1000 } as const;
 
 /** Left only by someone who wants ORMEN to get back to them. */
 export interface FeedbackContact {

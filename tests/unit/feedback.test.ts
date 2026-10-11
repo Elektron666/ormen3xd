@@ -11,7 +11,7 @@ describe("geri bildirim", () => {
 
   it("boş, çok uzun, bilinmeyen konu ve bot alanı reddedilir", () => {
     expect(parseFeedback({ kind: "oneri", message: "a" }).ok).toBe(false);
-    expect(parseFeedback({ kind: "oneri", message: "x".repeat(501) }).ok).toBe(false);
+    expect(parseFeedback({ kind: "oneri", message: "x".repeat(1001) }).ok).toBe(false);
     expect(parseFeedback({ kind: "sikayet", message: "merhaba" }).ok).toBe(false);
     expect(parseFeedback({ kind: "oneri", message: "merhaba", website: "spam.com" }).ok).toBe(false);
     // adres çubuğundaki sorgu (paylaşım kodu) saklanmaz

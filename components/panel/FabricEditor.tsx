@@ -12,6 +12,7 @@ import { uploadFabricMaps } from "@/lib/panel/upload";
 import { saveFabricAction } from "@/app/panel/actions";
 import { buttonClass, Field, inputClass } from "./ui";
 import { FabricPreview } from "./FabricPreview";
+import { FlatScaleCheck } from "./FlatScaleCheck";
 
 interface Draft {
   code: string;
@@ -427,6 +428,7 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
         <p className="mt-2 text-[12px] leading-snug text-antrasit-50">
           Ölçek kontrolünde kırmızı kareler gerçekte 10 × 10 cm’dir. Bir ilmek ya da örgü deseni kumaşın kendisindeki boyutta görünmüyorsa “Gerçek ölçü” değerlerini düzeltin.
         </p>
+        {scaleCheck && previewFabric && <FlatScaleCheck textureUrl={previewFabric.texture.maps.albedo["1k"]} repeatCm={previewFabric.texture.repeatCm} />}
       </aside>
     </div>
   );
