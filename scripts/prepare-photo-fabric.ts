@@ -323,7 +323,11 @@ function stripTile(rgb: Uint8Array, w: number, h: number, period: number, teeth:
     for (let y = 0; y < by; y++) {
       let bestPrev = Infinity;
       let arg = y;
-      for (const py of [y - 1, y, y + 1]) if (py >= 0 && py < by && acc[py * W + x - 1] < bestPrev) ((bestPrev = acc[py * W + x - 1]), (arg = py));
+      for (const py of [y - 1, y, y + 1])
+        if (py >= 0 && py < by && acc[py * W + x - 1] < bestPrev) {
+          bestPrev = acc[py * W + x - 1];
+          arg = py;
+        }
       acc[y * W + x] = cost[y * W + x] + bestPrev;
       from[y * W + x] = arg;
     }
