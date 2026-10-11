@@ -83,6 +83,22 @@ function fieldsFrom(d: Draft): FabricFields {
 }
 
 
+const CARD_FLAG = "ormen_kart_cekim";
+function readFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+function writeFlag(key: string, v: boolean) {
+  try {
+    localStorage.setItem(key, v ? "1" : "0");
+  } catch {
+    /* private mode: remembered for this page only */
+  }
+}
+
 export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; models: FurnitureModel[] }) {
   const router = useRouter();
   const [draft, setDraft] = useState<Draft>(() => draftFrom(fabric));
@@ -93,7 +109,14 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
   const [heightTouched, setHeightTouched] = useState(Boolean(fabric));
   const [scaleCheck, setScaleCheck] = useState(false);
   // Ar-Ge A1: the photo has the ORMEN calibration card on it; scale and perspective come from it
-  const [useCard, setUseCard] = useState(false);
+  const [useCard, setUseCardState] = useState(false);
+  const cameraInput = useRef<HTMLInputElement>(null);
+  // remembered on this device: whoever shoots with the card shoots every fabric with it
+  useEffect(() => setUseCardState(readFlag(CARD_FLAG)), []);
+  const setUseCard = (v: boolean) => {
+    setUseCardState(v);
+    writeFlag(CARD_FLAG, v);
+  };
   const [previewModel, setPreviewModel] = useState(models[0]?.id ?? "");
   const [errors, setErrors] = useState<FabricFieldErrors>({});
   const [status, setStatus] = useState<string | null>(null);
@@ -255,6 +278,15 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
             </div>
             <input ref={fileInput} type="file" accept="image/*" className="hidden" aria-label="Kumaş fotoğrafı" onChange={(e) => pick(e.target.files?.[0])} />
           </div>
+          {/* in the depot, on a phone: straight to the camera (acil toplantı, 11 Oct) */}
+          <button
+            type="button"
+            onClick={() => cameraInput.current?.click()}
+            className="mt-2 inline-flex h-11 items-center rounded-full bg-antrasit px-5 text-[14px] text-kagit lg:hidden"
+          >
+            Kamerayla çek
+          </button>
+          <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="hidden" aria-label="Kamerayla çek" onChange={(e) => pick(e.target.files?.[0])} />
           <label className="mt-2 flex items-center gap-2 text-[13px] text-antrasit-70">
             <input type="checkbox" checked={useCard} onChange={(e) => setUseCard(e.target.checked)} className="h-4 w-4 accent-[#2a2a28]" />
             Fotoğrafta ORMEN kalibrasyon kartı var: ölçeği ve açıyı karttan al

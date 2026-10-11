@@ -108,3 +108,20 @@ test("kalibrasyon kartlı fotoğraf: ölçek ve açı karttan gelir", async ({ p
   await expect(result.getByText(/ölçülemedi \(bu yönde/)).toBeVisible();
   await page.screenshot({ path: "test-results/kart-deneme.png", fullPage: true });
 });
+
+// Acil toplantı (11 Oct): the fabric at its real size, set once with a bank card
+test("kumaş gerçek boyutta: banka kartıyla ayarlanır, desen ölçeğinde gösterilir", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Gerçek boyutta gör" }).click();
+  await expect(page.getByTestId("kart-cercevesi")).toBeVisible();
+  await page.getByRole("button", { name: "Büyüt" }).click();
+  await page.getByRole("button", { name: /Kartla aynı boyda/ }).click();
+  const area = page.getByTestId("gercek-boyut");
+  await expect(area).toBeVisible();
+  const pxPerCm = await page.evaluate(() => Number(localStorage.getItem("ormen_cm_px")));
+  expect(pxPerCm).toBeCloseTo(96 / 2.54 + 0.25, 3);
+  const size = await area.evaluate((el) => getComputedStyle(el).backgroundSize);
+  expect(size).toMatch(/^[\d.]+px [\d.]+px$/);
+  await expect(page.getByText(/kumaşı ekranda gerçek boyutunda/)).toBeVisible();
+  await page.screenshot({ path: `test-results/gercek-boyut-${test.info().project.name}.png` });
+});

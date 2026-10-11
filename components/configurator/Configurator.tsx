@@ -35,6 +35,7 @@ import { track } from "@/lib/track";
 import { fabricsForModel, seriesOf, startFabric } from "@/lib/fabric/allowed";
 import { ShareDialog } from "./ShareDialog";
 import { FeedbackDialog } from "./FeedbackDialog";
+import { TrueScaleDialog } from "./TrueScaleDialog";
 import { ModelSwapDialog } from "./ModelSwapDialog";
 import { PrintSheet, type PrintData } from "./PrintSheet";
 
@@ -299,6 +300,7 @@ export function Configurator({
   // AR: the selected piece in its fabric
   const [arOpen, setArOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [trueScaleOpen, setTrueScaleOpen] = useState(false);
   const [swapFor, setSwapFor] = useState<string | null>(null);
   const selectedIndex = Math.max(0, items.findIndex((p) => p.id === selectedItem.id));
   const arUrl = useCallback(() => `${window.location.origin}${arPath(shareId(), selectedIndex)}`, [shareId, selectedIndex]);
@@ -606,6 +608,13 @@ export function Configurator({
           <div className="mb-6">
             <FabricSpecs fabric={shownFabric} />
             {shownFabric.description && <p className="mt-3 text-sm leading-relaxed text-antrasit-70">{shownFabric.description}</p>}
+            <button
+              type="button"
+              onClick={() => setTrueScaleOpen(true)}
+              className="mt-3 rounded-full border border-cizgi px-3.5 py-2 text-[13px] text-antrasit hover:border-cizgi-koyu focus-visible:outline-2 focus-visible:outline-antrasit"
+            >
+              Gerçek boyutta gör
+            </button>
           </div>
           {favorites.codes.length > 0 && (
             <section aria-labelledby="begendiklerim" className="mb-6">
@@ -709,6 +718,7 @@ export function Configurator({
           setSwapFor(null);
         }}
       />
+      <TrueScaleDialog open={trueScaleOpen} onClose={() => setTrueScaleOpen(false)} fabric={shownFabric} />
       <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} firmSlug={firm?.slug ?? null} />
       {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} legFinish={selectedItem.ayak} turned={selectedItem.yon === "donuk"} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>

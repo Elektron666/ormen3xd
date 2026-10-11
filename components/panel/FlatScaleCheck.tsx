@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DEFAULT_PX_PER_CM, readStoredScale, storeScale } from "@/lib/screen-scale";
 
 // Ar-Ge, first step (ARGE.md): the fabric flat, at real size, to hold against
 // the real fabric. The window is centred on a corner where four tiles meet,
@@ -8,17 +9,7 @@ import { useEffect, useState } from "react";
 // A screen does not report its own size, so 10 cm is set once against a ruler
 // and remembered in this browser.
 
-const KEY = "ormen_cm_px";
-const DEFAULT_PX_PER_CM = 96 / 2.54; // CSS reference pixel; most screens are close, few are exact
-
-function stored(): number {
-  try {
-    const v = Number(localStorage.getItem(KEY));
-    return v > 10 && v < 200 ? v : DEFAULT_PX_PER_CM;
-  } catch {
-    return DEFAULT_PX_PER_CM;
-  }
-}
+const stored = () => readStoredScale() ?? DEFAULT_PX_PER_CM;
 
 export function FlatScaleCheck({ textureUrl, repeatCm }: { textureUrl: string; repeatCm: { w: number; h: number } }) {
   const [pxPerCm, setPxPerCm] = useState(DEFAULT_PX_PER_CM);
@@ -27,11 +18,7 @@ export function FlatScaleCheck({ textureUrl, repeatCm }: { textureUrl: string; r
   useEffect(() => setPxPerCm(stored()), []);
   const save = (v: number) => {
     setPxPerCm(v);
-    try {
-      localStorage.setItem(KEY, String(v));
-    } catch {
-      /* private mode: the setting lasts for this page only */
-    }
+    storeScale(v);
   };
 
   const tileW = repeatCm.w * pxPerCm;
