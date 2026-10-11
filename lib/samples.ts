@@ -180,7 +180,10 @@ export function sampleWhatsappText(v: Pick<SampleRequestInput, "name" | "phone" 
 }
 
 export function whatsappUrl(number: string | null | undefined, text: string): string {
-  const n = (number ?? "").replace(/\D/g, "");
+  let n = (number ?? "").replace(/\D/g, "");
+  // wa.me needs the country code: "0540 …" and "540 …" are Turkish numbers
+  if (/^0\d{10}$/.test(n)) n = "9" + n;
+  else if (/^5\d{9}$/.test(n)) n = "90" + n;
   return `https://wa.me/${n}?text=${encodeURIComponent(text)}`;
 }
 

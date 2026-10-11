@@ -45,6 +45,9 @@ describe("WhatsApp message", () => {
     expect(text).toContain("Kumaş: LUMA-02");
     expect(text).toContain("https://x/p/abc");
     expect(whatsappUrl("+90 532 000 00 00", "Merhaba ş")).toBe("https://wa.me/905320000000?text=Merhaba%20%C5%9F");
+    // written the Turkish way, with or without the leading 0
+    expect(whatsappUrl("0540 349 68 88", "x")).toBe("https://wa.me/905403496888?text=x");
+    expect(whatsappUrl("540 349 68 88", "x")).toBe("https://wa.me/905403496888?text=x");
   });
 });
 
