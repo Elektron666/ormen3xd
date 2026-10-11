@@ -20,10 +20,10 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 
 ## Yayından önce (ORMEN tarafı)
 
-- [x] Supabase projesi, tablolar, örnek ve MISSO kumaşları, 11 model (`ormen-atelier`, Frankfurt; dosyalar `supabase/BENIOKU.md`).
-- [ ] Panel kullanıcısı (README, "Supabase kurulumu", 6. adım).
+- [x] Supabase projesi, tablolar, örnek ve MISSO kumaşları, vitrin modelleri (`ormen-atelier`, Frankfurt; dosyalar `supabase/BENIOKU.md`).
+- [x] Panel kullanıcısı (fmachine666@icloud.com). Geçici şifre Güvenlik sayfasından değiştirilmeli, iki adımlı doğrulama açılmalı.
 - [x] Vercel'de alan adı `atelier.ormentekstil.com.tr` (cPanel'de CNAME → `cname.vercel-dns.com`) ve `NEXT_PUBLIC_SITE_URL`. 11 Ekim'de yayında. QR'lar artık basılabilir.
-- [ ] `NEXT_PUBLIC_ORMEN_WHATSAPP` numarası.
+- [ ] `NEXT_PUBLIC_ORMEN_WHATSAPP` = +90 540 349 68 88 Vercel'e girilecek (numara geldi, 11 Ekim).
 - [ ] Gerçek ORMEN logosu (şu an yazıyla yazılmış yer tutucu).
 - [ ] **KVKK aydınlatma metni hukukçuya onaylatılmalı** (`/kvkk` taslak).
 - [ ] İlk gerçek kumaşların çekimi ve yüklenmesi (`KUMAS-CEKIM-REHBERI.md`), yer tutucu kumaşların gizlenmesi.

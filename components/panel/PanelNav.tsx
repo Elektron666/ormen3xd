@@ -17,7 +17,8 @@ const LINKS = [
 export function PanelNav() {
   const path = usePathname();
   return (
-    <nav aria-label="Panel" className="flex gap-1">
+    // on a phone the links scroll sideways instead of squeezing on top of each other
+    <nav aria-label="Panel" className="order-last -mx-1 flex w-full gap-1 overflow-x-auto px-1 [scrollbar-width:none] md:order-none md:w-auto">
       {LINKS.map(([href, label]) => {
         const active = path.startsWith(href);
         return (
@@ -25,7 +26,7 @@ export function PanelNav() {
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`rounded-full px-3 py-1.5 text-[14px] transition-colors ${active ? "bg-antrasit text-kagit" : "text-antrasit-70 hover:bg-cizgi/60 hover:text-antrasit"}`}
+            className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[14px] transition-colors ${active ? "bg-antrasit text-kagit" : "text-antrasit-70 hover:bg-cizgi/60 hover:text-antrasit"}`}
           >
             {label}
           </Link>
