@@ -22,7 +22,7 @@ ORMEN Atelier'in bugünkü durumu, yayına çıkmadan önce yapılacaklar ve son
 
 - [x] Supabase projesi, tablolar, örnek ve MISSO kumaşları, 11 model (`ormen-atelier`, Frankfurt; dosyalar `supabase/BENIOKU.md`).
 - [ ] Panel kullanıcısı (README, "Supabase kurulumu", 6. adım).
-- [ ] Vercel'de alan adı `atelier.ormentekstil.com.tr` ve `NEXT_PUBLIC_SITE_URL`. **QR'lar bundan sonra basılmalı.**
+- [x] Vercel'de alan adı `atelier.ormentekstil.com.tr` (cPanel'de CNAME → `cname.vercel-dns.com`) ve `NEXT_PUBLIC_SITE_URL`. 11 Ekim'de yayında. QR'lar artık basılabilir.
 - [ ] `NEXT_PUBLIC_ORMEN_WHATSAPP` numarası.
 - [ ] Gerçek ORMEN logosu (şu an yazıyla yazılmış yer tutucu).
 - [ ] **KVKK aydınlatma metni hukukçuya onaylatılmalı** (`/kvkk` taslak).
@@ -49,7 +49,7 @@ Yeni özellik yok; pilota kadar içerik, altyapı ve hukuk. Hedef: en erken 20 E
 
 - [ ] Pilot firmanın 6–8 kumaşı gerçek fotoğraf, kod, en, desen ve yönle; gerçek ORMEN logosu; yer tutucular gizli (Kumaşlar sayfasında "Yer tutucuları yayından kaldır" düğmesi hazır).
 - [x] Supabase "uyumama": Vercel her gün 04:17'de (UTC) `/api/canli-tut` adresini çağırıyor, bir satır okunuyor.
-- [ ] Vercel Pro, alan adı (CNAME), Supabase yedeği. Alan adından önce hiçbir QR basılmaz.
+- [ ] Vercel Pro, Supabase yedeği. (Alan adı 11 Ekim'de bağlandı.)
 - [ ] Avukat: saklama süresi, yurt dışı aktarım (Frankfurt), firma protokolü (müşteri telefonu sözü dahil). Avukata verilecek bilgi: `AVUKAT-PAKETI.md`.
 - [x] Sunucu Frankfurt'a sabitlendi (`vercel.json`, `fra1`); Kurulum sayfası bölgeyi denetliyor.
 - [ ] Pilot firmanın 2 modeli parametrik olarak, metrajıyla.
