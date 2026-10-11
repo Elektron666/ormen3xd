@@ -98,4 +98,13 @@ test("kalibrasyon kartlı fotoğraf: ölçek ve açı karttan gelir", async ({ p
   await expect(page.getByText(/kâğıdına göre dengelendi/)).toBeVisible();
   await expect(page.getByLabel("Fotoğraftaki alanın eni (cm)")).toHaveValue("14.2");
   await expect(page.getByLabel("Boyu (cm)")).toHaveValue("14.2");
+
+  // the card tried on its own: the 1 cm stripes measured through it
+  await page.goto("/panel/kart-deneme");
+  await page.getByLabel("Kartlı fotoğraf").setInputFiles({ name: "kartli.png", mimeType: "image/png", buffer: png });
+  const result = page.getByTestId("kart-deneme-sonuc");
+  await expect(result).toBeVisible({ timeout: 60_000 });
+  await expect(result.getByText(/hedefin içinde/)).toHaveCount(1);
+  await expect(result.getByText(/ölçülemedi \(bu yönde/)).toBeVisible();
+  await page.screenshot({ path: "test-results/kart-deneme.png", fullPage: true });
 });

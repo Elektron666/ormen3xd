@@ -27,6 +27,8 @@ Kart rengi de düzeltir: ışığın sarılığı, maviliği ve pozlama farkı k
 - Kumaş ve kart aynı ışıkta olsun; pencere ışığıyla lambayı karıştırmayın.
 - Kâğıt fotoğrafta bembeyaz patlarsa renk düzeltilmez, panel uyarır. Ekranda dokunup pozlamayı biraz düşürün.
 
+Kartı ilk kez kullanırken milimetrik kâğıdın üstüne koyup çekin ve Panel → Kart denemesi (`/panel/kart-deneme`) sayfasında ölçün. Hata %2'nin altındaysa kart ve telefon tamamdır.
+
 ## Kumaşı serme
 
 1. Kumaşı ütüleyin ya da gergin serin; **kırışık olmasın**.

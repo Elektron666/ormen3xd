@@ -30,6 +30,9 @@ export default async function CalibrationCardPage() {
           <li>Ortadaki kesikli kareyi maket bıçağıyla kesip çıkarın.</li>
           <li>Kartı kumaşın üstüne düz koyun, telefonu tepeden tutup dört siyah işaret de görünecek şekilde çekin.</li>
           <li>Panelde yeni kumaş eklerken “Fotoğrafta kalibrasyon kartı var”ı işaretleyin; ölçek kendiliğinden gelir.</li>
+          <li>
+            İlk kez kullanırken kartı milimetrik kâğıdın üstüne koyup çekin ve <a href="/panel/kart-deneme" className="underline underline-offset-2">Kart denemesi</a> sayfasında ölçün: kart ne kadar doğru ölçüyor, orada görünür.
+          </li>
         </ol>
       </div>
       <article className="mx-auto bg-white shadow-lg print:shadow-none" style={{ width: `${W}mm`, height: `${H}mm` }}>

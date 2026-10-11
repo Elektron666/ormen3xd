@@ -102,7 +102,12 @@ Altı MISSO dokusu yeniden üretildi. Tekrar ölçüleri değişmedi; veritaban�
 Hedef %2'nin altıydı. Kart yokken yanlışlıkla kart bulunmuyor. Testler: `tests/unit/calibration.test.ts` ve uçtan uca panel testi.
 
 **Dürüst sınır:** Bunlar ideal görüntüler: bulanıklık, eşit olmayan ışık, lens bükülmesi, kartın kırışması yok. Gerçek telefon fotoğrafında hata daha büyük olur.
-- **Sıradaki ölçüm:** Kartı basıp raporu bilinen 3 kumaşla (ör. cetvelle ölçülmüş bir ekose) çekmek. Sonuç bu tabloya yazılacak.
+- **Sıradaki ölçüm:** Kartı basıp ölçüsü bilinen şeylerle çekmek. Sonuç bu tabloya yazılacak.
+- **Gerçek ölçüm aracı: Panel → `/panel/kart-deneme`.** Kartın penceresinin altına ölçüsü bilinen bir şey konur. En kolayı milimetrik kâğıt (1 cm); cetvelle ölçülmüş çizgili ya da ekose kumaş da olur.
+  - Sayfa fotoğrafta kartı bulur ve pencereyi düzeltir. Desenin tekrar aralığını yatay ve dikey ölçer (beklenen değerin ±%40'ı içinde en güçlü tepe), bilinen değerle karşılaştırır.
+  - Çözünürlüğü, eğikliği ve kâğıdın rengini de gösterir.
+  - "Sonucu kopyala" ile metin olarak gönderilir. Hiçbir şey kaydedilmez.
+  - Bu sayfa da aynı sentetik fotoğrafla test ediliyor: 1 cm çizgiyi 0,999 cm ölçüyor.
 - Renk için kart genişletildi; bkz. dördüncü adım.
 
 ## Dördüncü adım: kartın kâğıdıyla renk dengesi (A2, ilk sürüm yapıldı, 11 Ekim)
