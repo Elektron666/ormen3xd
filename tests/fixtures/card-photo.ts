@@ -29,7 +29,8 @@ function scene(x: number, y: number, dark: boolean): [number, number, number] {
   return [base + grain, base * 0.9 + grain, base * 0.75];
 }
 
-export function photo(quad: Point[], dark = false, width = 1400, height = 1100) {
+/** `cast` multiplies each channel, as a warm or cool light would. */
+export function photo(quad: Point[], dark = false, width = 1400, height = 1100, cast: [number, number, number] = [1, 1, 1]) {
   const cardCorners: Point[] = [[0, 0], [CARD.width, 0], [CARD.width, CARD.height], [0, CARD.height]];
   const H = homography(cardCorners, quad);
   const Hi = invert3(H);
@@ -39,7 +40,7 @@ export function photo(quad: Point[], dark = false, width = 1400, height = 1100) 
       const [mx, my] = apply(Hi, [x + 0.5, y + 0.5]);
       const [r, g, b] = scene(mx, my, dark);
       const o = (y * width + x) * 4;
-      data[o] = r; data[o + 1] = g; data[o + 2] = b; data[o + 3] = 255;
+      data[o] = r * cast[0]; data[o + 1] = g * cast[1]; data[o + 2] = b * cast[2]; data[o + 3] = 255;
     }
   return { px: { data, width, height }, H };
 }

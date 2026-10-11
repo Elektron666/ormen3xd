@@ -21,6 +21,12 @@ Konfigüratördeki kumaşın gerçeğe benzemesi, büyük ölçüde fotoğrafa b
 
 Panelden **Kalibrasyon kartı**nı basın (`/panel/kalibrasyon-karti`): %100 ölçek, A4. Alttaki çubuk cetvelle tam 10,0 cm olmalı. Ortadaki kareyi kesin, kartı kumaşın üstüne düz koyun ve dört siyah işaret de görünecek şekilde tepeden çekin. Panelde "Fotoğrafta ORMEN kalibrasyon kartı var"ı işaretleyince ölçek ve açı karttan gelir: cetvel ölçüsü yazmak, açıyı dert etmek gerekmez.
 
+Kart rengi de düzeltir: ışığın sarılığı, maviliği ve pozlama farkı kartın beyaz kâğıdına göre alınır. Bunun için:
+- Düz, mat, beyaz kâğıt kullanın (renkli, geri dönüşümlü ya da parlak değil).
+- Pencerenin iki yanına ve altına yazı yazmayın, gölge düşürmeyin.
+- Kumaş ve kart aynı ışıkta olsun; pencere ışığıyla lambayı karıştırmayın.
+- Kâğıt fotoğrafta bembeyaz patlarsa renk düzeltilmez, panel uyarır. Ekranda dokunup pozlamayı biraz düşürün.
+
 ## Kumaşı serme
 
 1. Kumaşı ütüleyin ya da gergin serin; **kırışık olmasın**.

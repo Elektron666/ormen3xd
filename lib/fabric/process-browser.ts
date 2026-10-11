@@ -2,7 +2,7 @@
 
 import type { FabricType } from "@/lib/types";
 import { averageColor, deriveMaps, makeSeamless, seamScore, type Pixels } from "./process";
-import { CARD_FABRIC_CM, findCard, rectifyWindow } from "./calibration";
+import { CARD_FABRIC_CM, applyGains, findCard, paperWhite, rectifyWindow, type PaperWhite } from "./calibration";
 
 // Browser side of the fabric pipeline: read the photo, prepare 2K and 1K
 // maps, encode them, and hand back blobs for upload plus object URLs for the
@@ -19,6 +19,8 @@ export interface ProcessedFabric {
   aspect: number;
   /** Set when the photo was flattened by the calibration card: the fabric square's real side, cm. */
   cardCm?: number;
+  /** Set with `cardCm`: the card's paper as photographed, and whether the colour was balanced by it. */
+  paper?: PaperWhite;
 }
 
 /** The calibration card was asked for but its four markers were not found. */
@@ -70,11 +72,15 @@ export async function processFabricPhoto(
 ): Promise<ProcessedFabric> {
   let px = await readPixels(file, opts.card ? 3000 : 2048);
   let cardCm: number | undefined;
+  let paper: PaperWhite | undefined;
   if (opts.card) {
     // Ar-Ge A1: perspective undone and the scale taken from the card's markers (ARGE.md)
     const found = findCard(px);
     if (!found) throw new CardNotFound();
+    paper = paperWhite(px, found);
     px = rectifyWindow(px, found).pixels;
+    // Ar-Ge A2: the light's colour and the exposure taken out by the card's paper
+    if (!paper.clipped) applyGains(px, paper.gains);
     cardCm = CARD_FABRIC_CM;
     opts = { ...opts, repeatWidthCm: cardCm };
   }
@@ -101,7 +107,7 @@ export async function processFabricPhoto(
     thumb: await encode(scaled(thumbSrc, 192, 192), "photo"),
   };
   const urls = Object.fromEntries(Object.entries(files).map(([k, b]) => [k, URL.createObjectURL(b)])) as Record<MapKey, string>;
-  return { files, urls, avgColor: averageColor(px), seam, aspect: px.height / px.width, cardCm };
+  return { files, urls, avgColor: averageColor(px), seam, aspect: px.height / px.width, cardCm, paper };
 }
 
 export function revoke(p: ProcessedFabric | null | undefined) {

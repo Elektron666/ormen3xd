@@ -266,6 +266,12 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
           {useCard && processed?.cardCm && (
             <p className="mt-1.5 rounded-xl bg-[#e6efe4] px-3 py-2 text-[13px] text-[#2f5a2a]">
               Kart bulundu: fotoğraf düzeltildi, kumaş {processed.cardCm} × {processed.cardCm} cm. Ölçü alanları karttan dolduruldu.
+              {processed.paper && !processed.paper.clipped && <> Renk, kartın beyaz kâğıdına göre dengelendi (ışığın rengi ve parlaklık).</>}
+            </p>
+          )}
+          {useCard && processed?.paper?.clipped && (
+            <p className="mt-1.5 rounded-xl bg-[#F4E9DD] px-3 py-2 text-[13px] text-ceviz">
+              Kartın kâğıdı fotoğrafta bembeyaz patlamış; renk düzeltilemedi. Işığı biraz azaltıp ya da ekranda pozlamayı düşürüp yeniden çekin.
             </p>
           )}
           {processed && (

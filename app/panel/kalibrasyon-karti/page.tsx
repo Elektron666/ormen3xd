@@ -24,6 +24,9 @@ export default async function CalibrationCardPage() {
           <li>
             Basılan kartta alttaki çubuğu cetvelle ölçün: tam <strong>10,0 cm</strong> olmalı. Değilse kart kullanılamaz; yazıcı ölçeğini düzeltip yeniden basın.
           </li>
+          <li>
+            Düz beyaz kâğıt kullanın (renkli, geri dönüşümlü ya da parlak kâğıt değil). Renk ayarı kartın beyazından alınır: pencerenin iki yanı ve altındaki boş kâğıda yazı yazmayın, gölge düşürmeyin.
+          </li>
           <li>Ortadaki kesikli kareyi maket bıçağıyla kesip çıkarın.</li>
           <li>Kartı kumaşın üstüne düz koyun, telefonu tepeden tutup dört siyah işaret de görünecek şekilde çekin.</li>
           <li>Panelde yeni kumaş eklerken “Fotoğrafta kalibrasyon kartı var”ı işaretleyin; ölçek kendiliğinden gelir.</li>

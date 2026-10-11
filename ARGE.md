@@ -103,7 +103,35 @@ Hedef %2'nin altıydı. Kart yokken yanlışlıkla kart bulunmuyor. Testler: `te
 
 **Dürüst sınır:** Bunlar ideal görüntüler: bulanıklık, eşit olmayan ışık, lens bükülmesi, kartın kırışması yok. Gerçek telefon fotoğrafında hata daha büyük olur.
 - **Sıradaki ölçüm:** Kartı basıp raporu bilinen 3 kumaşla (ör. cetvelle ölçülmüş bir ekose) çekmek. Sonuç bu tabloya yazılacak.
-- Kart, A2'de (renk) gri referans alanıyla genişletilecek.
+- Renk için kart genişletildi; bkz. dördüncü adım.
+
+## Dördüncü adım: kartın kâğıdıyla renk dengesi (A2, ilk sürüm yapıldı, 11 Ekim)
+
+**Sorun:** Aynı kumaş akşam ampulle sarı, gölgede mavi, floresanda yeşilimsi çekilir. Sistem bu rengi kumaşın rengi sanır. Bu, renk hatasının fotoğraf tarafı; ekran tarafı ayrı bir konu.
+
+**Çözüm:** Kartın kendi beyaz kâğıdı referans olarak kullanılıyor.
+- Basılı bir gri alan eklenmedi. Yazıcının mürekkebi griye kendi tonunu katar ve kart her yazıcıda başka bir renk çıkar. Düz beyaz kâğıt daha tutarlı.
+- Pencerenin iki yanındaki ve altındaki boş kâğıt şeritlerinden örnek alınır. Gölgeler elenir: yalnızca daha aydınlık yarı sayılır.
+- Kâğıdın her kanalı 235'e getirilir. Böylece ışığın rengi de pozlama farkı da gider; aynı kumaşın iki fotoğrafı birbirine benzer çıkar.
+- Kâğıt fotoğrafta bembeyaz patlamışsa (255) rengi okunamaz. O zaman düzeltme yapılmaz ve panel "biraz daha karanlık çekin" der.
+- Panelde ayrı bir düğme yok: kart işaretliyse renk de dengelenir. Ek paket yok.
+
+**Ölçüm (sentetik fotoğraf):** Aynı sahne renkli ışık altında üretildi. Düzeltilmiş pencere, nötr ışıktaki hâliyle karşılaştırıldı. Fark ΔE (CIE76, Lab) olarak ölçüldü.
+
+| Işık | Düzeltmeden ΔE | Kâğıda göre düzeltince ΔE |
+|---|---|---|
+| Sıcak ampul | 14,7 | 0,52 |
+| Soğuk gölge | 8,7 | 0,42 |
+| Yeşilimsi floresan | 11,2 | 0,34 |
+
+ΔE 2'nin altı gözle zor ayırt edilir. Testler: `tests/unit/calibration.test.ts` ve uçtan uca panel testi.
+
+**Dürüst sınırlar:**
+- **Sentetik ışık basit:** Kanalları çarpan bir ışık kullanıldı. Gerçek telefon kendi renk işlemini yapar (ton eğrisi, doygunluk artırma), bu düzeltme bunu geri alamaz. Gerçek fotoğrafta fark daha büyük çıkar.
+- **Kâğıt tam beyaz değildir:** Optik ağartıcılı kâğıt gün ışığında hafif mavi görünür. Bu yüzden düz, ağartıcısız, mat kâğıt öneriliyor.
+- **Tek ışık varsayılıyor:** Kumaş ve kart aynı ışıkta olmalı. Pencereden gelen gün ışığı ile tavan lambası karışırsa düzeltme yarım kalır.
+- **Ekran tarafı açık:** Bu adım yalnızca fotoğraftaki renk kaymasını alıyor. Telefon ekranının numuneye ne kadar yakın gösterdiği hâlâ ölçülmedi.
+- **Sıradaki ölçüm:** Kartla ve ColorChecker'la aynı kumaşı 3 ayrı ışıkta çekmek, ΔE2000 ile karşılaştırmak (hedef < 5). Kâğıt yeterli değilse ColorChecker'ın gri yaması karta yapıştırılır.
 
 ## Gerçek bir Ar-Ge'ci bulmak
 

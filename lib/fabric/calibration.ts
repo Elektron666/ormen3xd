@@ -279,3 +279,72 @@ export function rectifyWindow(px: Pixels, found: CardFound, opts: { insetMm?: nu
     }
   return { pixels: { data: out, width: n, height: n }, sizeCm: sizeMm / 10 };
 }
+
+// ------------------------------------------------------------------ white balance (Ar-Ge A2)
+
+/**
+ * Bare paper on the card, in millimetres: strips beside and below the window,
+ * clear of the markers, the text and the check bar. The paper's own white is
+ * the reference: a printed grey would carry the printer's ink tint with it.
+ */
+export const PAPER_STRIPS_MM = [
+  { x0: 8, x1: 22, y0: 50, y1: 180 },
+  { x0: 188, x1: 202, y0: 50, y1: 180 },
+  { x0: 40, x1: 170, y0: 218, y1: 230 },
+] as const;
+
+export interface PaperWhite {
+  /** The paper's colour in the photo (median of the brighter samples). */
+  rgb: [number, number, number];
+  /** Per-channel multipliers that bring the paper to `PAPER_TARGET` on every channel. */
+  gains: [number, number, number];
+  /** True when the paper is blown out and its colour cannot be read: no correction then. */
+  clipped: boolean;
+}
+
+/**
+ * The paper's value after correction. Neutral fixes the light's colour; one
+ * fixed level also evens out exposure, so two photos of the same fabric come
+ * out alike. A little under 255 leaves room for sheen.
+ */
+export const PAPER_TARGET = 235;
+
+const median = (v: number[]) => {
+  const s = [...v].sort((a, b) => a - b);
+  return s[s.length >> 1];
+};
+
+/** Reads the card's paper colour around the window. */
+export function paperWhite(px: Pixels, found: CardFound): PaperWhite {
+  const { data, width: w, height: h } = px;
+  const samples: [number, number, number, number][] = [];
+  for (const s of PAPER_STRIPS_MM)
+    for (let y = s.y0; y <= s.y1; y += 2)
+      for (let x = s.x0; x <= s.x1; x += 2) {
+        const [sx, sy] = apply(found.H, [x, y]);
+        const ix = Math.round(sx);
+        const iy = Math.round(sy);
+        if (ix < 0 || iy < 0 || ix >= w || iy >= h) continue;
+        const o = (iy * w + ix) * 4;
+        samples.push([data[o], data[o + 1], data[o + 2], lum(data, o)]);
+      }
+  if (samples.length < 20) return { rgb: [255, 255, 255], gains: [1, 1, 1], clipped: true };
+  // shadows (a hand, a fold) fall out: only the brighter half counts
+  const cut = median(samples.map((s) => s[3]));
+  const lit = samples.filter((s) => s[3] >= cut);
+  const rgb = [0, 1, 2].map((c) => median(lit.map((s) => s[c]))) as [number, number, number];
+  const clipped = rgb.some((v) => v >= 252);
+  const gains = clipped ? ([1, 1, 1] as [number, number, number]) : (rgb.map((v) => Math.max(0.5, Math.min(2, PAPER_TARGET / Math.max(v, 1)))) as [number, number, number]);
+  return { rgb, gains, clipped };
+}
+
+/** Multiplies each channel by its gain, in place. */
+export function applyGains(px: Pixels, gains: [number, number, number]): Pixels {
+  const d = px.data;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i] = Math.min(255, d[i] * gains[0]);
+    d[i + 1] = Math.min(255, d[i + 1] * gains[1]);
+    d[i + 2] = Math.min(255, d[i + 2] * gains[2]);
+  }
+  return px;
+}
