@@ -133,7 +133,7 @@ test.describe("firma sayfaları", () => {
   test("firma sayfasından gelen numune talebi firmaya yazılır", async ({ page, request }) => {
     const name = `Firma Talebi ${Date.now().toString(36)}`;
     const res = await request.post("/api/samples", {
-      data: { name, phone: "0532 123 45 67", consent: true, fabricCodes: ["SIENA-04"], firmSlug: "ornek-mobilya" },
+      data: { name, phone: "0532 123 45 67", consent: true, fabricCodes: ["MISSO-04"], firmSlug: "ornek-mobilya" },
     });
     expect(res.status()).toBe(201);
     await login(page);

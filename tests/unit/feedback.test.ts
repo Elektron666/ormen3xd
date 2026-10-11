@@ -57,3 +57,16 @@ describe("geri bildirim", () => {
     expect((await repo.listFeedback()).map((f) => f.message)).toEqual(["AR açılmadı"]);
   });
 });
+
+describe("katalog sırası", () => {
+  it("gerçek kumaşlar önce, kendi sıralarıyla", async () => {
+    const { realFirst } = await import("@/lib/fabric/allowed");
+    const list = [
+      { code: "LUMA-01", isPlaceholder: true },
+      { code: "MISSO-01", isPlaceholder: false },
+      { code: "LUMA-02", isPlaceholder: true },
+      { code: "MISSO-02", isPlaceholder: false },
+    ];
+    expect(realFirst(list).map((f) => f.code)).toEqual(["MISSO-01", "MISSO-02", "LUMA-01", "LUMA-02"]);
+  });
+});

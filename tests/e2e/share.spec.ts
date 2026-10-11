@@ -60,7 +60,8 @@ test.describe("paylaşım ve numune", () => {
   });
 
   test("numune talebi doğrulanır ve kaydedilir", async ({ page }) => {
-    await page.goto(`/?oda=acik-salon&y=${LAYOUT}`);
+    // only ORMEN's real fabrics have samples (MISSO); the stand-ins do not
+    await page.goto(`/?oda=acik-salon&y=moduler-kanepe.MISSO-05.0.51.0`);
     await page.getByRole("button", { name: "Numune iste" }).click();
     await page.getByRole("button", { name: "Talebi gönder" }).click();
     await expect(page.getByText("Adınızı yazın.")).toBeVisible();
@@ -90,5 +91,25 @@ test.describe("paylaşım ve numune", () => {
     expect(bad.status()).toBe(422);
     const unknown = await request.post("/api/samples", { data: { name: "Ali Veli", phone: "05321234567", consent: true, fabricCodes: ["YOK-99"] } });
     expect(unknown.status()).toBe(422);
+    // a stand-in fabric is not a product (geniş toplantı, 11 Oct)
+    const example = await request.post("/api/samples", { data: { name: "Ali Veli", phone: "05321234567", consent: true, fabricCodes: ["LUMA-02"] } });
+    expect(example.status()).toBe(422);
+    expect((await example.json()).errors.fabricCodes).toMatch(/Örnek kumaş/);
+  });
+
+  test("örnek kumaşlarla açılan sahnede numune formu gerçek kumaş seçmeyi söyler", async ({ page }) => {
+    await page.goto(`/?y=${LAYOUT}`);
+    await expect(page.getByText("Örnek kumaş · satışta değil")).toBeVisible({ timeout: 60_000 });
+    await page.getByRole("button", { name: "Numune iste" }).click();
+    await expect(page.getByRole("dialog").getByRole("status")).toContainText("örnek kumaştır");
+    await expect(page.getByRole("button", { name: "Talebi gönder" })).toBeDisabled();
+  });
+
+  test("bilinmeyen adres Türkçe sayfaya düşer", async ({ page }) => {
+    const res = await page.goto("/f/boyle-bir-firma-yok");
+    expect(res?.status()).toBe(404);
+    await expect(page.getByRole("heading", { name: "Bu sayfa bulunamadı" })).toBeVisible();
+    await page.getByRole("link", { name: "ORMEN kumaşlarını deneyin" }).click();
+    await expect(page).toHaveURL(/\/$/);
   });
 });

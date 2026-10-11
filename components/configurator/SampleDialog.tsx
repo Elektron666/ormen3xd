@@ -23,7 +23,10 @@ export interface SampleDialogProps {
 type Stage = { kind: "form" } | { kind: "sending" } | { kind: "done"; value: SampleRequestInput } | { kind: "error"; message: string };
 
 export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whatsapp, modelSlugs, link, onSent }: SampleDialogProps) {
-  const [picked, setPicked] = useState<string[]>(() => fabrics.slice(0, 1).map((f) => f.code));
+  // only ORMEN's real fabrics have samples; stand-ins are shown but cannot be asked for
+  const real = fabrics.filter((f) => !f.isPlaceholder);
+  const examples = fabrics.filter((f) => f.isPlaceholder);
+  const [picked, setPicked] = useState<string[]>(() => real.slice(0, 1).map((f) => f.code));
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [choices, setChoices] = useState<SampleChoices>({});
@@ -126,8 +129,13 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
           </div>
           <fieldset>
             <legend className="eyebrow mb-2">Kumaş</legend>
+            {real.length === 0 && (
+              <p role="status" className="rounded-xl bg-[#F4E9DD] px-3 py-2.5 text-[13px] leading-snug text-ceviz">
+                Ekrandaki kumaş{examples.length > 1 ? "lar" : ""} örnek kumaştır, numunesi yoktur. Numune için gerçek bir ORMEN kumaşı seçin (ör. MISSO serisi).
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
-              {fabrics.map((f) => {
+              {real.map((f) => {
                 const on = picked.includes(f.code);
                 return (
                   <label
@@ -150,6 +158,11 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
                 );
               })}
             </div>
+            {real.length > 0 && examples.length > 0 && (
+              <p className="mt-1.5 text-[12px] text-antrasit-50">
+                <span translate="no">{examples.map((f) => f.code).join(", ")}</span> örnek kumaş; numunesi yok.
+              </p>
+            )}
             {errors.fabricCodes && <p className="mt-1.5 text-[13px] text-[#9a3b31]">{errors.fabricCodes}</p>}
           </fieldset>
 
@@ -220,13 +233,16 @@ export function SampleDialog({ open, onClose, fabrics, firmSlug, firmName, whats
           {errors.consent && <p className="-mt-2 text-[13px] text-[#9a3b31]">{errors.consent}</p>}
           {stage.kind === "error" && <p className="text-[13px] text-[#9a3b31]">{stage.message}</p>}
 
-          <button
-            type="submit"
-            disabled={stage.kind === "sending"}
-            className="mt-1 h-12 rounded-full bg-antrasit text-[15px] text-kagit transition-colors hover:bg-ceviz disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit"
-          >
-            {stage.kind === "sending" ? "Gönderiliyor…" : "Talebi gönder"}
-          </button>
+          {/* kept in view at the bottom of the window: on a laptop the form is taller than the screen (geniş toplantı, 11 Oct) */}
+          <div className="sticky -bottom-5 -mx-6 -mb-5 mt-1 border-t border-cizgi bg-kagit px-6 pb-5 pt-3">
+            <button
+              type="submit"
+              disabled={stage.kind === "sending" || real.length === 0}
+              className="h-12 w-full rounded-full bg-antrasit text-[15px] text-kagit transition-colors hover:bg-ceviz disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-antrasit"
+            >
+              {stage.kind === "sending" ? "Gönderiliyor…" : "Talebi gönder"}
+            </button>
+          </div>
         </form>
       )}
     </Dialog>

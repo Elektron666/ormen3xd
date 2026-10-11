@@ -73,6 +73,10 @@ export function FabricHeadline({ fabric, loading }: { fabric: Fabric; loading: b
       <p className="mt-0.5 truncate text-sm text-antrasit-70">
         <span translate="no">{fabric.series}</span> · {fabric.colorName}
       </p>
+      {fabric.isPlaceholder && (
+        // a stand-in until ORMEN's real photos arrive: never passed off as a product (geniş toplantı, 11 Oct)
+        <p className="mt-1 inline-block rounded-full bg-[#F4E9DD] px-2 py-0.5 text-[11.5px] text-ceviz">Örnek kumaş · satışta değil</p>
+      )}
     </div>
   );
 }

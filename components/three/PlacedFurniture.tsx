@@ -45,6 +45,8 @@ function Outline({ size, warn }: { size: THREE.Vector3; warn: boolean }) {
 }
 
 export interface PieceActions {
+  /** Opens the model list to put another model in this piece's place (11 Oct, geniş toplantı). */
+  onChangeModel?: (id: string) => void;
   onRotate: (id: string, deg: number) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
@@ -81,7 +83,13 @@ function PieceToolbar({
         onPointerDown={(e) => e.stopPropagation()}
         className="flex items-center gap-0.5 whitespace-nowrap rounded-full border border-cizgi bg-kagit/95 p-1 shadow-[0_6px_20px_-10px_rgba(42,42,40,0.45)]"
       >
-        <span className="px-2.5 text-[12px] text-antrasit-70">{name}</span>
+        {actions.onChangeModel ? (
+          <button type="button" className={`${btn} gap-1 text-antrasit-70`} onClick={() => actions.onChangeModel!(p.id)} aria-label={`Model değiştir (şu an ${name})`} title="Model değiştir">
+            {name} <span aria-hidden="true">▾</span>
+          </button>
+        ) : (
+          <span className="px-2.5 text-[12px] text-antrasit-70">{name}</span>
+        )}
         <button type="button" className={btn} onClick={() => actions.onRotate(p.id, -45)} aria-label="Sola 45° döndür" title="Sola döndür">
           ↺ 45°
         </button>

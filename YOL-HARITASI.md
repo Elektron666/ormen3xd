@@ -131,3 +131,14 @@ Ayrıntı ve gerekçeler `TOPLANTI-2026-10-05.md` dosyasında. Fotoğraf ve avuk
 - [ ] Vercel Pro + Supabase Pro kararı (yedek, sızdırılmış şifre koruması).
 - [ ] Kütük ve yastık kol (firma fotoğrafları gelince).
 
+## Geniş toplantı, 11 Ekim (`TOPLANTI-2026-10-11-genis.md`)
+
+- [x] Türkçe "sayfa bulunamadı".
+- [x] Model değiştir (kumaş ve bölgeler korunur).
+- [x] Gerçek kumaşlar önce; yer tutucuya "Örnek kumaş" ibaresi, numunesi istenemez.
+- [x] Telefonda alt bölüm çakışması; numune formunda sabit gönder düğmesi.
+- [ ] Biye telefonda kesik (cihaz testinde).
+- [ ] Teşekkür ekranında numune süresi (Fatih Bey onayı).
+- [ ] Gerçek logo ve kısa ORMEN tanıtım satırı (Fatih Bey'den).
+- [ ] Yer tutucuları gizlemek (gerçek kumaşlar gelince).
+

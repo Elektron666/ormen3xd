@@ -1,4 +1,5 @@
 import "server-only";
+import { realFirst } from "@/lib/fabric/allowed";
 import { supabaseEnabled } from "@/lib/supabase/config";
 import { MemoryRepository } from "./memory-repo";
 import { SupabaseRepository } from "./supabase-repo";
@@ -31,5 +32,5 @@ export async function loadCatalogue(firmSlug?: string | null): Promise<{ firm: F
   const [models, all] = await Promise.all([firm ? modelsForFirm(repo, firm.id) : repo.listShowcaseModels(), repo.listFabrics()]);
   // a firm may limit its page to some series; a limit that matches nothing shows everything
   const limited = filterBySeries(all, firm?.fabricSeries);
-  return { firm, models, fabrics: limited.length ? limited : all };
+  return { firm, models, fabrics: realFirst(limited.length ? limited : all) };
 }

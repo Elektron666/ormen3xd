@@ -822,3 +822,14 @@ Fatih Bey katalog görseli fikrini düşürdü; toplantının kalanı yapıldı.
   - Supabase: `touch_updated_at` sabit search_path (dün); Supabase'in kendi "RLS'yi otomatik aç" fonksiyonunun herkese açık çağrı izni kaldırıldı.
 - **Bilerek bırakılanlar:** `cut_reports` ve `feedback` tablolarına tarayıcıdan erişim yok (yalnızca sunucu yazar); `is_staff()` satır kurallarında kullanıldığı için çağrılabilir, yalnızca "ben personel miyim" der. QR SVG'leri kendi kütüphanemizin çıktısı, kullanıcı metni değil.
 - **Sizde:** Supabase → Authentication → "Leaked password protection" (sızdırılmış şifre listesindeki şifreleri reddeder); planınızda varsa açın. 10 Ekim'de geçici olarak verdiğim panel şifresini Güvenlik sayfasından değiştirin; sohbette yazılı kaldı.
+
+## Geniş toplantının (eleştirmenlerle) hemen uygulananları (11 Ekim)
+
+Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
+- **Türkçe "sayfa bulunamadı":** Yanlış yazılan ya da artık geçerli olmayan adres (eski bir QR) Next.js'in İngilizce sayfası yerine ORMEN'in sayfasına düşüyor; oradan ana sayfaya bağlantı var. Durum kodu 404 kalıyor.
+- **Model değiştir:** Seçili mobilyanın etiketindeki ad artık bir düğme ("Modüler Kanepe ▾"). Aynı model listesini açıyor; seçilen model yerine geçiyor. Kumaş, bölgeler, desen yönü korunuyor; ayak rengi yalnızca ahşap ayaklı modelde. Yeni model büyükse ve başka bir mobilyaya taşıyorsa en yakın boş yere kayıyor. Kioskta yok (orada yalnızca kumaş denenir).
+- **Gerçek kumaşlar önce:** Kumaş listesinde ORMEN'in gerçek kumaşları (bugün MISSO) yer tutuculardan önce. Gruplar kendi içinde sırasını koruyor.
+- **Yer tutucu dürüstlüğü:** Yer tutucu bir kumaş seçiliyken künyede "Örnek kumaş · satışta değil". Numune formu yer tutucuyu listelemiyor; sahnede yalnızca yer tutucu varsa gerçek bir kumaş seçilmesini söylüyor ve gönder düğmesi kapalı. Sunucu da yer tutucu kodlu talebi reddediyor (Av. Yalın: olmayan ürünün numunesi istenmemeli).
+- **Telefonda alt bölüm:** Renk uyarısı ve "Geri bildirim" tek blok hâlinde akıyor; araç çubuğu bir satır yukarı alındı, çakışma yok.
+- **Numune formu:** "Talebi gönder" düğmesi pencerenin altında sabit; dizüstünde kaydırmadan görünüyor.
+- **Bekleyen:** biye telefonda kesik görünüyor; gerçek cihazda ölçülmeden değiştirilmeyecek.

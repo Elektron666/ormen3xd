@@ -35,6 +35,7 @@ import { track } from "@/lib/track";
 import { fabricsForModel, seriesOf, startFabric } from "@/lib/fabric/allowed";
 import { ShareDialog } from "./ShareDialog";
 import { FeedbackDialog } from "./FeedbackDialog";
+import { ModelSwapDialog } from "./ModelSwapDialog";
 import { PrintSheet, type PrintData } from "./PrintSheet";
 
 const Stage = dynamic(() => import("@/components/three/Stage").then((m) => m.Stage), {
@@ -210,7 +211,31 @@ export function Configurator({
     commit([...items, piece]);
     setSelectedId(piece.id);
   };
+  /** Another model in a piece's place: position, fabric, zones, legs and pattern direction stay where they still apply. */
+  const swapModel = (id: string, slug: string) => {
+    const model = bySlug.get(slug);
+    const src = items.find((p) => p.id === id);
+    if (!model || !src || src.modelSlug === slug) return;
+    const allowed = fabricsForModel(fabrics, model);
+    const keep = (code: string) => allowed.some((f) => f.code === code);
+    const zones = src.zones && Object.fromEntries(Object.entries(src.zones).filter(([, c]) => keep(c)));
+    let next: Placement = {
+      ...src,
+      modelSlug: slug,
+      fabricCode: keep(src.fabricCode) ? src.fabricCode : startFabric(allowed, src.fabricCode, model).code,
+      zones: zones && Object.keys(zones).length ? zones : undefined,
+      ayak: hasWoodLegs(model) ? src.ayak : undefined,
+    };
+    next = constrain(next, modelDims(model), room);
+    const others = items.filter((p) => p.id !== id).map((p) => ({ p, dims: dimsOf(p.modelSlug) }));
+    // a bigger model that now runs into another piece moves to the nearest free spot
+    if (overlapping([...others, { p: next, dims: modelDims(model) }]).has(id)) next = { ...next, ...findFreeSpot(modelDims(model), room, others) };
+    commit(items.map((p) => (p.id === id ? next : p)));
+    setSelectedId(id);
+  };
+
   const pieceActions = {
+    onChangeModel: kiosk ? undefined : (id: string) => setSwapFor(id),
     onSelect: (id: string) => {
       setSelectedId(id);
       setPieceTapped(true);
@@ -274,6 +299,7 @@ export function Configurator({
   // AR: the selected piece in its fabric
   const [arOpen, setArOpen] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [swapFor, setSwapFor] = useState<string | null>(null);
   const selectedIndex = Math.max(0, items.findIndex((p) => p.id === selectedItem.id));
   const arUrl = useCallback(() => `${window.location.origin}${arPath(shareId(), selectedIndex)}`, [shareId, selectedIndex]);
 
@@ -397,7 +423,7 @@ export function Configurator({
         )}
 
         {ready && (
-          <div className="kiosk-zoom-wide pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+2.75rem)] flex justify-center px-4 md:bottom-12">
+          <div className="kiosk-zoom-wide pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+3.75rem)] flex justify-center px-4 md:bottom-12">
             <div className="pointer-events-auto">
               <SceneTools
                 models={models}
@@ -433,23 +459,27 @@ export function Configurator({
           )}
         </div>
 
-        <p className="kiosk-zoom pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+0.75rem)] flex justify-center px-6 md:bottom-4">
+        {/* on a phone: one block under the scene tools, the feedback link flowing on the same lines */}
+        <p className="kiosk-zoom pointer-events-none absolute inset-x-0 bottom-[calc(2dvh+0.5rem)] px-6 text-center md:bottom-4">
           <span
-            className={`rounded-full text-center text-[11px] leading-snug transition-colors duration-300 ${
+            className={`rounded-full text-[11px] leading-snug transition-colors duration-300 ${
               room.shape !== "yok" ? "bg-kagit/85 px-3 py-1 text-antrasit-70" : "text-antrasit-50"
             }`}
           >
             {t.colorDisclaimer}
+            {!kiosk && (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  onClick={() => setFeedbackOpen(true)}
+                  className="pointer-events-auto whitespace-nowrap px-1 py-1 text-antrasit-50 underline underline-offset-2 hover:text-antrasit"
+                >
+                  Geri bildirim
+                </button>
+              </>
+            )}
           </span>
-          {!kiosk && (
-            <button
-              type="button"
-              onClick={() => setFeedbackOpen(true)}
-              className="pointer-events-auto ml-2 rounded-full px-2 py-1 text-[11px] text-antrasit-50 underline underline-offset-2 hover:text-antrasit"
-            >
-              Geri bildirim
-            </button>
-          )}
         </p>
       </section>
 
@@ -669,6 +699,16 @@ export function Configurator({
           url={takeHome}
         />
       )}
+      <ModelSwapDialog
+        open={swapFor !== null}
+        onClose={() => setSwapFor(null)}
+        models={models}
+        current={items.find((p) => p.id === swapFor)?.modelSlug ?? null}
+        onPick={(slug) => {
+          if (swapFor) swapModel(swapFor, slug);
+          setSwapFor(null);
+        }}
+      />
       <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} firmSlug={firm?.slug ?? null} />
       {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} legFinish={selectedItem.ayak} turned={selectedItem.yon === "donuk"} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>

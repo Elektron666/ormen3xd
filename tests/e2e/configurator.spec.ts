@@ -243,3 +243,17 @@ test("telefonda ilk ekran: kumaş şeridi görünür, araçlar 'Daha fazla' alt�
   await page.getByRole("menuitemcheckbox", { name: "Ölçüler" }).click();
   await expect(page.getByRole("menu")).toHaveCount(0);
 });
+
+test("model değiştir: seçili koltuğun yerine başka model gelir, kumaş ve bölge kalır", async ({ page, isMobile }) => {
+  test.skip(isMobile, "araç çubuğu telefonda koltuğa dokununca açılır; masaüstünde denenir");
+  await page.goto("/?y=moduler-kanepe.MISSO-05.0.51.0.oMISSO-02");
+  await expect.poll(async () => (await fabricOnModel(page)).sort(), { timeout: 45_000 }).toEqual(["MISSO-02", "MISSO-05"]);
+  await page.getByRole("button", { name: /^Model değiştir \(şu an Modüler Kanepe\)/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Model değiştir" });
+  await dialog.getByRole("button", { name: /Chester Kanepe/ }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page).toHaveURL(/chester-kanepe\.MISSO-05\..*oMISSO-02/);
+  await expect.poll(async () => (await fabricOnModel(page)).sort(), { timeout: 45_000 }).toEqual(["MISSO-02", "MISSO-05"]);
+  // still one piece: replaced, not added
+  await expect(page.getByRole("button", { name: /^Model değiştir/ })).toHaveCount(1);
+});

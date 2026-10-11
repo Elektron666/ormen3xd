@@ -33,3 +33,12 @@ export function cleanSeries(input: unknown, known: string[]): string[] {
   const set = new Set(known);
   return [...new Set(input.filter((s): s is string => typeof s === "string" && set.has(s)))];
 }
+
+/**
+ * ORMEN's real fabrics before the placeholders (geniş toplantı, 11 Oct): a
+ * visitor's first look at "ORMEN's fabrics" is a real one. Order within each
+ * group is kept.
+ */
+export function realFirst<F extends { isPlaceholder?: boolean }>(fabrics: F[]): F[] {
+  return [...fabrics.filter((f) => !f.isPlaceholder), ...fabrics.filter((f) => f.isPlaceholder)];
+}

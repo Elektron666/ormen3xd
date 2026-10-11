@@ -22,9 +22,15 @@ export async function POST(request: Request) {
   if (!result.ok) return NextResponse.json({ errors: result.errors }, { status: 422 });
 
   const repo = getRepository();
-  const fabrics = new Set((await repo.listFabrics()).map((f) => f.code));
+  const all = await repo.listFabrics();
+  const fabrics = new Set(all.map((f) => f.code));
   if (result.value.fabricCodes.some((c) => !fabrics.has(c))) {
     return NextResponse.json({ errors: { fabricCodes: "Bilinmeyen kumaş kodu." } }, { status: 422 });
+  }
+  // a stand-in fabric is not a product: no sample of it can be promised
+  const examples = new Set(all.filter((f) => f.isPlaceholder).map((f) => f.code));
+  if (result.value.fabricCodes.some((c) => examples.has(c))) {
+    return NextResponse.json({ errors: { fabricCodes: "Örnek kumaşın numunesi yok; gerçek bir ORMEN kumaşı seçin." } }, { status: 422 });
   }
   // a firm that no longer exists (or a made-up slug) is not attributed
   const firm = result.value.firmSlug ? await repo.getFirmBySlug(result.value.firmSlug) : null;

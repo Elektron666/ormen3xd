@@ -16,7 +16,7 @@ test.describe("panel", () => {
 
     // the redirect response itself must not carry panel data (a layout-only check would leak it)
     const name = `Sizinti Testi ${Date.now().toString(36)}`;
-    await request.post("/api/samples", { data: { name, phone: "0532 987 65 43", consent: true, fabricCodes: ["LUMA-02"] } });
+    await request.post("/api/samples", { data: { name, phone: "0532 987 65 43", consent: true, fabricCodes: ["MISSO-05"] } });
     for (const cookie of [undefined, "ormen_panel=sahte.imza"]) {
       for (const path of ["/panel/talepler", "/panel/rapor", "/panel"]) {
         const r = await request.get(path, { maxRedirects: 0, headers: cookie ? { cookie } : {} });
@@ -71,13 +71,13 @@ test.describe("panel", () => {
   test("numune talebi panelde listelenir ve CSV olarak iner", async ({ page, request }) => {
     const name = `Deneme ${Date.now().toString(36)}`;
     const res = await request.post("/api/samples", {
-      data: { name, phone: "0532 123 45 67", consent: true, fabricCodes: ["LUMA-02"], link: "https://evil.example/x" },
+      data: { name, phone: "0532 123 45 67", consent: true, fabricCodes: ["MISSO-05"], link: "https://evil.example/x" },
     });
     expect(res.ok()).toBe(true);
     await login(page);
     await page.goto("/panel/talepler");
     const item = page.getByRole("listitem").filter({ hasText: name });
-    await expect(item).toContainText("LUMA-02");
+    await expect(item).toContainText("MISSO-05");
     await expect(item.getByRole("link", { name: "Seçimi aç" })).toHaveCount(0);
     const csv = await page.request.get("/api/panel/talepler");
     expect(csv.headers()["content-disposition"]).toContain("numune-talepleri");
@@ -86,7 +86,7 @@ test.describe("panel", () => {
 
   test("numune: adım, lot, etiket; mağaza QR'dan siparişe döndü der", async ({ page, browser, request }) => {
     const name = `Etiket ${Date.now().toString(36)}`;
-    const res = await request.post("/api/samples", { data: { name, phone: "0532 765 43 21", consent: true, fabricCodes: ["LUMA-02", "SIENA-03"] } });
+    const res = await request.post("/api/samples", { data: { name, phone: "0532 765 43 21", consent: true, fabricCodes: ["MISSO-05", "MISSO-02"] } });
     expect(res.ok()).toBe(true);
     await login(page);
     await page.goto("/panel/talepler");
