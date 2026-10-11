@@ -8,6 +8,7 @@ import { DuplicateCodeError, DuplicateSlugError, type FabricInput, type FirmInpu
 import { cleanLot, newSampleCode, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
 import { buildReport, type StoredEvent, type UsageEvent } from "@/lib/events";
 import type { CutReport } from "@/lib/cut-report";
+import type { Feedback, FeedbackInput } from "@/lib/feedback";
 
 /**
  * In-memory repository backed by the seed catalogue; used when Supabase is
@@ -25,6 +26,8 @@ export class MemoryRepository implements Repository {
   private events: StoredEvent[] = [];
   private shares = new Map<string, string>();
   private cuts: CutReport[] = [];
+  private feedback: Feedback[] = [];
+  private feedbackSeq = 0;
   readonly files = new Map<string, { data: ArrayBuffer; type: string }>();
 
   async listFabrics(opts?: { includeInactive?: boolean }) {
@@ -177,6 +180,19 @@ export class MemoryRepository implements Repository {
 
   async listCutReports() {
     return this.cuts.slice(0, 1000);
+  }
+
+  async recordFeedback(f: FeedbackInput) {
+    this.feedback.unshift({ ...f, id: String(++this.feedbackSeq), createdAt: new Date().toISOString() });
+    if (this.feedback.length > 5000) this.feedback.length = 5000;
+  }
+
+  async listFeedback() {
+    return this.feedback.slice(0, 500);
+  }
+
+  async deleteFeedback(id: string) {
+    this.feedback = this.feedback.filter((f) => f.id !== id);
   }
 
   async recordEvent(e: UsageEvent) {

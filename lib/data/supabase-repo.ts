@@ -3,6 +3,7 @@ import { codeUpper } from "@/lib/i18n/tr";
 import type { ColorFamily, Fabric, FabricType, Firm, FurnitureModel, ModelSource } from "@/lib/types";
 import { normaliseParams } from "@/lib/parametric/spec";
 import { cleanLot, newSampleCode, type SampleChoices, type SampleRequest, type SampleRequestInput, type SampleStep } from "@/lib/samples";
+import type { Feedback, FeedbackInput } from "@/lib/feedback";
 import type { CutReport } from "@/lib/cut-report";
 import { cleanPresets } from "@/lib/firm-presets";
 import { reportFromJson, type Device, type EventType, type Source, type StoredEvent, type UsageEvent } from "@/lib/events";
@@ -375,6 +376,28 @@ export class SupabaseRepository implements Repository {
     if (res.error?.code === "23505") return (await this.getShare(code)) === longId;
     check(res);
     return true;
+  }
+
+  async recordFeedback(f: FeedbackInput) {
+    check(await this.db.from("feedback").insert({ kind: f.kind, message: f.message, page: f.page, firm_slug: f.firmSlug, device: f.device ?? null }));
+  }
+
+  async listFeedback(): Promise<Feedback[]> {
+    const rows = check(await this.db.from("feedback").select("*").order("created_at", { ascending: false }).limit(500)) as {
+      id: number;
+      kind: Feedback["kind"];
+      message: string;
+      page: string | null;
+      firm_slug: string | null;
+      device: Feedback["device"] | null;
+      created_at: string;
+    }[];
+    return rows.map((r) => ({ id: String(r.id), kind: r.kind, message: r.message, page: r.page, firmSlug: r.firm_slug, device: r.device ?? undefined, createdAt: r.created_at }));
+  }
+
+  async deleteFeedback(id: string) {
+    if (!/^\d{1,18}$/.test(id)) return;
+    check(await this.db.from("feedback").delete().eq("id", id));
   }
 
   async recordCutReport(r: Omit<CutReport, "createdAt">) {

@@ -2,6 +2,7 @@ import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
 import type { SampleRequest, SampleRequestInput, SampleStep } from "@/lib/samples";
 import type { Report, StoredEvent, UsageEvent } from "@/lib/events";
 import type { CutReport } from "@/lib/cut-report";
+import type { Feedback, FeedbackInput } from "@/lib/feedback";
 
 export type FabricInput = Omit<Fabric, "id"> & { id?: string; derivedMaps?: boolean };
 export type ModelInput = Omit<FurnitureModel, "id"> & { id?: string };
@@ -61,6 +62,12 @@ export interface Repository {
   recordCutReport(r: Omit<CutReport, "createdAt">): Promise<void>;
   /** Newest first, capped. */
   listCutReports(): Promise<CutReport[]>;
+
+  /** Visitor feedback ("Geri bildirim"). */
+  recordFeedback(f: FeedbackInput): Promise<void>;
+  /** Newest first, capped. */
+  listFeedback(): Promise<Feedback[]>;
+  deleteFeedback(id: string): Promise<void>;
 
   recordEvent(e: UsageEvent): Promise<void>;
   /** Events since a date (newest first, capped), optionally of one firm ("" = ORMEN's own pages). */

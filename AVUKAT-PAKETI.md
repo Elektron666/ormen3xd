@@ -19,6 +19,14 @@ Formda serbest metin alanı **yoktur** (5 Ekim toplantısında kaldırıldı). A
 
 Kullanım sayımı (ziyaret, kumaş denemesi) kimliksizdir. Sayım için sekme kapanınca silinen rastgele bir numara kullanılır ve bu numara talebe bağlanmaz.
 
+**Geri bildirim formu (11 Ekim):** Konu (beğendim / öneri / hata / diğer) ve en fazla 1000 karakterlik serbest metin. Ad, telefon, e-posta, IP istenmez ve saklanmaz; metinde telefon ya da e-posta görünürse form ziyaretçiyi uyarır ama engellemez. Serbest metin olduğu için ziyaretçi yine de kişisel bilgi yazabilir; panelden tek tıkla silinebilir.
+
+**IP kaydı sorusu (11 Ekim, Fatih Bey: "siteye girenlerin bilgisine legal olarak ulaşmamız lazım, IP kaydedebiliyor musun?").** Bugünkü tercih: kaydetmiyoruz. Gerekçe, avukatın teyidine:
+- 5651 sayılı Kanun'da trafik bilgisini (IP, zaman) saklama yükümlülüğü **yer sağlayıcıya** (barındırma: Vercel, Supabase) ve **toplu kullanım sağlayıcıya** (internet kafe, otel ağı vb.) düşüyor; bizim konumumuz **içerik sağlayıcı**. Bildiğimiz kadarıyla içerik sağlayıcıya ayrıca IP saklama yükümlülüğü yok.
+- IP adresi KVKK'da kişisel veri sayılıyor. Saklarsak aydınlatma metnine, saklama süresine ve imha politikasına girmesi gerekir; amacı da yok (satış, sepet, üyelik yok).
+- Bir hukuki talep olursa (ör. kötüye kullanım), barındırma sağlayıcısının kendi erişim kayıtları var: Vercel istek kayıtlarını planına göre kısa süre tutuyor.
+- Avukattan istenen: bu yorumun doğrulanması. "Saklayın" derse eklemek kolay (yalnızca numune talebine bağlı, süreli, aydınlatma metniyle).
+
 ## 2. Kim görüyor
 
 | Kim | Ne görüyor |

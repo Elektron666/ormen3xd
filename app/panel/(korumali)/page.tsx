@@ -11,16 +11,23 @@ export default async function PanelHome() {
   // checked here, not only in the layout: a layout check does not stop the page from rendering
   await requirePanelUser();
   const repo = getRepository();
-  const [fabrics, models, firms, samples] = await Promise.all([
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 86_400_000);
+  const [fabrics, models, firms, samples, week] = await Promise.all([
     repo.listFabrics({ includeInactive: true }),
     repo.listAllModels(),
     repo.listFirms(),
     repo.listSampleRequests(),
+    // visits: a random per-tab id, never a person (lib/events.ts)
+    repo.eventReport(weekAgo, now).catch(() => null),
   ]);
+  const todayKey = now.toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" });
+  const today = week?.days.find((d) => d.day === todayKey)?.sessions ?? 0;
   const cards = [
     { href: "/panel/kumaslar", title: "Kumaşlar", value: fabrics.filter((f) => f.isActive).length, note: `${fabrics.filter((f) => f.isPlaceholder).length} yer tutucu` },
     { href: "/panel/modeller", title: "Modeller", value: models.filter((m) => m.isActive).length, note: "vitrin ve firma modelleri" },
     { href: "/panel/firmalar", title: "Firmalar", value: firms.filter((f) => f.isActive).length, note: "kendi sayfası olan firma" },
+    { href: "/panel/rapor", title: "Ziyaret (bugün)", value: today, note: week ? `son 7 gün: ${week.sessions}` : "rapor okunamadı" },
     { href: "/panel/talepler", title: "Numune talepleri", value: samples.length, note: samples[0] ? `son: ${new Date(samples[0].createdAt).toLocaleDateString("tr-TR")}` : "henüz yok" },
   ];
   const overdue = overdueCount(samples);
@@ -42,7 +49,7 @@ export default async function PanelHome() {
           Yeni kumaş
         </Link>
       </PageHeader>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c) => (
           <Link key={c.href} href={c.href} className="rounded-2xl border border-cizgi bg-kagit p-5 transition-colors hover:border-cizgi-koyu">
             <p className="eyebrow">{c.title}</p>

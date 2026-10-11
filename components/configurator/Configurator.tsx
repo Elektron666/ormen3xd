@@ -34,6 +34,7 @@ import { arPath } from "@/lib/ar/device";
 import { track } from "@/lib/track";
 import { fabricsForModel, seriesOf, startFabric } from "@/lib/fabric/allowed";
 import { ShareDialog } from "./ShareDialog";
+import { FeedbackDialog } from "./FeedbackDialog";
 import { PrintSheet, type PrintData } from "./PrintSheet";
 
 const Stage = dynamic(() => import("@/components/three/Stage").then((m) => m.Stage), {
@@ -272,6 +273,7 @@ export function Configurator({
 
   // AR: the selected piece in its fabric
   const [arOpen, setArOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const selectedIndex = Math.max(0, items.findIndex((p) => p.id === selectedItem.id));
   const arUrl = useCallback(() => `${window.location.origin}${arPath(shareId(), selectedIndex)}`, [shareId, selectedIndex]);
 
@@ -439,6 +441,15 @@ export function Configurator({
           >
             {t.colorDisclaimer}
           </span>
+          {!kiosk && (
+            <button
+              type="button"
+              onClick={() => setFeedbackOpen(true)}
+              className="pointer-events-auto ml-2 rounded-full px-2 py-1 text-[11px] text-antrasit-50 underline underline-offset-2 hover:text-antrasit"
+            >
+              Geri bildirim
+            </button>
+          )}
         </p>
       </section>
 
@@ -658,6 +669,7 @@ export function Configurator({
           url={takeHome}
         />
       )}
+      <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} firmSlug={firm?.slug ?? null} />
       {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} legFinish={selectedItem.ayak} turned={selectedItem.yon === "donuk"} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>
   );

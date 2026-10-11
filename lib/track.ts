@@ -21,7 +21,7 @@ function sessionId(): string {
 }
 let memoryId: string | undefined;
 
-function device(): Device {
+export function device(): Device {
   const ua = navigator.userAgent;
   if (/iPad|Tablet/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua)) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1)) return "tablet";
   if (/Mobi|iPhone|Android/i.test(ua)) return "telefon";

@@ -51,6 +51,7 @@ export async function gatherSetupFacts(requestHost: string | null): Promise<Setu
         (await probe(() => db.from("models").select("meterage_m").limit(1))).ok &&
         (await probe(() => db.from("cut_reports").select("id").limit(1))).ok;
       migrations["20261011000000_bolge_metraji.sql"] = (await probe(() => db.from("models").select("meterage_zones").limit(1))).ok;
+      migrations["20261012000000_geri_bildirim.sql"] = (await probe(() => db.from("feedback").select("id").limit(1))).ok;
     }
   }
 

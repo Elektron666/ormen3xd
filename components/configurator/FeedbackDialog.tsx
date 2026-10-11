@@ -1,0 +1,110 @@
+"use client";
+
+import { useState } from "react";
+import { Dialog } from "@/components/ui/Dialog";
+import { FEEDBACK_KINDS, FEEDBACK_LABELS, FEEDBACK_LIMITS, looksPersonal, type FeedbackKind } from "@/lib/feedback";
+import { device } from "@/lib/track";
+
+// "Geri bildirim gönder": a few words to ORMEN, nothing personal asked.
+
+export function FeedbackDialog({ open, onClose, firmSlug }: { open: boolean; onClose: () => void; firmSlug: string | null }) {
+  const [kind, setKind] = useState<FeedbackKind | null>(null);
+  const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState("");
+  const [state, setState] = useState<"bos" | "gonderiliyor" | "tamam">("bos");
+  const [error, setError] = useState<string | null>(null);
+
+  const close = () => {
+    onClose();
+    if (state === "tamam") {
+      setKind(null);
+      setMessage("");
+      setState("bos");
+    }
+  };
+
+  const send = async () => {
+    if (!kind) return setError("Bir konu seçin.");
+    setState("gonderiliyor");
+    setError(null);
+    try {
+      const res = await fetch("/api/geri-bildirim", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind, message, website, page: location.pathname, firmSlug, device: device() }),
+      });
+      if (!res.ok) {
+        setError(((await res.json().catch(() => null)) as { error?: string } | null)?.error ?? "Gönderilemedi.");
+        setState("bos");
+        return;
+      }
+      setState("tamam");
+    } catch {
+      setError("Bağlantı kurulamadı; biraz sonra tekrar deneyin.");
+      setState("bos");
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={close} title="Geri bildirim">
+      {state === "tamam" ? (
+        <div className="flex flex-col gap-4" role="status">
+          <p className="text-[15px]">Teşekkürler, ORMEN’e ulaştı.</p>
+          <button type="button" onClick={close} className="h-11 rounded-full bg-antrasit px-5 text-[14px] text-kagit">
+            Kapat
+          </button>
+        </div>
+      ) : (
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send();
+          }}
+        >
+          <fieldset>
+            <legend className="mb-2 text-[13px] text-antrasit-70">Konu</legend>
+            <div className="flex flex-wrap gap-2">
+              {FEEDBACK_KINDS.map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={kind === k}
+                  onClick={() => setKind(k)}
+                  className={`h-10 rounded-full border px-4 text-[14px] ${kind === k ? "border-antrasit bg-antrasit text-kagit" : "border-cizgi text-antrasit hover:border-cizgi-koyu"}`}
+                >
+                  {FEEDBACK_LABELS[k]}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <label className="flex flex-col gap-1.5 text-[13px] text-antrasit-70">
+            Mesajınız
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              maxLength={FEEDBACK_LIMITS.max}
+              rows={4}
+              className="rounded-xl border border-cizgi bg-white p-3 text-[15px] text-antrasit focus:border-antrasit-50 focus:outline-none"
+            />
+          </label>
+          {/* a person never sees or fills this; a bot does */}
+          <input type="text" name="website" value={website} onChange={(e) => setWebsite(e.target.value)} tabIndex={-1} autoComplete="off" aria-hidden className="absolute -left-[9999px] h-0 w-0 opacity-0" />
+          <p className={`text-[12px] ${looksPersonal(message) ? "text-[#9a3b31]" : "text-antrasit-50"}`}>
+            {looksPersonal(message)
+              ? "Mesajda telefon ya da e-posta var gibi görünüyor. Size dönüş istiyorsanız numune talebini kullanın; burada kişisel bilgi saklamıyoruz."
+              : "Adınızı, telefonunuzu ya da e-postanızı yazmayın: geri bildirim isimsiz kaydedilir."}
+          </p>
+          {error && (
+            <p role="alert" className="text-[13px] text-[#9a3b31]">
+              {error}
+            </p>
+          )}
+          <button type="submit" disabled={state === "gonderiliyor"} className="h-11 rounded-full bg-antrasit px-5 text-[14px] text-kagit disabled:opacity-60">
+            {state === "gonderiliyor" ? "Gönderiliyor…" : "Gönder"}
+          </button>
+        </form>
+      )}
+    </Dialog>
+  );
+}

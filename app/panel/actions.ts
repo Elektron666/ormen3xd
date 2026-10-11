@@ -349,3 +349,10 @@ export async function deleteSampleAction(id: string): Promise<{ ok: boolean; err
   revalidatePath("/panel");
   return { ok: true };
 }
+
+export async function deleteFeedbackAction(id: string): Promise<{ ok: boolean }> {
+  await guard();
+  await getRepository().deleteFeedback(String(id).slice(0, 40));
+  revalidatePath("/panel/geri-bildirim");
+  return { ok: true };
+}
