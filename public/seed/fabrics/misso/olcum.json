@@ -10,9 +10,9 @@
       "w": 18.4,
       "h": 112.5
     },
-    "avgColor": "#A8998D",
-    "seamBefore": 1.64,
-    "seamAfter": 1.64
+    "avgColor": "#A9998E",
+    "seamBefore": 1.65,
+    "seamAfter": 1.65
   },
   {
     "code": "MISSO-02",
@@ -40,9 +40,9 @@
       "w": 18.4,
       "h": 26.8
     },
-    "avgColor": "#8A6864",
-    "seamBefore": 0.96,
-    "seamAfter": 0.96
+    "avgColor": "#8B6965",
+    "seamBefore": 0.94,
+    "seamAfter": 0.94
   },
   {
     "code": "MISSO-04",
@@ -55,9 +55,9 @@
       "w": 18.4,
       "h": 99.4
     },
-    "avgColor": "#7E736B",
-    "seamBefore": 2.51,
-    "seamAfter": 2.51
+    "avgColor": "#7F746B",
+    "seamBefore": 2.52,
+    "seamAfter": 2.52
   },
   {
     "code": "MISSO-05",
@@ -70,7 +70,7 @@
       "w": 18.4,
       "h": 91.5
     },
-    "avgColor": "#A18C78",
+    "avgColor": "#A18D78",
     "seamBefore": 1.91,
     "seamAfter": 1.91
   },
@@ -85,8 +85,8 @@
       "w": 18.4,
       "h": 112.5
     },
-    "avgColor": "#A19991",
-    "seamBefore": 1.74,
-    "seamAfter": 1.74
+    "avgColor": "#A29992",
+    "seamBefore": 1.75,
+    "seamAfter": 1.75
   }
 ]

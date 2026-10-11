@@ -54,6 +54,30 @@ Panel → Kumaşlar → kumaş sayfası → **Ölçek ve dikiş kontrolü**:
 - **Doğrulama:** Gerçek kumaşta dikey desen tekrarı cetvelle ölçülmeli (Hakan, numune üzerinden). Ölçü 91,5 cm'den farklıysa doku o boyla yeniden hazırlanır.
 - **Yan dikiş** (sol/sağ) altı kumaşta da temiz: fark 255 üzerinden 1'in altında.
 
+## İkinci adım: dikiş için minimum hata kesimi (yapıldı, 11 Ekim)
+
+**Ölçüm:** `ORMEN_OLC_YUKSEKLIK=1 npx tsx scripts/prepare-photo-fabric.ts …` her yükseklikte renk bantlarının kendini ne kadar tuttuğunu yazar.
+- MISSO fotoğraflarının hiçbirinde gerçek bir dikey tekrar yok. Her yükseklikte fark 255 üzerinden 30–70 arasında, derin bir dip yok. Kumaşın bant dizisi fotoğraftan uzun.
+- Yani tekrar boyunu değiştirmek dikişi yok edemez. Hakan'ın ölçümü yine de gerekli: gerçek tekrar boyunu söyleyecek.
+
+**Eski yöntem:** Dikişte iki ucu yüzde 10'luk bir bantta karıştırıyordu. Sonuç yaklaşık 9 cm boyunda bulanık, zikzakları çift görünen bir şeritti.
+
+**Yeni yöntem:** Görüntü dikmede (image quilting) kullanılan **minimum hata kesimi**. Her sütunda iki ucun en çok benzediği satırdan, sütundan sütuna en fazla bir satır kayarak kesiyor; 2 satırlık yumuşatma var.
+
+**Ölçülen fark** (dikişteki ortalama renk farkı, 255 üzerinden):
+
+| Kumaş | Eski karışım | Yeni kesim |
+|---|---|---|
+| MISSO-01 | 35,0 | 11,3 |
+| MISSO-02 | 32,8 | 6,3 |
+| MISSO-04 | 58,4 | 12,6 |
+| MISSO-05 | 32,2 | 11,3 |
+| MISSO-06 | 39,7 | 8,4 |
+
+Altı MISSO dokusu yeniden üretildi. Tekrar ölçüleri değişmedi; veritabanında değişiklik gerekmedi.
+
+**Kalan:** Gözle bakınca bulanık şerit yok, ama kesim çizgisinin hemen altında yaklaşık 2 cm'lik düzensiz bir iz var. Tam çözüm için kumaş **en az bir tam tekrar boyunda** fotoğraflanmalı. Fotoğrafta tekrar varsa ölçüm aracı onu derin bir dip olarak bulur ve dikiş kaybolur. Bunun için `KUMAS-CEKIM-REHBERI.md`'ye kural eklendi.
+
 ## Gerçek bir Ar-Ge'ci bulmak
 
 **Kim aranıyor:** Bilgisayarlı görü ya da grafik konusunda deneyimli; tarayıcıda (WebGL/three.js) ya da Python/OpenCV ile çalışmış biri. Tekstil bilgisi şart değil; Hüseyin Usta ve Hakan bunu sağlar.

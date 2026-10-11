@@ -284,6 +284,15 @@ function stripTile(rgb: Uint8Array, w: number, h: number, period: number, teeth:
     for (let k = 0; k < by; k++) for (let i = 0; i < W * 3; i++) s += (strip[(a + k) * W * 3 + i] - strip[(b + k) * W * 3 + i]) ** 2;
     return s;
   };
+  if (process.env.ORMEN_OLC_YUKSEKLIK) {
+    // Ar-Ge (ARGE.md): how well the colour bands come round at every height, as a mean
+    // per-channel difference (0–255) over the fade band; the true vertical repeat is a deep minimum
+    const per = (t: number) => Math.sqrt(rowDiff(0, t) / (by * W * 3));
+    const prof: [number, number][] = [];
+    for (let t = Math.round(h * 0.1); t + by < h; t++) prof.push([t, per(t)]);
+    const minima = prof.filter(([, v], i) => i > 2 && i < prof.length - 3 && prof.slice(i - 3, i + 4).every(([, u]) => u >= v)).sort((a, b) => a[1] - b[1]);
+    console.log(`  yükseklik profili (h=${h}px): en iyi 5 tekrar adayı`, minima.slice(0, 5).map(([t, v]) => `${t}px (${(t / h * 100).toFixed(0)}%) fark ${v.toFixed(1)}`).join(" | "));
+  }
   let T = h - by - 1;
   best = Infinity;
   for (let t = Math.round(h * 0.7); t + by < h; t++) {
@@ -293,16 +302,55 @@ function stripTile(rgb: Uint8Array, w: number, h: number, period: number, teeth:
       T = t;
     }
   }
+  if (process.env.ORMEN_OLC_YUKSEKLIK) console.log(`  seçilen: ${T}px fark ${Math.sqrt(rowDiff(0, T) / (by * W * 3)).toFixed(1)}`);
+  // The seam: the strip's rows from T on continue the tile's top rows (0…by). Ar-Ge (ARGE.md):
+  // the photos hold no true vertical repeat, so the two never match; mixing them over the band
+  // left a blurred, doubled strip. Instead each column switches from the continuation to the
+  // tile's own rows along the path where the two look most alike (minimum-error boundary cut,
+  // as in image quilting), with a 2-row feather.
+  const cost = new Float64Array(W * by);
+  for (let y = 0; y < by; y++)
+    for (let x = 0; x < W; x++) {
+      let d = 0;
+      for (let c = 0; c < 3; c++) d += (strip[(y * W + x) * 3 + c] - strip[((y + T) * W + x) * 3 + c]) ** 2;
+      cost[y * W + x] = d;
+    }
+  // dynamic programming across the columns, the cut moving at most one row per column
+  const acc = new Float64Array(W * by);
+  const from = new Int16Array(W * by);
+  for (let y = 0; y < by; y++) acc[y * W] = cost[y * W];
+  for (let x = 1; x < W; x++)
+    for (let y = 0; y < by; y++) {
+      let bestPrev = Infinity;
+      let arg = y;
+      for (const py of [y - 1, y, y + 1]) if (py >= 0 && py < by && acc[py * W + x - 1] < bestPrev) ((bestPrev = acc[py * W + x - 1]), (arg = py));
+      acc[y * W + x] = cost[y * W + x] + bestPrev;
+      from[y * W + x] = arg;
+    }
+  const cut = new Int16Array(W);
+  let end = 0;
+  for (let y = 1; y < by; y++) if (acc[y * W + W - 1] < acc[end * W + W - 1]) end = y;
+  cut[W - 1] = end;
+  for (let x = W - 1; x > 0; x--) cut[x - 1] = from[cut[x] * W + x];
+  const feather = 2;
   const tile = new Uint8ClampedArray(W * T * 4);
   for (let y = 0; y < T; y++) {
-    const m = y < by ? ((k) => k * k * (3 - 2 * k))(y / by) : 1;
     for (let x = 0; x < W; x++) {
+      // 0 → the continuation (strip row y+T), 1 → the tile's own row
+      const m = y >= by ? 1 : Math.min(1, Math.max(0, (y - cut[x] + feather) / (2 * feather)));
       for (let c = 0; c < 3; c++) {
-        const top = strip[(y * W + x) * 3 + c];
-        tile[(y * W + x) * 4 + c] = m < 1 ? top * m + strip[((y + T) * W + x) * 3 + c] * (1 - m) : top;
+        const own = strip[(y * W + x) * 3 + c];
+        tile[(y * W + x) * 4 + c] = m < 1 ? own * m + strip[((y + T) * W + x) * 3 + c] * (1 - m) : own;
       }
       tile[(y * W + x) * 4 + 3] = 255;
     }
+  }
+  if (process.env.ORMEN_OLC_YUKSEKLIK) {
+    let pathCost = 0;
+    let blendCost = 0;
+    for (let x = 0; x < W; x++) pathCost += Math.sqrt(cost[cut[x] * W + x] / 3);
+    for (let y = 0; y < by; y++) for (let x = 0; x < W; x++) blendCost += Math.sqrt(cost[y * W + x] / 3);
+    console.log(`  dikiş: kesim yolundaki fark ${(pathCost / W).toFixed(1)} (eski karışımın ortalama farkı ${(blendCost / (W * by)).toFixed(1)})`);
   }
   return { tile, width: W, height: T, stripPx: Wf };
 }

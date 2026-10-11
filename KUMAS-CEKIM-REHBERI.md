@@ -34,6 +34,8 @@ Konfigüratördeki kumaşın gerçeğe benzemesi, büyük ölçüde fotoğrafa b
 
 **Desenli kumaşta özellikle:** MISSO fotoğrafları kumaş topun üzerindeyken, açılı ve dökümlü çekilmişti. Ancak elle düzeltilerek kullanılabildi. Desenli kumaşı düz bir masaya serin, tepeden çekin, cetvelle bir desen dişinin (ya da raporunun) boyunu ölçüp not edin. Bu ölçü olmadan desen koltukta doğru büyüklükte görünmez.
 
+**Desenli kumaşta boy (11 Ekim, Ar-Ge ölçümü):** Kumaşı **desenin en az bir tam dikey tekrarı** kadar uzun serip çekin; zikzak gibi bant desenlerde bu çoğu zaman 1–1,5 m'dir. Tekrarın başladığı ve bittiği yeri (aynı renk bandının yeniden geldiği yeri) cetvelle ölçüp not edin. MISSO fotoğraflarında tam tekrar yoktu; koltukta tekrar çizgisinde ince bir iz kalmasının sebebi bu.
+
 ## Panele yüklemeden önce
 
 - Fotoğrafı **kare** kırpın (cetvel kadrajın dışında kalsın) ve kırptığınız karenin **kaç cm geldiğini** not edin. Panelde "Fotoğraftaki alanın eni (cm)" bu değerdir. Bu değer yanlışsa ilmekler koltukta dev ya da minicik görünür.
@@ -45,6 +47,7 @@ Konfigüratördeki kumaşın gerçeğe benzemesi, büyük ölçüde fotoğrafa b
 1. **Kumaşlar → Yeni kumaş** → fotoğrafı sürükleyin, eni yazın.
 2. Panel "Doku dikişsiz tekrar ediyor" diyorsa tamam. "Kenarları birbirini tutmuyor" diyorsa **Kenarları yumuşat**'ı işaretleyin ya da daha düz, daha eşit ışıkla yeniden çekin.
 3. **Ölçek kontrol (10 cm)** kutusunu açın: koltuktaki kırmızı karelerin her biri gerçekte 10 cm'dir. Elinizdeki kumaşta 10 cm'ye kaç ilmek/çizgi sığıyorsa koltukta da o kadar sığmalı.
+   Altında açılan **düz ölçek ve dikiş kontrolü** kumaşı ekranda gerçek boyunda gösterir: gerçek kumaşı ekranın yanına koyun. Ortadaki ince kırmızı çizgiler dört tekrarın birleştiği yerdir; orada desen kayıyorsa ya da iz varsa fotoğrafı yeniden çekin. Ekrandaki 10 cm çizgisini bir kez gerçek cetvelle ayarlayın.
 4. Rengi, kumaşı ekranın yanına tutarak karşılaştırın. Fark büyükse ışığı kontrol edip yeniden çekin. Ekranlar arasında küçük fark her zaman olur; sitede "karar öncesi numune isteyin" uyarısı bu yüzden var.
 
 ## Künye bilgileri
