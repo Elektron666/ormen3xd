@@ -13,6 +13,7 @@ import { encodeRoom, type RoomSpec } from "@/lib/room/spec";
 import { encodeLayout, footprint, footprintParts, modelDims, type Placement } from "@/lib/room/layout";
 import { Room } from "./Room";
 import { CameraRig, FOV } from "./CameraRig";
+import { furnitureBox, nearPlane } from "@/lib/three/depth";
 import { PlanView } from "./PlanView";
 import { PlacedFurniture, type PieceActions } from "./PlacedFurniture";
 import { enableAllLayers, renderSplit, showPrimary } from "@/lib/three/layers";
@@ -92,6 +93,25 @@ function AdaptiveDpr({ onLower }: { onLower: (dpr: number) => void }) {
     const next = nextDpr(state.viewport.dpr, buf);
     intervals.current = [];
     if (next < state.viewport.dpr) onLower(next);
+  });
+  return null;
+}
+
+/**
+ * Keeps the near plane as far out as the furniture allows, for depth precision
+ * on phones (Ar-Ge A5, `lib/three/depth.ts`). Runs after the camera has moved.
+ */
+function DepthRange() {
+  const box = useRef(new THREE.Box3());
+  useFrame(({ scene, camera }) => {
+    const cam = camera as THREE.PerspectiveCamera;
+    if (!cam.isPerspectiveCamera) return;
+    furnitureBox(scene, box.current);
+    const near = box.current.isEmpty() ? 0.05 : nearPlane(box.current.distanceToPoint(cam.position));
+    if (Math.abs(cam.near - near) > 0.002) {
+      cam.near = near;
+      cam.updateProjectionMatrix();
+    }
   });
   return null;
 }
@@ -335,6 +355,7 @@ export function Stage({
         roomExtent={inRoom ? roomExtent : 0}
         closeUp={closeUp && !plan}
       />
+      <DepthRange />
     </Canvas>
   );
 }

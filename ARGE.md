@@ -138,6 +138,38 @@ Hedef %2'nin altıydı. Kart yokken yanlışlıkla kart bulunmuyor. Testler: `te
 - **Ekran tarafı açık:** Bu adım yalnızca fotoğraftaki renk kaymasını alıyor. Telefon ekranının numuneye ne kadar yakın gösterdiği hâlâ ölçülmedi.
 - **Sıradaki ölçüm:** Kartla ve ColorChecker'la aynı kumaşı 3 ayrı ışıkta çekmek, ΔE2000 ile karşılaştırmak (hedef < 5). Kâğıt yeterli değilse ColorChecker'ın gri yaması karta yapıştırılır.
 
+## Beşinci adım: biye telefonda kesik (A5, ilk düzeltme yapıldı, 11 Ekim)
+
+**Şikâyet (Hüseyin Usta, geniş toplantı):** Telefonda sırt minderlerinin biyesi dikiş gibi kesik kesik görünüyor; bilgisayarda düz.
+
+**Bulunan neden:** Biye yaklaşık 9 mm çaplı bir kordon ve yarısı minderin içinde.
+- Minder ile kordonun buluştuğu yerde ekran kartı hangisinin önde olduğuna derinlik değeriyle karar verir.
+- Bilgisayar bunun için genellikle 24 bit kullanır. Bazı telefonlar 16 bit verir, yani 256 kat kaba.
+- Kamera 4 m uzaktayken ve yakın kesme düzlemi 5 cm'deyken 16 bit yalnızca yaklaşık 5 mm'yi ayırt eder. Bu, kordonun kendi boyu.
+- Sonuç: kordon yer yer minderin altında kalıyor, gömülü yarısı yer yer öne çıkıyor. Biye kesik kesik görünüyor.
+
+**Düzeltme:** Yakın kesme düzlemi artık sabit 5 cm değil. Kameranın en yakın mobilyaya uzaklığının yarısı oluyor (en az 2 cm, en çok 50 cm; `lib/three/depth.ts`).
+- Genel görünümde 50 cm'ye çıkıyor, bu da 10 kat hassasiyet demek.
+- Mobilyaya hiçbir zaman kesmiyor. Yakın planda 2 cm'ye iniyor.
+- Ek maliyet yok: her karede yalnızca mobilyanın sınır kutusuna bakılıyor.
+
+**Ölçüm** (`scripts/olc-biye.ts`, telefon ekranı Pixel 7):
+- **Yöntem:** Her yüzey siyaha, biye kırmızıya boyandı. Kırmızı parçaların sayısı sayıldı; parça sayısı arttıkça biye kesik demek.
+- **16 bitin taklidi:** Hassasiyet "uzaklık² / (yakın düzlem × 2^bit)" ile gider. Bu yüzden 16 bitlik telefon, yakın düzlemi 256'ya bölünerek taklit edildi.
+
+| Görünüm | Bilgisayar (24 bit) | Telefon 16 bit, eski | Telefon 16 bit, yeni |
+|---|---|---|---|
+| Önden | 6–7 parça | 28–38 parça | 7–8 parça |
+| Alçaktan | 9–10 parça | 30–35 parça | 10–13 parça |
+| Yandan | 6–8 parça | 8–11 parça | 5–6 parça |
+
+Eski hâlde gömülü yarı da %3–17 oranında öne çıkıyordu. Yenide fark %3–8.
+
+**Dürüst sınırlar:**
+- Telefonun gerçekten 16 bit verdiği varsayım. Bu, telefonda biyenin kesik göründüğü şikâyetiyle uyumlu, ama cihazda doğrulanmadı.
+- Kesiklik pikselin altına düşen ince geometriden (örtüşme) de gelebilir. Bu ölçüm onu ayırmıyor; 24 bitte de kalan 6–10 parçanın bir kısmı köşelerde ve çizgi aralarında.
+- **Sıradaki adım:** Cihaz testinde (Samsung, iPhone) aynı sahnenin ekran görüntüsü, düzeltmeden önce ve sonra.
+
 ## Gerçek bir Ar-Ge'ci bulmak
 
 **Kim aranıyor:** Bilgisayarlı görü ya da grafik konusunda deneyimli; tarayıcıda (WebGL/three.js) ya da Python/OpenCV ile çalışmış biri. Tekstil bilgisi şart değil; Hüseyin Usta ve Hakan bunu sağlar.

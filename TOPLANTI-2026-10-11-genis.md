@@ -94,7 +94,7 @@ Kişiler temsilîdir. Herkes siteyi kendi telefonunda ve dizüstünde açtı. Me
 | 4 | Yer tutucu kumaşa "Örnek kumaş" ibaresi; numune formu yer tutucuya numune istemez | Hemen | Claude |
 | 5 | Telefonda renk uyarısı ve Geri bildirim ayrı satırda, çakışmasın | Hemen | Claude |
 | 6 | Numune formunda gönder düğmesi pencerenin altında sabit | Hemen | Claude |
-| 7 | Biye telefonda kesik: cihaz testinde ölçülüp düzeltilecek | Cihaz testi | Mert, Claude |
+| 7 | Biye telefonda kesik: cihaz testinde ölçülüp düzeltilecek | Cihaz testi | Mert, Claude. Neden bulundu ve düzeltildi (derinlik hassasiyeti, ARGE.md A5); cihazda doğrulama bekliyor |
 | 8 | Teşekkür ekranında numune süresi ("genellikle 2–3 iş günü") | Fatih Bey onaylarsa | Fatih Bey |
 | 9 | Gerçek logo ve kısa ORMEN tanıtım satırı | Fatih Bey'den gelince | Fatih Bey |
 | 10 | Yer tutucuların tamamen gizlenmesi | Gerçek kumaşlar gelince | Fatih Bey |

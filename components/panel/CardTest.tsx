@@ -127,7 +127,11 @@ export function CardTest() {
         </p>
         <label className="mt-4 block text-[13px] text-antrasit-70">
           Kartlı fotoğraf
-          <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1 block w-full text-[13px]" aria-label="Kartlı fotoğraf" />
+          <span className="mt-1 flex items-center gap-3">
+            <span className="cursor-pointer rounded-full border border-antrasit/30 bg-white px-4 py-2 text-[13px] text-antrasit hover:bg-cizgi/40">Fotoğraf seç</span>
+            <span className="truncate text-[12px] text-antrasit-50">{file ? file.name : "seçilmedi"}</span>
+          </span>
+          <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="sr-only" aria-label="Kartlı fotoğraf" />
         </label>
         {busy && <p className="mt-3 text-[13px] text-antrasit-50">Ölçülüyor…</p>}
         {error && <p className="mt-3 rounded-xl bg-[#F4E9DD] px-3 py-2 text-[13px] text-ceviz">{error}</p>}
