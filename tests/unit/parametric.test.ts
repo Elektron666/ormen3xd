@@ -21,6 +21,7 @@ const cases: ParametricParams[] = [
   { ...DEFAULTS.berjer, yukseklikCm: 104, sirtTipi: "sabit", kol: "yuvarlak" },
   { ...DEFAULTS.kose, solUc: "kose", sagUc: "sezlong", genislikCm: 330, solBoyCm: 230, sagBoyCm: 170, sirtTipi: "sabit", oturumTipi: "tek", yukseklikCm: 78 },
   { ...DEFAULTS.puf, yukseklikCm: 38 },
+  { ...DEFAULTS.puf, form: "yuvarlak", genislikCm: 60, derinlikCm: 60, yukseklikCm: 44 },
   // Chester-style tufted back, wingback armchair
   { ...DEFAULTS.uclu, sirtTipi: "kapitone", kol: "yuvarlak", yukseklikCm: 78 },
   { ...DEFAULTS.berjer, kulak: true, sirtTipi: "kapitone", yukseklikCm: 105 },
@@ -206,3 +207,47 @@ describe("paramFloorRects", () => {
     expect(area).toBeLessThan(w * d - 1);
   });
 });
+
+describe("yuvarlak puf ve Chester (11 Ekim)", () => {
+  const names = (p: ParametricParams) => {
+    const n: string[] = [];
+    buildParametric(p).traverse((o) => o.name && n.push(o.name));
+    return n;
+  };
+
+  it("yuvarlak puf: derinlik çapa eşit, adı ve ölçüsü çapla", () => {
+    const p = normaliseParams({ tip: "puf", form: "yuvarlak", genislikCm: 60, derinlikCm: 90 })!;
+    expect(p).toMatchObject({ form: "yuvarlak", genislikCm: 60, derinlikCm: 60 });
+    expect(shapeName(p)).toBe("Yuvarlak puf");
+    expect(describeParams(p)).toContain("Ø 60 cm");
+    // yalnızca pufta
+    expect(normaliseParams({ tip: "uclu", form: "yuvarlak" })!.form).toBeUndefined();
+    expect(names(p).filter((n) => n === "biye")).toHaveLength(2);
+  });
+
+  it("Chester: kollar sırtla aynı boyda, sırtın üstünde rulo, kolların içi düğmeli", () => {
+    const p = { ...applyStil(DEFAULTS.uclu, "chester"), yukseklikCm: 76 };
+    const n = names(p);
+    expect(n).toContain("sirt-kivrim");
+    expect(n.filter((x) => x === "kol-ic")).toHaveLength(2);
+    const g = buildParametric(p);
+    const top = (name: string) => {
+      const box = new THREE.Box3();
+      g.traverse((o) => o.name === name && box.expandByObject(o));
+      return box.max.y;
+    };
+    expect(Math.abs(top("kol-kivrim") - top("sirt-kivrim"))).toBeLessThan(0.02);
+    // kulaklı berjer Chester kurallarına girmez: kolları alçak kalır
+    expect(names(applyStil(DEFAULTS.berjer, "chester"))).not.toContain("sirt-kivrim");
+  });
+
+  it("sabit sırt: oturumun önünde en az 55 cm oturma derinliği kalır", () => {
+    const p = { ...applyStil(DEFAULTS.dortlu, "blok"), genislikCm: 300, derinlikCm: 104 };
+    const g = buildParametric(p);
+    const seat = new THREE.Box3();
+    g.traverse((o) => o.name === "oturum" && seat.expandByObject(o));
+    expect(seat.max.z - seat.min.z).toBeGreaterThan(0.55);
+    expect(seat.max.z - seat.min.z).toBeLessThan(0.7);
+  });
+});
+

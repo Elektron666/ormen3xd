@@ -780,3 +780,15 @@ Fatih Bey katalog görseli fikrini düşürdü; toplantının kalanı yapıldı.
 - **Dosyalar düzenlendi (Fatih Bey'in isteği):** Tablo dosyaları Türkçe adlandı (`…_kurulum.sql`, `…_kesim_masasi.sql`, `…_bolge_metraji.sql` …), katalog dosyaları `supabase/veri/` altında çalışma sırasıyla numaralandı (`1-ornek-katalog`, `2-kumaslar-misso`, `3-modeller-vitrin`). Açıklama: `supabase/BENIOKU.md`.
   - Canlı veritabanının "Migrations" listesi de aynı adlara çekildi: sekiz dosyanın hepsi işli. Önce her dosyanın değişikliğinin veritabanında gerçekten olduğu tek tek denetlendi, sonra listeye yazıldı.
 - **İzinler:** `.claude/settings.json`'a Supabase'te okuma, SQL çalıştırma ve tablo dosyası uygulama izni eklendi; bu depoda açılan oturumlarda bunlar için onay sorulmaz. Proje silme, durdurma, yeni proje açma gibi geri dönüşü zor işler listede yok; onlar yine sorulur.
+
+## Vitrin modelleri, 2. tur (11 Ekim, Fatih Bey)
+
+- **Şezlonglu L Köşe ve U Koltuk vitrinden kalktı.** Canlıda silinmedi, kapatıldı (`is_active = false`): paylaşılmış eski bağlantılar hata yerine kibarca düşer, istenirse panelden geri açılır.
+- **Chester yeniden modellendi** ("Chester olmamış"). Gerçek bir Chesterfield'ın üç işareti eklendi:
+  - kollar sırtla aynı yükseklikte, rulo kolların ve sırtın üstünde tek çizgi hâlinde dönüyor;
+  - kapitone sırt kalın ve dik, kolların içi de düğmeli;
+  - kısa (9 cm) ahşap ayak.
+  - Kulaklı Chester berjer bu kurala girmiyor (kolları kulakların altında alçak kalır).
+  - Vitrinde PIETRA-05 Bordo ile gösteriliyor: mat nubuk, Chester'ın alışılmış deri görünümüne en yakın ORMEN kumaşı. Berjer PIETRA-03 Toprak. Zikzak MISSO düğmeleri yutuyordu.
+- **Sabit sırt düzeltildi** ("Blok dörtlüde sırt kısmında sıkıntı var"). Sabit sırt 9 cm'lik ince bir pano olarak çerçevenin önünde duruyordu; yandan bakınca ince bir korkuluk gibiydi, oturum da 87 cm derinlikle oturulamayacak kadar derindi. Şimdi dolgu tabana oturuyor, çerçeveyle aynı üst çizgide ve derinliği modelin derinliğinden hesaplanıyor: oturumun önünde 55–70 cm oturma derinliği kalıyor (blok dörtlüde 26 cm kalın sırt).
+- **Yuvarlak puf eklendi.** Pufa "Form: Kare / Yuvarlak" seçeneği geldi (panelde "Seçerek oluştur"). Yuvarlakta genişlik çap oluyor. Üst ve alt düz kesim, yan tek şerit sarılıyor, kumaş yine gerçek ölçüsünde; üst ve altta biye, ortada kaplı düğme. Vitrinde Ø 60 × 44 cm, LUMA-05 Karamel.

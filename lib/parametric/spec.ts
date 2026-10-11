@@ -52,6 +52,8 @@ export interface ParametricParams {
    * Missing = the height of the chosen back preset.
    */
   yukseklikCm?: number;
+  /** Pouf only: round (diameter = width) instead of square-ish; missing = square. */
+  form?: "yuvarlak";
 }
 
 export const TIP_LABELS: Record<Tip, string> = {
@@ -265,12 +267,17 @@ export function normaliseParams(raw: unknown): ParametricParams | null {
   if (p.tip === "berjer" && r.kulak === true) p.kulak = true;
   if (p.tip !== "puf" && p.tip !== "berjer" && OTURUM_TIPLERI.includes(r.oturumTipi as OturumTipi) && r.oturumTipi !== "ayri") p.oturumTipi = r.oturumTipi as OturumTipi;
   if (typeof r.yukseklikCm === "number" && Number.isFinite(r.yukseklikCm)) p.yukseklikCm = Math.round(r.yukseklikCm);
+  if (p.tip === "puf" && r.form === "yuvarlak") {
+    p.form = "yuvarlak";
+    p.derinlikCm = p.genislikCm;
+  }
   return p;
 }
 
 /** Everyday name of a corner/modular set from its two ends. */
 export function shapeName(p: ParametricParams): string {
   if (p.tip === "berjer" && p.kulak) return "Kulaklı berjer";
+  if (p.tip === "puf" && p.form === "yuvarlak") return "Yuvarlak puf";
   if (p.tip !== "kose") return TIP_LABELS[p.tip];
   const ends = [p.solUc ?? "kol", p.sagUc ?? "kol"];
   const corners = ends.filter((u) => u === "kose").length;
@@ -284,7 +291,7 @@ export function shapeName(p: ParametricParams): string {
 /** Short human description, e.g. "Köşe takımı · 290 × 220 cm · kalın kol · köşe sağda". */
 export function describeParams(p: ParametricParams): string {
   const d = paramDimensions(p).d;
-  const size = p.tip === "kose" ? `${p.genislikCm} × ${d} cm` : `${p.genislikCm} × ${p.derinlikCm} cm`;
+  const size = p.tip === "kose" ? `${p.genislikCm} × ${d} cm` : p.form === "yuvarlak" ? `Ø ${p.genislikCm} cm` : `${p.genislikCm} × ${p.derinlikCm} cm`;
   const parts = [shapeName(p), size];
   if (p.tip !== "puf") parts.push(p.kol === "yok" ? "kolsuz" : `${KOL_LABELS[p.kol].toLocaleLowerCase("tr-TR")} kol`);
   if (p.sirtTipi === "sabit") parts.push("sabit sırt");

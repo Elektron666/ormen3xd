@@ -11,6 +11,8 @@ export interface Part extends CushionOptions {
   name: string;
   at: [number, number, number];
   rotX?: number;
+  /** Turn about the vertical axis (a panel facing sideways, e.g. the inside of a Chester arm). */
+  rotY?: number;
   /** Piping (biye) around these faces: [axis 0=x 1=y 2=z, side]. */
   welt?: [Axis, 1 | -1][];
 }
@@ -27,6 +29,7 @@ export function buildParts(parts: Part[], fabric: THREE.Material): THREE.Group {
     mesh.userData.cushion = { w: part.w, h: part.h, d: part.d, r: part.r };
     mesh.position.set(...part.at);
     if (part.rotX) mesh.rotation.x = part.rotX;
+    if (part.rotY) mesh.rotation.y = part.rotY;
     for (const [axis, side] of part.welt ?? []) {
       const welt = new THREE.Mesh(createWeltGeometry(part, axis, side), fabric);
       welt.name = "biye";

@@ -82,7 +82,7 @@ function SizeField({ label, value, range, error, onChange }: { label: string; va
 }
 
 /** A copy without an optional choice, so the stored data stays as before it was set. */
-function without(p: ParametricParams, k: "yukseklikCm" | "sirtTipi" | "oturumTipi" | "kulak"): ParametricParams {
+function without(p: ParametricParams, k: "yukseklikCm" | "sirtTipi" | "oturumTipi" | "kulak" | "form"): ParametricParams {
   const next = { ...p };
   delete next[k];
   return next;
@@ -117,6 +117,7 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
     setServerErrors({});
     setParams((p) => {
       const next = { ...p, [k]: v };
+      if (next.form === "yuvarlak") next.derinlikCm = next.genislikCm;
       // a new end type gets a length that suits it (a chaise is shorter than a corner return)
       for (const [ucKey, boyKey] of [
         ["solUc", "solBoyCm"],
@@ -231,6 +232,19 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
               }}
             />
           )}
+          {params.tip === "puf" && (
+            <Segmented
+              label="Form"
+              value={params.form ?? "kare"}
+              options={["kare", "yuvarlak"] as const}
+              labels={{ kare: "Kare / dikdörtgen", yuvarlak: "Yuvarlak" }}
+              onChange={(v) => {
+                setServerErrors({});
+                // a round pouf's depth is its diameter
+                setParams((p) => (v === "yuvarlak" ? { ...p, form: "yuvarlak", derinlikCm: p.genislikCm } : without(p, "form")));
+              }}
+            />
+          )}
           {params.tip !== "puf" && params.tip !== "berjer" && (
             <Segmented label="Oturum" value={params.oturumTipi ?? "ayri"} options={OTURUM_TIPLERI} labels={OTURUM_TIPI_LABELS} onChange={(v) => optional("oturumTipi", v, "ayri")} />
           )}
@@ -251,8 +265,14 @@ export function ParametricEditor({ model, fabrics, firmId = null }: { model?: Fu
 
         <section className="flex flex-col gap-4">
           <h2 className="eyebrow">2 · Ölçüler</h2>
-          <SizeField label={params.tip === "kose" ? "Arka duvar boyu, uçlar dahil (cm)" : "Genişlik (cm)"} value={params.genislikCm} range={lim.w} error={errors.genislikCm} onChange={(v) => set("genislikCm", v)} />
-          <SizeField label="Derinlik (cm)" value={params.derinlikCm} range={lim.d} error={errors.derinlikCm} onChange={(v) => set("derinlikCm", v)} />
+          <SizeField
+            label={params.tip === "kose" ? "Arka duvar boyu, uçlar dahil (cm)" : params.form === "yuvarlak" ? "Çap (cm)" : "Genişlik (cm)"}
+            value={params.genislikCm}
+            range={lim.w}
+            error={errors.genislikCm}
+            onChange={(v) => set("genislikCm", v)}
+          />
+          {params.form !== "yuvarlak" && <SizeField label="Derinlik (cm)" value={params.derinlikCm} range={lim.d} error={errors.derinlikCm} onChange={(v) => set("derinlikCm", v)} />}
           <SizeField
             label={params.tip === "puf" ? "Yükseklik (cm)" : "Yükseklik, sırtın üstü (cm)"}
             value={heightCm(params)}

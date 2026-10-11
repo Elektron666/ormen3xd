@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { SEAT_HEIGHT_CM, SEZLONG_EN_CM, heightCm, lowBack, seatCount, type Kol, type ParametricParams, type Uc } from "@/lib/parametric/spec";
 import { WELT, buildParts, materials, taperedLeg, type Part } from "./furniture";
+import { createRoundPoufGeometry, createRoundWeltGeometry, type RoundOptions } from "./round";
 
 // Builds a parametric sofa / corner sofa / armchair / pouf in metres.
 // Every upholstered part is a cushion primitive with UVs in metres, so the
@@ -39,10 +40,23 @@ interface Ctx {
   bench: boolean;
   /** Button-tufted back panel (kapitone); implies a fixed back. */
   tufted: boolean;
+  /**
+   * A true Chesterfield: rolled arms and a buttoned back at one height, a roll
+   * running round the top, buttons inside the arms too. A wingback keeps its
+   * low arms under the wings.
+   */
+  chester: boolean;
+  /** Depth of a fixed back's padding: the seat keeps about 60 cm in front of it. */
+  padD: number;
 }
 
+const CHESTER_ROLL = 0.15;
+
+/** From the back of the piece to the front of the back: frame, plus the padding of a fixed back. */
+const backDepth = (c: Ctx) => BACK_D + (c.fixed ? c.padD : 0);
+
 /** Top of the back frame: a loose cushion rises 6 cm over it unless the back is low or fixed. */
-const frameTopOf = (c: Ctx) => (c.low || c.fixed ? c.H : c.H - 0.06);
+const frameTopOf = (c: Ctx) => (c.chester ? c.H - CHESTER_ROLL / 2 : c.low || c.fixed ? c.H : c.H - 0.06);
 
 /**
  * One arm, centred on x, on side s (-1 left, +1 right), d deep around z.
@@ -53,15 +67,38 @@ function armParts(c: Ctx, x: number, s: -1 | 1, d: number, z: number): Part[] {
   const { legH, seatTop, arm } = c;
   const armH = seatTop + arm.rise - legH;
   if (c.p.kol !== "kivrik") return [{ name: "kol", welt: WELT.front, wrap: 2, w: arm.w, h: armH, d, r: arm.r, bulge: { y: 0.01, x: 0.006 }, at: [x, legH + armH / 2, z] }];
-  const top = seatTop + arm.rise;
-  const roll = 0.17;
+  // a Chesterfield's arms run at the back's height, so the roll goes round in one line
+  const top = c.chester ? c.H : seatTop + arm.rise;
+  const roll = c.chester ? CHESTER_ROLL : 0.17;
   const bodyW = arm.w - 0.045;
   const bodyH = top - roll * 0.6 - legH;
-  return [
+  const parts: Part[] = [
     { name: "kol", wrap: 2, w: bodyW, h: bodyH, d, r: 0.03, bulge: { x: 0.008 }, at: [x - s * 0.0225, legH + bodyH / 2, z] },
     // nearly a cylinder along the depth: the radius is almost half of its width and height
     { name: "kol-kivrim", wrap: 2, w: arm.w, h: roll, d, r: roll / 2 - 0.002, at: [x, top - roll / 2, z] },
   ];
+  if (c.chester) {
+    // the buttoned inside of the arm, from the seat up under the roll, from the front to the back padding
+    const zFront = z + d / 2 - 0.03;
+    const zBack = z - d / 2 + backDepth(c);
+    const len = zFront - zBack;
+    const bottom = seatTop - 0.01;
+    const h = top - roll * 0.55 - bottom;
+    const t = 0.06;
+    parts.push({
+      name: "kol-ic",
+      w: len,
+      h,
+      d: t,
+      r: 0.025,
+      bulge: { z: 0.008 },
+      tufts: { spacing: 0.15, depth: 0.016 },
+      // +z of the panel faces the seat: the arm's inner side
+      rotY: s < 0 ? Math.PI / 2 : -Math.PI / 2,
+      at: [x - s * (arm.w / 2 + t / 2 - 0.015), bottom + h / 2, (zFront + zBack) / 2],
+    });
+  }
+  return parts;
 }
 
 /** A straight run centred on x, back towards -z. */
@@ -72,7 +109,7 @@ function straightRun(c: Ctx, len: number, armStart: boolean, armEnd: boolean, se
   const x1 = len / 2 - (armEnd ? aw : 0);
   const innerW = x1 - x0;
   const cx = (x0 + x1) / 2;
-  const bd = back ? BACK_D : 0;
+  const bd = back ? backDepth(c) : 0;
   const parts: Part[] = [{ name: "govde", w: innerW + 0.02, h: baseTop - legH, d: D, r: 0.035, at: [cx, legH + (baseTop - legH) / 2, 0] }];
 
   if (armStart) parts.push(...armParts(c, -len / 2 + aw / 2, -1, D, 0));
@@ -92,6 +129,11 @@ function straightRun(c: Ctx, len: number, armStart: boolean, armEnd: boolean, se
   if (back) {
     const frameTop = frameTopOf(c);
     parts.push({ name: "sirt-govde", w: innerW + 0.02, h: frameTop - baseTop, d: BACK_D, r: 0.06, bulge: { z: 0.006 }, at: [cx, baseTop + (frameTop - baseTop) / 2, -D / 2 + BACK_D / 2] });
+    if (c.chester) {
+      // the roll along the top of the back, meeting the arms' rolls at the corners
+      const rd = backDepth(c) + 0.02;
+      parts.push({ name: "sirt-kivrim", w: innerW + 0.08, h: CHESTER_ROLL, d: rd, r: CHESTER_ROLL / 2 - 0.002, at: [cx, c.H - CHESTER_ROLL / 2, -D / 2 + rd / 2] });
+    }
   }
 
   const seatD = D - bd - 0.005;
@@ -109,21 +151,25 @@ function straightRun(c: Ctx, len: number, armStart: boolean, armEnd: boolean, se
 function backCushion(c: Ctx, w: number, x: number, z: number): Part {
   const bottom = c.seatTop - 0.03;
   if (c.fixed) {
-    // a padded panel fixed to the frame: thinner, nearly upright, stops just under the frame's top
-    const top = c.H - 0.035;
-    const h = Math.max(0.18, top - bottom);
+    // padding fixed to the frame, standing on the base behind the seat: one block with the frame,
+    // up to its top (under the roll on a Chesterfield), deep enough that the seat is a real seat
+    const frameFront = z - 0.08;
+    const pb = c.baseTop;
+    const top = c.chester ? c.H - CHESTER_ROLL * 0.55 : frameTopOf(c) - 0.008;
+    const h = Math.max(0.2, top - pb);
     return {
       name: "sirt-dolgu",
       w,
       h,
-      d: 0.09,
-      r: 0.04,
-      bulge: { z: c.tufted ? 0.012 : 0.018, x: 0.004, y: 0.006 },
+      d: c.padD,
+      r: c.tufted ? 0.035 : 0.06,
+      bulge: { z: c.tufted ? 0.012 : 0.02, x: 0.004, y: 0.008 },
+      soft: c.tufted ? undefined : 0.003,
       // buttons about a hand apart, as on a Chester back
-      tufts: c.tufted ? { spacing: 0.15, depth: 0.018 } : undefined,
+      tufts: c.tufted ? { spacing: 0.15, depth: 0.02 } : undefined,
       welt: WELT.front,
-      rotX: -0.07,
-      at: [x, bottom + h / 2, z - 0.035],
+      rotX: -0.025,
+      at: [x, pb + h / 2, frameFront + c.padD / 2],
     };
   }
   const top = c.H + (c.low ? -0.02 : 0.01);
@@ -187,18 +233,19 @@ function addSupports(group: THREE.Group, c: Ctx, rects: Rect[], wood: THREE.Mate
 function addCorner(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1, W: number, L: number, hasArms: boolean): Rect[] {
   const D = c.D;
   const cx = s * (W / 2 - D / 2);
-  const seatD = D - BACK_D;
+  const bd = backDepth(c);
+  const seatD = D - bd;
   const frameTop = frameTopOf(c);
   const frameH = frameTop - c.baseTop;
   group.add(
     partsGroup(
       [
         { name: "govde", w: D, h: c.baseTop - c.legH, d: D, r: 0.035, at: [cx, c.legH + (c.baseTop - c.legH) / 2, 0] },
-        { name: "oturum", welt: WELT.seat, w: seatD, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.03, z: 0.008, x: 0.008 }, soft: 0.006, at: [cx - s * (BACK_D / 2), c.baseTop + SEAT_T / 2, BACK_D / 2] },
+        { name: "oturum", welt: WELT.seat, w: seatD, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.03, z: 0.008, x: 0.008 }, soft: 0.006, at: [cx - s * (bd / 2), c.baseTop + SEAT_T / 2, bd / 2] },
         { name: "sirt-govde", w: D, h: frameH, d: BACK_D, r: 0.06, at: [cx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] },
         // side-wall back of the corner square (sized, not rotated)
         { name: "sirt-govde", w: BACK_D, h: frameH, d: D - BACK_D, r: 0.06, at: [s * (W / 2 - BACK_D / 2), c.baseTop + frameH / 2, BACK_D / 2] },
-        backCushion(c, seatD * 0.92, cx - s * (BACK_D / 2), -D / 2 + BACK_D + 0.08),
+        backCushion(c, seatD * 0.92, cx - s * (bd / 2), -D / 2 + BACK_D + 0.08),
       ],
       fabric,
     ),
@@ -234,11 +281,12 @@ function addChaise(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1
   const innerCx = cx - s * (aw / 2);
   const frameTop = frameTopOf(c);
   const frameH = frameTop - c.baseTop;
-  const seatD = L - BACK_D - 0.005;
+  const bd = backDepth(c);
+  const seatD = L - bd - 0.005;
   const parts: Part[] = [
     { name: "govde", w: cw - aw + 0.02, h: c.baseTop - c.legH, d: L, r: 0.035, at: [innerCx, c.legH + (c.baseTop - c.legH) / 2, zc] },
     { name: "sirt-govde", w: cw - aw + 0.02, h: frameH, d: BACK_D, r: 0.06, bulge: { z: 0.006 }, at: [innerCx, c.baseTop + frameH / 2, -D / 2 + BACK_D / 2] },
-    { name: "oturum", welt: WELT.seat, w: cw - aw, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.03, z: 0.01, x: 0.006 }, soft: 0.006, at: [innerCx, c.baseTop + SEAT_T / 2, -D / 2 + BACK_D + seatD / 2 + 0.005] },
+    { name: "oturum", welt: WELT.seat, w: cw - aw, h: SEAT_T, d: seatD, r: 0.055, bulge: { y: 0.03, z: 0.01, x: 0.006 }, soft: 0.006, at: [innerCx, c.baseTop + SEAT_T / 2, -D / 2 + bd + seatD / 2 + 0.005] },
     backCushion(c, cw - aw, innerCx, -D / 2 + BACK_D + 0.08),
   ];
   if (hasArms) {
@@ -252,7 +300,9 @@ function addChaise(group: THREE.Group, c: Ctx, fabric: THREE.Material, s: -1 | 1
 
 export function buildParametric(p: ParametricParams): THREE.Group {
   const { fabric, wood } = materials();
-  const legH = LEG_H[p.ayak];
+  // a Chesterfield stands low, on short turned feet
+  const chesterLook = p.sirtTipi === "kapitone" && p.kol === "kivrik" && !p.kulak && p.ayak === "konik";
+  const legH = chesterLook ? 0.09 : LEG_H[p.ayak];
   const seatTop = SEAT_HEIGHT_CM / 100;
   const c: Ctx = {
     p,
@@ -265,6 +315,8 @@ export function buildParametric(p: ParametricParams): THREE.Group {
     low: lowBack(p),
     fixed: p.sirtTipi === "sabit" || p.sirtTipi === "kapitone",
     tufted: p.sirtTipi === "kapitone",
+    chester: p.sirtTipi === "kapitone" && p.kol === "kivrik" && !p.kulak && p.tip !== "puf",
+    padD: Math.min(0.26, Math.max(0.09, p.derinlikCm / 100 - BACK_D - 0.6)),
     bench: p.oturumTipi === "tek",
   };
   const W = p.genislikCm / 100;
@@ -272,6 +324,27 @@ export function buildParametric(p: ParametricParams): THREE.Group {
   const group = new THREE.Group();
   group.name = `parametrik-${p.tip}`;
   const hasArms = p.kol !== "yok";
+
+  if (p.tip === "puf" && p.form === "yuvarlak") {
+    const R = W / 2;
+    const o: RoundOptions = { R, h: c.H - legH, r: Math.min(0.045, R / 5), crown: 0.012, button: 0.02 };
+    const mesh = new THREE.Mesh(createRoundPoufGeometry(o), fabric);
+    mesh.name = "puf";
+    // occlusion is baked against its box (ao.ts): close enough for a round body
+    mesh.userData.cushion = { w: W, h: o.h, d: W, r: o.r };
+    mesh.position.y = legH + o.h / 2;
+    for (const s of [1, -1] as const) {
+      const welt = new THREE.Mesh(createRoundWeltGeometry(o, s), fabric);
+      welt.name = "biye";
+      welt.userData.aoTarget = true;
+      mesh.add(welt);
+    }
+    group.add(mesh);
+    // legs inside the circle
+    const k = R * 0.62;
+    addSupports(group, c, [{ x0: -k - 0.06, x1: k + 0.06, z0: -k - 0.06, z1: k + 0.06 }], wood);
+    return group;
+  }
 
   if (p.tip === "puf") {
     const top = new THREE.Group();

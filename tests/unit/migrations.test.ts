@@ -124,11 +124,16 @@ describe("1-ornek-katalog.sql", () => {
     await fresh.exec(misso);
     const m5 = await fresh.query<{ color_name: string; repeat_w_cm: number }>("select f.color_name, t.repeat_w_cm::float as repeat_w_cm from fabrics f join fabric_textures t on t.fabric_id = f.id where f.code = 'MISSO-05'");
     expect(m5.rows[0]).toEqual({ color_name: "Panelde verilen ad", repeat_w_cm: 18.4 });
-    // the Chester showcase models, on top
+    // the showcase models, on top: 3 samples + 7 showcase
     const chester = readFileSync(path.join(process.cwd(), "supabase/veri/3-modeller-vitrin.sql"), "utf8");
+    // a database that still has the retired corner models switches them off
+    await fresh.exec(`insert into models (slug, name, procedural_key, params, fabric_material_names, width_cm, depth_cm, height_cm, is_active, sort_order) values ('u-koltuk', 'U Koltuk', 'parametric', '{"tip":"kose"}', '{kumas}', 340, 230, 78, true, 8)`);
     await fresh.exec(chester);
     await fresh.exec(chester);
     expect(await count("models")).toBe(11);
+    expect((await fresh.query("select 1 from models where slug in ('u-koltuk', 'sezlonglu-kose') and is_active")).rows).toHaveLength(0);
+    const ch = await fresh.query<{ default_fabric_code: string }>("select default_fabric_code from models where slug = 'chester-kanepe'");
+    expect(ch.rows[0].default_fabric_code).toBe("PIETRA-05");
     const mf = await fresh.query<{ pattern: string; is_placeholder: boolean; width_cm: number | null }>("select pattern, is_placeholder, width_cm from fabrics where code = 'MISSO-03'");
     expect(mf.rows[0]).toEqual({ pattern: "desenli", is_placeholder: false, width_cm: null });
     const m = await fresh.query<{ fabric_material_names: string[]; default_fabric_code: string }>("select fabric_material_names, default_fabric_code from models where slug = 'berjer'");
