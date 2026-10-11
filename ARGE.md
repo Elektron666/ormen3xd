@@ -14,7 +14,7 @@ Projede bu üç sorunun izleri zaten var:
 - **Kumaş dijitalleştirme:** MISSO fotoğraflarında ölçek üç kez değişti (3, 6, 4,4, sonra 4,6 cm diş). Perspektif yüzünden desen kaydı; doğru sonuç, fotoğrafın ortasından 4 diş kesilerek elle bulundu (`scripts/prepare-photo-fabric.ts`). Her yeni seri için bu elle yapılamaz.
 - **Renk:** Sitede "Ekran renkleri bağlayıcı değildir" yazıyor, ama farkın ne kadar olduğunu bilmiyoruz.
 - **Metraj:** Firmanın ustasının sayısı tekrarlanıyor; usta föyündeki QR'dan gerçekte kesilen metre geri geliyor (`cut_reports`). Bu veri birikiyor ama henüz analiz edilmiyor.
-- **Görüntü:** Biye telefonda kesik görünüyor; kadife ve nubukta hav yönü yok.
+- **Görüntü:** Biye telefonda kesik görünüyor.
 
 ## Ar-Ge yol haritası
 
@@ -23,10 +23,11 @@ Projede bu üç sorunun izleri zaten var:
 | A1 | **Kalibrasyon kartı ile kumaş tarama** | Basılı bir ORMEN kartı (köşe işaretleri + cm cetveli) kumaşın üstüne konup telefonla çekilince ölçek ve perspektif otomatik düzeltilebilir mi? | Bilinen raporlu 10 kumaşta ölçek hatası < %2, dikiş kayması gözle görülmez | 6–8 hafta |
 | A2 | **Renk doğruluğu** | Ekrandaki kumaş rengi numuneden ne kadar farklı? | ΔE2000; ColorChecker kartıyla çekim. Hedef: orta sınıf telefonda ortalama ΔE < 5 | 4 hafta (A1 ile birlikte) |
 | A3 | **Metraj tahmini** | Parametrik modelin parçalarından (kasa, kol, oturak, sırt) pastal yerleşimiyle metraj hesaplanabilir mi? | `cut_reports` gerçek metreleriyle karşılaştırma; ustanın sayısından daha küçük ortalama hata | Pilotta en az 30 kesim biriktikten sonra 8 hafta |
-| A4 | **Hav ve parlaklık** | Kadife ve nubukta hav yönü (anizotropik parlaklık) gerçek zamanlı ve telefonda akıcı gösterilebilir mi? | Gerçek fotoğrafla yan yana kör test; telefonda 30 fps altına düşmemek | 4 hafta |
 | A5 | **İnce detay telefonda** | Biye ve dikiş gibi ince geometri telefonda kırılmadan nasıl gösterilir? | Samsung ve iPhone'da ekran görüntüsü karşılaştırması | 1 hafta (cihaz testinde) |
 
-**Sıra:** A5 → A1 + A2 → A4 → A3.
+**Sıra:** A5 → A1 + A2 → A3.
+
+~~A4 hav ve parlaklık~~: Fatih Bey çıkardı (11 Ekim): "abartmasın, yok öyle bir şey." Sahada karşılığı olmayan bir iş; listeden kalktı.
 - A5 küçük ve cihaz testine bağlı.
 - A1 ve A2 birlikte yapılmalı: aynı çekim düzeni kullanılır, ve gerçek kumaş fotoğrafları gelmeden ikisi de başlayamaz.
 - A3 veri bekliyor.

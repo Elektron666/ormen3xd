@@ -847,3 +847,4 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
 - Gerçek bir kişi işe alınamaz. Ekibe temsilî bir Ar-Ge sorumlusu (Dr. Ece Tunalı) eklendi; yol haritası, iş ilanı metni, nereden aranacağı ve başvurulabilecek destekler: `ARGE.md`. Destek programlarının güncel şartları için resmî siteler kontrol edilmeli; tutar uydurulmadı.
 - **İlk adım yapıldı:** Panelde kumaşın **düz ölçek ve dikiş kontrolü** (Ölçek kontrol kutusu açılınca). Gerçek boyutta, dikiş köşesi ortada, cetvelle ayarlanabilir 10 cm.
 - **İlk bulgu:** MISSO-05'te yatay tekrar çizgisinde görünen fark. Ölçüm (`scripts/olc-dikis.ts`) aydınlatmanın değil, büyük olasılıkla tekrar boyunun (91,5 cm) desenin gerçek dikey tekrarına oturmamasının sebep olduğunu gösteriyor. Gerçek kumaşta ölçülecek. Ayrıntı `ARGE.md`'de.
+- **Hav görünümü (A4) Ar-Ge planından çıkarıldı** (Fatih Bey: "abartmasın, yok öyle bir şey"). Sıra: biye (telefon) → kalibrasyon kartı + renk → metraj.
