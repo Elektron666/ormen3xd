@@ -13,6 +13,7 @@ import { saveFabricAction } from "@/app/panel/actions";
 import { buttonClass, Field, inputClass } from "./ui";
 import { FabricPreview } from "./FabricPreview";
 import { FlatScaleCheck } from "./FlatScaleCheck";
+import { CARD_FABRIC_CM } from "@/lib/fabric/calibration";
 
 interface Draft {
   code: string;
@@ -91,6 +92,8 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
   const [fixSeam, setFixSeam] = useState(false);
   const [heightTouched, setHeightTouched] = useState(Boolean(fabric));
   const [scaleCheck, setScaleCheck] = useState(false);
+  // Ar-Ge A1: the photo has the ORMEN calibration card on it; scale and perspective come from it
+  const [useCard, setUseCard] = useState(false);
   const [previewModel, setPreviewModel] = useState(models[0]?.id ?? "");
   const [errors, setErrors] = useState<FabricFieldErrors>({});
   const [status, setStatus] = useState<string | null>(null);
@@ -100,34 +103,44 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
 
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => ({ ...d, [k]: v }));
   const repeatW = parseNumber(draft.repeatW) ?? 0;
+  // with the card the width comes from the card, so typing in the field does not reprocess
+  const widthForJob = useCard ? 0 : repeatW;
 
   // (re)process the photo when it, the seam option, the type or the width change
   const job = useRef(0);
   useEffect(() => {
-    if (!photo || !draft.type || !(repeatW > 0)) return;
+    if (!photo || !draft.type || !(useCard || repeatW > 0)) return;
     const id = ++job.current;
     const t = window.setTimeout(async () => {
       setProcessing(true);
       try {
-        const p = await processFabricPhoto(photo, { type: draft.type as FabricType, repeatWidthCm: repeatW, fixSeam });
+        const p = await processFabricPhoto(photo, { type: draft.type as FabricType, repeatWidthCm: useCard ? CARD_FABRIC_CM : repeatW, fixSeam, card: useCard });
         if (id !== job.current) return revoke(p);
         setProcessed((old) => {
           revoke(old);
           return p;
         });
-        setDraft((d) => ({
-          ...d,
-          colorFamily: d.colorFamily || suggestColorFamily(p.avgColor),
-          repeatH: heightTouched ? d.repeatH : String(Math.round(repeatW * p.aspect * 10) / 10),
+        setErrors((e) => ({ ...e, photo: undefined }));
+        setDraft((d) =>
+          p.cardCm
+            ? { ...d, colorFamily: d.colorFamily || suggestColorFamily(p.avgColor), repeatW: String(p.cardCm), repeatH: String(p.cardCm) }
+            : { ...d, colorFamily: d.colorFamily || suggestColorFamily(p.avgColor), repeatH: heightTouched ? d.repeatH : String(Math.round(repeatW * p.aspect * 10) / 10) },
+        );
+      } catch (err) {
+        setErrors((e) => ({
+          ...e,
+          photo:
+            err instanceof Error && err.name === "CardNotFound"
+              ? "Kalibrasyon kartının dört siyah işareti bulunamadı. Dördü de kadrajda, gölgesiz ve net olacak şekilde yeniden çekin."
+              : "Fotoğraf okunamadı. JPG, PNG ya da WebP deneyin.",
         }));
-      } catch {
-        setErrors((e) => ({ ...e, photo: "Fotoğraf okunamadı. JPG, PNG ya da WebP deneyin." }));
       } finally {
         if (id === job.current) setProcessing(false);
       }
     }, 300);
     return () => window.clearTimeout(t);
-  }, [photo, fixSeam, draft.type, repeatW, heightTouched]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- repeatW is read through widthForJob
+  }, [photo, fixSeam, draft.type, widthForJob, heightTouched, useCard]);
 
   useEffect(() => () => revoke(processed), [processed]);
 
@@ -242,7 +255,19 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
             </div>
             <input ref={fileInput} type="file" accept="image/*" className="hidden" aria-label="Kumaş fotoğrafı" onChange={(e) => pick(e.target.files?.[0])} />
           </div>
+          <label className="mt-2 flex items-center gap-2 text-[13px] text-antrasit-70">
+            <input type="checkbox" checked={useCard} onChange={(e) => setUseCard(e.target.checked)} className="h-4 w-4 accent-[#2a2a28]" />
+            Fotoğrafta ORMEN kalibrasyon kartı var: ölçeği ve açıyı karttan al
+            <a href="/panel/kalibrasyon-karti" target="_blank" className="underline underline-offset-2">
+              Kartı yazdır
+            </a>
+          </label>
           {errors.photo && <p className="mt-1.5 text-[12px] text-[#9a3b31]">{errors.photo}</p>}
+          {useCard && processed?.cardCm && (
+            <p className="mt-1.5 rounded-xl bg-[#e6efe4] px-3 py-2 text-[13px] text-[#2f5a2a]">
+              Kart bulundu: fotoğraf düzeltildi, kumaş {processed.cardCm} × {processed.cardCm} cm. Ölçü alanları karttan dolduruldu.
+            </p>
+          )}
           {processed && (
             <div className={`mt-3 rounded-xl px-3 py-2.5 text-[13px] leading-snug ${seamBad || fixSeam ? "bg-[#F4E9DD] text-ceviz" : "bg-cizgi/40 text-antrasit-70"}`}>
               {seamBad && !fixSeam ? (

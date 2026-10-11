@@ -17,6 +17,10 @@ Konfigüratördeki kumaşın gerçeğe benzemesi, büyük ölçüde fotoğrafa b
 - Tavan lambasını kapatın; sarı ve beyaz ışığı karıştırmayın.
 - Flaş kullanmayın.
 
+## Kalibrasyon kartı (önerilen yol)
+
+Panelden **Kalibrasyon kartı**nı basın (`/panel/kalibrasyon-karti`): %100 ölçek, A4. Alttaki çubuk cetvelle tam 10,0 cm olmalı. Ortadaki kareyi kesin, kartı kumaşın üstüne düz koyun ve dört siyah işaret de görünecek şekilde tepeden çekin. Panelde "Fotoğrafta ORMEN kalibrasyon kartı var"ı işaretleyince ölçek ve açı karttan gelir: cetvel ölçüsü yazmak, açıyı dert etmek gerekmez.
+
 ## Kumaşı serme
 
 1. Kumaşı ütüleyin ya da gergin serin; **kırışık olmasın**.

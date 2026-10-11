@@ -2,6 +2,7 @@
 
 import type { FabricType } from "@/lib/types";
 import { averageColor, deriveMaps, makeSeamless, seamScore, type Pixels } from "./process";
+import { CARD_FABRIC_CM, findCard, rectifyWindow } from "./calibration";
 
 // Browser side of the fabric pipeline: read the photo, prepare 2K and 1K
 // maps, encode them, and hand back blobs for upload plus object URLs for the
@@ -16,6 +17,16 @@ export interface ProcessedFabric {
   seam: number;
   /** Photo aspect (height / width), to suggest the repeat height. */
   aspect: number;
+  /** Set when the photo was flattened by the calibration card: the fabric square's real side, cm. */
+  cardCm?: number;
+}
+
+/** The calibration card was asked for but its four markers were not found. */
+export class CardNotFound extends Error {
+  constructor() {
+    super("Kalibrasyon kartının dört işareti bulunamadı.");
+    this.name = "CardNotFound";
+  }
 }
 
 export async function readPixels(file: Blob, maxSide = 2048): Promise<Pixels> {
@@ -55,9 +66,18 @@ async function encode(c: OffscreenCanvas, kind: "photo" | "data"): Promise<Blob>
 
 export async function processFabricPhoto(
   file: Blob,
-  opts: { type: FabricType; repeatWidthCm: number; fixSeam: boolean },
+  opts: { type: FabricType; repeatWidthCm: number; fixSeam: boolean; card?: boolean },
 ): Promise<ProcessedFabric> {
-  let px = await readPixels(file);
+  let px = await readPixels(file, opts.card ? 3000 : 2048);
+  let cardCm: number | undefined;
+  if (opts.card) {
+    // Ar-Ge A1: perspective undone and the scale taken from the card's markers (ARGE.md)
+    const found = findCard(px);
+    if (!found) throw new CardNotFound();
+    px = rectifyWindow(px, found).pixels;
+    cardCm = CARD_FABRIC_CM;
+    opts = { ...opts, repeatWidthCm: cardCm };
+  }
   const seam = seamScore(px);
   if (opts.fixSeam) px = makeSeamless(px);
   const { normal, roughness } = deriveMaps(px, opts.type, opts.repeatWidthCm);
@@ -81,7 +101,7 @@ export async function processFabricPhoto(
     thumb: await encode(scaled(thumbSrc, 192, 192), "photo"),
   };
   const urls = Object.fromEntries(Object.entries(files).map(([k, b]) => [k, URL.createObjectURL(b)])) as Record<MapKey, string>;
-  return { files, urls, avgColor: averageColor(px), seam, aspect: px.height / px.width };
+  return { files, urls, avgColor: averageColor(px), seam, aspect: px.height / px.width, cardCm };
 }
 
 export function revoke(p: ProcessedFabric | null | undefined) {

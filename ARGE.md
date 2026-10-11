@@ -20,7 +20,7 @@ Projede bu üç sorunun izleri zaten var:
 
 | # | Konu | Soru | Ölçüt | Süre |
 |---|---|---|---|---|
-| A1 | **Kalibrasyon kartı ile kumaş tarama** | Basılı bir ORMEN kartı (köşe işaretleri + cm cetveli) kumaşın üstüne konup telefonla çekilince ölçek ve perspektif otomatik düzeltilebilir mi? | Bilinen raporlu 10 kumaşta ölçek hatası < %2, dikiş kayması gözle görülmez | 6–8 hafta |
+| A1 | **Kalibrasyon kartı ile kumaş tarama** (ilk sürüm hazır, gerçek çekimle doğrulanacak) | Basılı bir ORMEN kartı (köşe işaretleri + cm cetveli) kumaşın üstüne konup telefonla çekilince ölçek ve perspektif otomatik düzeltilebilir mi? | Bilinen raporlu 10 kumaşta ölçek hatası < %2, dikiş kayması gözle görülmez | 6–8 hafta |
 | A2 | **Renk doğruluğu** | Ekrandaki kumaş rengi numuneden ne kadar farklı? | ΔE2000; ColorChecker kartıyla çekim. Hedef: orta sınıf telefonda ortalama ΔE < 5 | 4 hafta (A1 ile birlikte) |
 | A3 | **Metraj tahmini** | Parametrik modelin parçalarından (kasa, kol, oturak, sırt) pastal yerleşimiyle metraj hesaplanabilir mi? | `cut_reports` gerçek metreleriyle karşılaştırma; ustanın sayısından daha küçük ortalama hata | Pilotta en az 30 kesim biriktikten sonra 8 hafta |
 | A5 | **İnce detay telefonda** | Biye ve dikiş gibi ince geometri telefonda kırılmadan nasıl gösterilir? | Samsung ve iPhone'da ekran görüntüsü karşılaştırması | 1 hafta (cihaz testinde) |
@@ -77,6 +77,33 @@ Panel → Kumaşlar → kumaş sayfası → **Ölçek ve dikiş kontrolü**:
 Altı MISSO dokusu yeniden üretildi. Tekrar ölçüleri değişmedi; veritabanında değişiklik gerekmedi.
 
 **Kalan:** Gözle bakınca bulanık şerit yok, ama kesim çizgisinin hemen altında yaklaşık 2 cm'lik düzensiz bir iz var. Tam çözüm için kumaş **en az bir tam tekrar boyunda** fotoğraflanmalı. Fotoğrafta tekrar varsa ölçüm aracı onu derin bir dip olarak bulur ve dikiş kaybolur. Bunun için `KUMAS-CEKIM-REHBERI.md`'ye kural eklendi.
+
+## Üçüncü adım: kalibrasyon kartı (A1, ilk sürüm yapıldı, 11 Ekim)
+
+**Kart:** Panel → `/panel/kalibrasyon-karti`. A4, %100 ölçekte basılır.
+- Ortada kesilip çıkarılacak 15 × 15 cm bir pencere var. Pencerenin dört köşesinin yanında birer işaret var: 18 mm siyah kare, ortasında 6 mm beyaz delik.
+- Altta 10,0 cm kontrol çubuğu var. Cetvelle tutmazsa yazıcı sayfayı ölçeklemiştir ve kart kullanılamaz.
+
+**Panelde:** Yeni kumaş → "Fotoğrafta ORMEN kalibrasyon kartı var" işaretlenir.
+1. Dört işaret bulunur. Bunun için koyu, kareye yakın, ortası açık lekeler aranır; eşik Otsu yöntemiyle belirlenir. Uygun dörtlü seçilir.
+2. Kartın milimetre koordinatlarından fotoğrafa bir homografi (perspektif dönüşümü) kurulur.
+3. Pencerenin içi kenarlardan 4 mm içeriden, düz ve kare olarak yeniden örneklenir.
+4. Kumaş 14,2 × 14,2 cm olur; ölçü alanları kendiliğinden dolar.
+- Ek paket yok, her şey tarayıcıda çalışıyor.
+
+**Ölçüm (sentetik fotoğraf):** Kumaşta 1 cm aralıklı çizgiler, kart üstünde, farklı açılarla çekilmiş gibi üretildi. Düzeltilmiş penceredeki çizgi aralığı ölçüldü.
+
+| Durum | Ölçek hatası | İşaret konum hatası |
+|---|---|---|
+| Tepeden, hafif dönük | %0,04 | 0,78 px |
+| Açılı (perspektif) | %0,07 | 0,50 px |
+| Koyu kumaş, açılı | %0,05 | 0,64 px |
+
+Hedef %2'nin altıydı. Kart yokken yanlışlıkla kart bulunmuyor. Testler: `tests/unit/calibration.test.ts` ve uçtan uca panel testi.
+
+**Dürüst sınır:** Bunlar ideal görüntüler: bulanıklık, eşit olmayan ışık, lens bükülmesi, kartın kırışması yok. Gerçek telefon fotoğrafında hata daha büyük olur.
+- **Sıradaki ölçüm:** Kartı basıp raporu bilinen 3 kumaşla (ör. cetvelle ölçülmüş bir ekose) çekmek. Sonuç bu tabloya yazılacak.
+- Kart, A2'de (renk) gri referans alanıyla genişletilecek.
 
 ## Gerçek bir Ar-Ge'ci bulmak
 

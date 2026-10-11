@@ -77,3 +77,24 @@ test("panelde kumaşın düz ölçek ve dikiş kontrolü gerçek boyutta açıl�
   await expect(page.getByText("Rapor: 18.4 × 91.5 cm.")).toBeVisible();
   await flat.screenshot({ path: "test-results/duz-olcek.png" });
 });
+
+// Ar-Ge A1 (ARGE.md): a photo with the calibration card, taken at an angle; the panel finds the
+// card, flattens the window and fills in the real size by itself.
+test("kalibrasyon kartlı fotoğraf: ölçek ve açı karttan gelir", async ({ page, isMobile }) => {
+  test.skip(isMobile, "panel masaüstü");
+  test.setTimeout(120_000);
+  const { photo } = await import("../fixtures/card-photo");
+  const sharp = (await import("sharp")).default;
+  const { px } = photo([[420, 140], [980, 110], [1080, 1020], [300, 990]]);
+  const png = await sharp(Buffer.from(px.data), { raw: { width: px.width, height: px.height, channels: 4 } }).png().toBuffer();
+  await login(page);
+  await page.goto("/panel/kalibrasyon-karti");
+  await expect(page.getByRole("img", { name: "ORMEN kalibrasyon kartı" })).toBeVisible();
+  await page.goto("/panel/kumaslar/yeni");
+  await page.getByRole("checkbox", { name: /kalibrasyon kartı var/ }).check();
+  await page.getByLabel("Kumaş tipi").selectOption("dokuma");
+  await page.getByLabel("Kumaş fotoğrafı").setInputFiles({ name: "kartli.png", mimeType: "image/png", buffer: png });
+  await expect(page.getByText(/Kart bulundu/)).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByLabel("Fotoğraftaki alanın eni (cm)")).toHaveValue("14.2");
+  await expect(page.getByLabel("Boyu (cm)")).toHaveValue("14.2");
+});
