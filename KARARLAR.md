@@ -815,8 +815,8 @@ Fatih Bey katalog görseli fikrini düşürdü; toplantının kalanı yapıldı.
 - Panel API'leri ve panel işlemleri: hepsi oturumu kendisi denetliyor (yalnızca giriş, kod ve çıkış işlemleri oturumsuz; doğası gereği).
 - Depoda gizli anahtar yok.
 - **Bulunan ve kapatılanlar:**
-  - *Şifre/kod deneme sınırı yoktu.* Supabase kendi sınırını IP başına uyguluyor, ama bütün istekler ona Vercel sunucusundan gidiyor; ziyaretçileri ayıramıyor. Şimdi giriş, doğrulama kodu ve şifre değiştirme için aynı kaynaktan 15 dakikada 10 deneme.
-  - *Numune formu, kısa bağlantı ve olay sayacı sınırsızdı* (bir betik veritabanını doldurabilir, raporu bozabilirdi). Numune: 10 dakikada 5; kısa bağlantı: 60; olay: 600. Adres yalnızca bellekte, özetlenmiş hâliyle ve pencere süresince tutuluyor; hiçbir yere yazılmıyor. Yerel sunucuda (adres başlığı yok) sınır uygulanmıyor.
+  - *Şifre/kod deneme sınırı yoktu.* Supabase kendi sınırını IP başına uyguluyor, ama bütün istekler ona Vercel sunucusundan gidiyor; ziyaretçileri ayıramıyor. Şimdi giriş, doğrulama kodu ve şifre değiştirmede aynı kaynaktan 15 dakikada 10 **hatalı** deneme; doğru girişler sayılmıyor (kendi ekibini kilitlemesin).
+  - *Numune formu, kısa bağlantı ve olay sayacı sınırsızdı* (bir betik veritabanını doldurabilir, raporu bozabilirdi). Numune: 10 dakikada 5; kısa bağlantı: 60; olay: 600. Adres yalnızca bellekte, özetlenmiş hâliyle ve pencere süresince tutuluyor; hiçbir yere yazılmıyor. Sınırlar yalnızca Vercel'de çalışıyor; yerel sunucuda ve testlerde (tek makine, ayırt edecek bir şey yok) kapalı.
   - *HSTS başlığı yoktu*: tarayıcı siteyi iki yıl boyunca yalnızca https ile açar.
   - *Demo modunda yüklenen dosyalar* sayfa gibi çalışamaz (CSP sandbox).
   - Supabase: `touch_updated_at` sabit search_path (dün); Supabase'in kendi "RLS'yi otomatik aç" fonksiyonunun herkese açık çağrı izni kaldırıldı.

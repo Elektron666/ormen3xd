@@ -8,11 +8,12 @@ import { createHash } from "node:crypto";
 const buckets = new Map<string, number[]>();
 
 /**
- * The caller, hashed. Null when the request carries no forwarded address:
- * a local server (development, tests) with nothing to tell callers apart.
- * Vercel always sets it.
+ * The caller, hashed. Null off Vercel (a local server, the tests: one
+ * machine, nothing to tell callers apart) or when no address came with the
+ * request; then nothing is limited.
  */
-export function callerKey(headers: Headers): string | null {
+export function callerKey(headers: Headers, onVercel = !!process.env.VERCEL): string | null {
+  if (!onVercel) return null;
   const ip = headers.get("x-forwarded-for")?.split(",")[0]?.trim() || headers.get("x-real-ip");
   return ip ? createHash("sha256").update(ip).digest("base64url").slice(0, 16) : null;
 }
@@ -31,3 +32,17 @@ export function allow(scope: string, key: string | null, max: number, windowMs: 
   if (buckets.size > 10_000) for (const [bk, ts] of buckets) if (!ts.some((t) => now - t < windowMs)) buckets.delete(bk);
   return true;
 }
+
+/** For guessing (passwords, codes): blocked once `max` failures fell within the window. Only failures count. */
+export function blocked(scope: string, key: string | null, max: number, windowMs: number, now = Date.now()): boolean {
+  if (key === null) return false;
+  const recent = (buckets.get(`${scope}:${key}`) ?? []).filter((t) => now - t < windowMs);
+  return recent.length >= max;
+}
+
+export function recordFailure(scope: string, key: string | null, now = Date.now()): void {
+  if (key === null) return;
+  const k = `${scope}:${key}`;
+  buckets.set(k, [...(buckets.get(k) ?? []), now]);
+}
+

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { looksPersonal, parseFeedback } from "@/lib/feedback";
-import { allow, callerKey } from "@/lib/rate-limit";
+import { allow, blocked, callerKey, recordFailure } from "@/lib/rate-limit";
 import { MemoryRepository } from "@/lib/data/memory-repo";
 
 describe("geri bildirim", () => {
@@ -32,8 +32,19 @@ describe("geri bildirim", () => {
     expect(allow("test", "k", 5, 60_000, t + 61_000)).toBe(true);
     // a local server without a forwarded address: nothing to tell callers apart, no limit
     for (let i = 0; i < 20; i++) expect(allow("test", null, 5, 60_000, t)).toBe(true);
-    expect(callerKey(new Headers())).toBeNull();
-    expect(callerKey(new Headers({ "x-forwarded-for": "1.2.3.4, 10.0.0.1" }))).toBe(callerKey(new Headers({ "x-forwarded-for": "1.2.3.4" })));
+    expect(callerKey(new Headers(), true)).toBeNull();
+    expect(callerKey(new Headers({ "x-forwarded-for": "1.2.3.4" }), false)).toBeNull();
+    expect(callerKey(new Headers({ "x-forwarded-for": "1.2.3.4, 10.0.0.1" }), true)).toBe(callerKey(new Headers({ "x-forwarded-for": "1.2.3.4" }), true));
+  });
+
+  it("şifre denemesinde yalnızca hatalı denemeler sayılır", () => {
+    const t = 5_000_000;
+    for (let i = 0; i < 9; i++) recordFailure("giris-test", "k", t + i);
+    expect(blocked("giris-test", "k", 10, 60_000, t + 20)).toBe(false);
+    recordFailure("giris-test", "k", t + 21);
+    expect(blocked("giris-test", "k", 10, 60_000, t + 22)).toBe(true);
+    expect(blocked("giris-test", "k", 10, 60_000, t + 61_000)).toBe(false);
+    expect(blocked("giris-test", null, 10, 60_000, t + 22)).toBe(false);
   });
 
   it("panelde en yeni önce listelenir, silinir", async () => {
