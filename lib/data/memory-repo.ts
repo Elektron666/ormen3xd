@@ -195,6 +195,18 @@ export class MemoryRepository implements Repository {
     this.feedback = this.feedback.filter((f) => f.id !== id);
   }
 
+  async purgeFeedbackContacts(before: Date) {
+    let n = 0;
+    this.feedback = this.feedback.map((f) => {
+      if (!f.contact || new Date(f.createdAt) >= before) return f;
+      n++;
+      const rest = { ...f };
+      delete rest.contact;
+      return rest;
+    });
+    return n;
+  }
+
   async recordEvent(e: UsageEvent) {
     this.events.unshift({ ...e, createdAt: new Date().toISOString() });
     if (this.events.length > 50_000) this.events.length = 50_000;

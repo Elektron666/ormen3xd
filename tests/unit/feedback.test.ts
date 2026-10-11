@@ -11,7 +11,7 @@ describe("geri bildirim", () => {
 
   it("boş, çok uzun, bilinmeyen konu ve bot alanı reddedilir", () => {
     expect(parseFeedback({ kind: "oneri", message: "a" }).ok).toBe(false);
-    expect(parseFeedback({ kind: "oneri", message: "x".repeat(1001) }).ok).toBe(false);
+    expect(parseFeedback({ kind: "oneri", message: "x".repeat(501) }).ok).toBe(false);
     expect(parseFeedback({ kind: "sikayet", message: "merhaba" }).ok).toBe(false);
     expect(parseFeedback({ kind: "oneri", message: "merhaba", website: "spam.com" }).ok).toBe(false);
     // adres çubuğundaki sorgu (paylaşım kodu) saklanmaz
@@ -68,5 +68,29 @@ describe("katalog sırası", () => {
       { code: "MISSO-02", isPlaceholder: false },
     ];
     expect(realFirst(list).map((f) => f.code)).toEqual(["MISSO-01", "MISSO-02", "LUMA-01", "LUMA-02"]);
+  });
+});
+
+describe("bize fikir verin: iletişim", () => {
+  it("boşsa isimsiz; doluysa ad, telefon ve onay şart", async () => {
+    const { parseContact } = await import("@/lib/feedback");
+    expect(parseContact(undefined)).toBeUndefined();
+    expect(parseContact({ company: " ", name: "", phone: "" })).toBeUndefined();
+    expect(parseContact({ name: "Kemal", phone: "" , consent: true})).toMatch(/telefon/);
+    expect(parseContact({ name: "Kemal Yıldız", phone: "0533 222 11 00" })).toMatch(/onay/);
+    expect(parseContact({ company: "Yıldız Mobilya", name: " Kemal  Yıldız ", phone: "0533 222 11 00", consent: true })).toEqual({ company: "Yıldız Mobilya", name: "Kemal Yıldız", phone: "+905332221100" });
+    expect(parseContact({ name: "Kemal", phone: "05332221100", consent: true })).toEqual({ company: null, name: "Kemal", phone: "+905332221100" });
+  });
+
+  it("geri bildirime eklenir; saklama süresi sonunda iletişim silinir, mesaj kalır", async () => {
+    const r = parseFeedback({ kind: "oneri", message: "Kütük kol olsun", contact: { name: "Kemal", phone: "05332221100", consent: true } });
+    expect(r.ok && r.value.contact).toEqual({ company: null, name: "Kemal", phone: "+905332221100" });
+    expect(parseFeedback({ kind: "oneri", message: "Kütük kol olsun", contact: { name: "Kemal", phone: "05332221100" } }).ok).toBe(false);
+    const repo = new MemoryRepository();
+    await repo.recordFeedback(r.ok ? r.value : (null as never));
+    expect(await repo.purgeFeedbackContacts(new Date(Date.now() + 1000))).toBe(1);
+    const [f] = await repo.listFeedback();
+    expect(f.contact).toBeUndefined();
+    expect(f.message).toBe("Kütük kol olsun");
   });
 });

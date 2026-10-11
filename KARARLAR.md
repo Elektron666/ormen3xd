@@ -833,3 +833,11 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
 - **Telefonda alt bölüm:** Renk uyarısı ve "Geri bildirim" tek blok hâlinde akıyor; araç çubuğu bir satır yukarı alındı, çakışma yok.
 - **Numune formu:** "Talebi gönder" düğmesi pencerenin altında sabit; dizüstünde kaydırmadan görünüyor.
 - **Bekleyen:** biye telefonda kesik görünüyor; gerçek cihazda ölçülmeden değiştirilmeyecek.
+
+## "Bize fikir verin" (11 Ekim, Fatih Bey: "firma adı, isim, telefon ve kısa bir alan")
+
+- "Geri bildirim" bağlantısı **"Bize fikir verin"** oldu. Konu + en fazla 500 karakterlik kısa "Fikriniz" alanı.
+- Altında **"Size dönelim mi? (isteğe bağlı)"**: Firma adı, Ad soyad, Telefon. Zorunlu yapılmadı: kişisel veri isteyen form, mağazadaki müşteriyi yazmaktan vazgeçirir; isimsiz fikir de değerli. Ad veya telefon yazılırsa ikisi de ve onay kutusu şart ("yalnızca bu mesaja dönüş için"); firma adı isteğe bağlı.
+- Panelde sekmenin adı **Fikirler**. Dönüş isteyen mesajın altında ad, firma, tıklanınca arayan telefon ve WhatsApp bağlantısı; ana sayfa kartında "dönüş bekliyor" sayısı.
+- **Saklama:** Numune talepleriyle aynı süre (`SAMPLE_RETENTION_DAYS`). Süre dolunca ad, firma ve telefon siliniyor, mesaj kalıyor. KVKK metni buna göre güncellendi.
+- Veritabanı: `20261013000000_fikir_iletisim.sql` (canlıda çalıştırıldı). Ad ve telefon ya birlikte ya hiç; telefon `+90…` biçiminde.

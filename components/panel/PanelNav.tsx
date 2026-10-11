@@ -9,7 +9,7 @@ const LINKS = [
   ["/panel/firmalar", "Firmalar"],
   ["/panel/talepler", "Talepler"],
   ["/panel/rapor", "Rapor"],
-  ["/panel/geri-bildirim", "Geri bildirim"],
+  ["/panel/geri-bildirim", "Fikirler"],
   ["/panel/durum", "Kurulum"],
   ["/panel/guvenlik", "Güvenlik"],
 ] as const;

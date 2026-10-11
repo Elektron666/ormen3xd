@@ -23,6 +23,7 @@ export default async function PanelHome() {
     repo.listFeedback().catch(() => []),
   ]);
   const newFeedback = feedback.filter((f) => new Date(f.createdAt) >= weekAgo).length;
+  const waiting = feedback.filter((f) => f.contact && new Date(f.createdAt) >= weekAgo).length;
   const todayKey = now.toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" });
   const today = week?.days.find((d) => d.day === todayKey)?.sessions ?? 0;
   const cards = [
@@ -30,7 +31,7 @@ export default async function PanelHome() {
     { href: "/panel/modeller", title: "Modeller", value: models.filter((m) => m.isActive).length, note: "vitrin ve firma modelleri" },
     { href: "/panel/firmalar", title: "Firmalar", value: firms.filter((f) => f.isActive).length, note: "kendi sayfası olan firma" },
     { href: "/panel/rapor", title: "Ziyaret (bugün)", value: today, note: week ? `son 7 gün: ${week.sessions}` : "rapor okunamadı" },
-    { href: "/panel/geri-bildirim", title: "Geri bildirim", value: newFeedback, note: "son 7 gün" },
+    { href: "/panel/geri-bildirim", title: "Fikirler", value: newFeedback, note: `son 7 gün${waiting ? ` · ${waiting} dönüş bekliyor` : ""}` },
     { href: "/panel/talepler", title: "Numune talepleri", value: samples.length, note: samples[0] ? `son: ${new Date(samples[0].createdAt).toLocaleDateString("tr-TR")}` : "henüz yok" },
   ];
   const overdue = overdueCount(samples);

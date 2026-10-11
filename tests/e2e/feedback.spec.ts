@@ -1,16 +1,16 @@
 import { expect, test } from "@playwright/test";
 import { login } from "./helpers";
 
-// "Geri bildirim gönder" (11 Oct): a visitor sends a few words, ORMEN reads them in the panel.
-test("ziyaretçi geri bildirim gönderir, panelde görünür", async ({ page, browser }) => {
+// "Bize fikir verin" (11 Oct): anonymous by default; a firm that wants an answer leaves its name and phone.
+test("ziyaretçi fikrini isimsiz gönderir, panelde görünür", async ({ page, browser }) => {
   const visitor = await browser.newPage();
   await visitor.goto("/");
-  await visitor.getByRole("button", { name: "Geri bildirim" }).click();
-  const dialog = visitor.getByRole("dialog", { name: "Geri bildirim" });
-  await dialog.getByLabel("Mesajınız").fill("beni 0532 123 45 67 den arayın");
-  await expect(dialog.getByText(/kişisel bilgi saklamıyoruz/)).toBeVisible();
+  await visitor.getByRole("button", { name: "Bize fikir verin" }).click();
+  const dialog = visitor.getByRole("dialog", { name: "Bize fikir verin" });
+  await dialog.getByLabel("Fikriniz").fill("beni 0532 123 45 67 den arayın");
+  await expect(dialog.getByText(/iletişim bilgilerini yukarıdaki alanlara/)).toBeVisible();
   const text = `Yuvarlak puf çok güzel ${Date.now()}`;
-  await dialog.getByLabel("Mesajınız").fill(text);
+  await dialog.getByLabel("Fikriniz").fill(text);
   await dialog.getByRole("button", { name: "Gönder" }).click();
   await expect(dialog.getByText("Bir konu seçin.")).toBeVisible();
   await dialog.getByRole("button", { name: "Beğendim" }).click();
@@ -21,9 +21,35 @@ test("ziyaretçi geri bildirim gönderir, panelde görünür", async ({ page, br
   await login(page);
   // the visit count sits on the panel's home page
   await expect(page.getByText("Ziyaret (bugün)")).toBeVisible();
-  await expect(page.getByRole("link", { name: /^Geri bildirim \d+ son 7 gün$/ })).toBeVisible();
-  await page.getByRole("navigation", { name: "Panel" }).getByRole("link", { name: "Geri bildirim", exact: true }).click();
+  await expect(page.getByRole("link", { name: /^Fikirler \d+ son 7 gün/ })).toBeVisible();
+  await page.getByRole("navigation", { name: "Panel" }).getByRole("link", { name: "Fikirler", exact: true }).click();
   await expect(page.getByText(text)).toBeVisible();
+});
+
+test("dönüş isteyen firma adını, adını ve telefonunu onayla bırakır; panelde aranabilir", async ({ page, browser }) => {
+  const visitor = await browser.newPage();
+  await visitor.goto("/");
+  await visitor.getByRole("button", { name: "Bize fikir verin" }).click();
+  const dialog = visitor.getByRole("dialog", { name: "Bize fikir verin" });
+  await dialog.getByRole("button", { name: "Önerim var" }).click();
+  const text = `Kütük kol eklensin ${Date.now()}`;
+  await dialog.getByLabel("Fikriniz").fill(text);
+  await dialog.getByRole("textbox", { name: "Firma adı" }).fill("Yıldız Mobilya");
+  await dialog.getByRole("textbox", { name: "Ad soyad" }).fill("Kemal Yıldız");
+  await dialog.getByRole("textbox", { name: "Telefon" }).fill("0533 222 11 00");
+  await dialog.getByRole("button", { name: "Gönder" }).click();
+  await expect(dialog.getByRole("alert")).toContainText("onay kutusunu");
+  await dialog.getByRole("checkbox", { name: /kabul ediyorum/ }).check();
+  await dialog.getByRole("button", { name: "Gönder" }).click();
+  await expect(dialog.getByRole("status")).toContainText("Size telefonla döneceğiz");
+  await visitor.close();
+
+  await login(page);
+  await page.goto("/panel/geri-bildirim");
+  const item = page.getByRole("listitem").filter({ hasText: text });
+  await expect(item).toContainText("Kemal Yıldız");
+  await expect(item).toContainText("Yıldız Mobilya");
+  await expect(item.getByRole("link", { name: "0533 222 11 00" })).toHaveAttribute("href", "tel:+905332221100");
 });
 
 test("panelde Güvenlik sayfası: örnek veri modunda iki adımlı doğrulama yok der", async ({ page }) => {

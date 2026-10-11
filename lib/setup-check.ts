@@ -42,6 +42,7 @@ export const MIGRATIONS = [
   ["20261010000000_kesim_masasi.sql", "Kesim masası: numune adımları, lot, kumaş deseni ve yönü"],
   ["20261011000000_bolge_metraji.sql", "Bölge başına metraj (kasa, kollar, oturak, sırt)"],
   ["20261012000000_geri_bildirim.sql", "Ziyaretçi geri bildirimi"],
+  ["20261013000000_fikir_iletisim.sql", "Fikir formunda isteğe bağlı iletişim"],
 ] as const;
 
 export function evaluateSetup(f: SetupFacts): Check[] {

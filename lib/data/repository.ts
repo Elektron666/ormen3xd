@@ -68,6 +68,8 @@ export interface Repository {
   /** Newest first, capped. */
   listFeedback(): Promise<Feedback[]>;
   deleteFeedback(id: string): Promise<void>;
+  /** Clears name, firm and phone from messages older than the date (retention); the message itself stays. */
+  purgeFeedbackContacts(before: Date): Promise<number>;
 
   recordEvent(e: UsageEvent): Promise<void>;
   /** Events since a date (newest first, capped), optionally of one firm ("" = ORMEN's own pages). */

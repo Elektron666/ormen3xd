@@ -475,7 +475,7 @@ export function Configurator({
                   onClick={() => setFeedbackOpen(true)}
                   className="pointer-events-auto whitespace-nowrap px-1 py-1 text-antrasit-50 underline underline-offset-2 hover:text-antrasit"
                 >
-                  Geri bildirim
+                  Bize fikir verin
                 </button>
               </>
             )}

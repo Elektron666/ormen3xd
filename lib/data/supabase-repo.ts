@@ -379,7 +379,17 @@ export class SupabaseRepository implements Repository {
   }
 
   async recordFeedback(f: FeedbackInput) {
-    check(await this.db.from("feedback").insert({ kind: f.kind, message: f.message, page: f.page, firm_slug: f.firmSlug, device: f.device ?? null }));
+    const row: Record<string, string | null> = { kind: f.kind, message: f.message, page: f.page, firm_slug: f.firmSlug, device: f.device ?? null };
+    // contact columns come with a later migration: an anonymous message never touches them
+    check(
+      await this.db
+        .from("feedback")
+        .insert(
+          f.contact
+            ? { ...row, contact_company: f.contact.company, contact_name: f.contact.name, contact_phone: f.contact.phone, contact_consent_at: new Date().toISOString() }
+            : row,
+        ),
+    );
   }
 
   async listFeedback(): Promise<Feedback[]> {
@@ -390,9 +400,33 @@ export class SupabaseRepository implements Repository {
       page: string | null;
       firm_slug: string | null;
       device: Feedback["device"] | null;
+      contact_company?: string | null;
+      contact_name?: string | null;
+      contact_phone?: string | null;
       created_at: string;
     }[];
-    return rows.map((r) => ({ id: String(r.id), kind: r.kind, message: r.message, page: r.page, firmSlug: r.firm_slug, device: r.device ?? undefined, createdAt: r.created_at }));
+    return rows.map((r) => ({
+      id: String(r.id),
+      kind: r.kind,
+      message: r.message,
+      page: r.page,
+      firmSlug: r.firm_slug,
+      device: r.device ?? undefined,
+      ...(r.contact_name && r.contact_phone ? { contact: { company: r.contact_company ?? null, name: r.contact_name, phone: r.contact_phone } } : {}),
+      createdAt: r.created_at,
+    }));
+  }
+
+  async purgeFeedbackContacts(before: Date) {
+    const res = await this.db
+      .from("feedback")
+      .update({ contact_company: null, contact_name: null, contact_phone: null, contact_consent_at: null })
+      .lt("created_at", before.toISOString())
+      .not("contact_phone", "is", null)
+      .select("id");
+    // before the contact migration the columns do not exist: nothing to clear
+    if (res.error) return 0;
+    return (res.data ?? []).length;
   }
 
   async deleteFeedback(id: string) {

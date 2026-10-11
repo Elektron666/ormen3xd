@@ -17,6 +17,7 @@ Ad sırasıyla, her biri bir kez çalışır. Supabase'in "Migrations" listesind
 | `20261010000000_kesim_masasi.sql` | Numune adımları, lot, kumaş deseni ve yönü, metraj, kesim geri bildirimi |
 | `20261011000000_bolge_metraji.sql` | Bölge başına metraj (kasa, kollar, oturak, sırt) |
 | `20261012000000_geri_bildirim.sql` | Ziyaretçi geri bildirimi (isimsiz) |
+| `20261013000000_fikir_iletisim.sql` | "Bize fikir verin": isteğe bağlı firma adı, ad, telefon (onaylı) |
 
 Yeni bir değişiklik yeni bir dosyayla gelir; eski dosya değiştirilmez. Kurulum sayfası (`/panel/durum`) hangisinin eksik olduğunu söyler.
 
