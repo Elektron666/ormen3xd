@@ -142,3 +142,15 @@ Ayrıntı ve gerekçeler `TOPLANTI-2026-10-05.md` dosyasında. Fotoğraf ve avuk
 - [ ] Gerçek logo ve kısa ORMEN tanıtım satırı (Fatih Bey'den).
 - [ ] Yer tutucuları gizlemek (gerçek kumaşlar gelince).
 
+## Gece, 12 Ekim (`TOPLANTI-2026-10-12-gece.md`, `SABAH-RAPORU.md`)
+- [x] Erişilebilirlik WCAG 2.1 AA, yeni ekranlar ve telefon.
+- [x] 3B bağlamı kaybolunca sahne geri gelir.
+- [x] Föyde 5 × 5 cm gerçek boyut kare.
+- [x] Açılışta JavaScript 303 → 179 kB.
+- [x] İçerik güvenlik politikası.
+- [x] Pilot günü iki adımlı doğrulama anahtarı (`PANEL_2FA_ZORUNLU=1`).
+- [x] Bulanık fotoğraf uyarısı.
+- [x] Kart bulunamazsa nedeni.
+- [x] Tarayıcı hataları sunucu kaydına.
+- [ ] "Sahne açılamadı" olayı raporda (veritabanı değişikliği; Supabase bağlantısı gerekiyor).
+- [ ] Çevrimdışı kiosk (doku önbelleği).

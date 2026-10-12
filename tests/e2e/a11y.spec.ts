@@ -68,9 +68,12 @@ test.describe("erişilebilirlik", () => {
     await page.goto("/f/ornek-mobilya");
     await expect(page.getByRole("button", { name: "Numune iste" })).toBeVisible({ timeout: 60_000 });
     expect(await violations(page)).toEqual([]);
+    // dialogs load their code when first opened: wait for them, so axe checks the dialog itself
     await page.getByRole("button", { name: "Numune iste" }).click();
+    await expect(page.getByRole("dialog", { name: "Numune iste" })).toBeVisible();
     expect(await violations(page)).toEqual([]);
     await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toBeHidden();
     await page.getByRole("button", { name: "Odamda gör" }).click();
     await expect(page.getByRole("img", { name: "Telefonda açmak için QR kod" })).toBeVisible();
     expect(await violations(page)).toEqual([]);
