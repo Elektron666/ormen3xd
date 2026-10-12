@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { login, sceneFabrics } from "./helpers";
 
 // Kesim masası (2nd meeting): the firm's own metres reach the cutter's sheet

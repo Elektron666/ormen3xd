@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 const LAYOUT = "moduler-kanepe.LUMA-02.0.51.0_berjer.SIENA-03.170.60.-90";
 

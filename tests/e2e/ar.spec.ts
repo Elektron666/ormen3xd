@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 // Real AR needs a real phone; here we check what can be checked in a browser:
 // the right path per device, and a valid GLB with the fabric baked in.

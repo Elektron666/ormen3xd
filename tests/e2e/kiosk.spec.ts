@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { sceneFabrics } from "./helpers";
 
 // the welcome screen's slow turn renders every frame, which a test browser without a

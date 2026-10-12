@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import sharp from "sharp";
 import { colourDrift, hexToLab } from "@/lib/fabric/color";
 import { linearToSrgb, rgbToHex, srgbToLinear } from "@/lib/fabric/maps";

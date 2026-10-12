@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { login, sceneFabrics } from "./helpers";
 
 test("ziyaret ve kumaş denemeleri raporda görünür; panel kullanıcısı sayılmaz", async ({ browser, isMobile }) => {

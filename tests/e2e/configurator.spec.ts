@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 type StageWindow = Window & {
   __ormenStage?: { get(): { scene: { traverse(cb: (o: { isMesh?: boolean; material?: { name?: string } }) => void): void } } };

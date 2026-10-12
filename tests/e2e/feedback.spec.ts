@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { login } from "./helpers";
 
 // "Bize fikir verin" (11 Oct): anonymous by default; a firm that wants an answer leaves its name and phone.
