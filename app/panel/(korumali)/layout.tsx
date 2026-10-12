@@ -8,7 +8,9 @@ import { PanelNav } from "@/components/panel/PanelNav";
 export const metadata: Metadata = { title: { default: "Panel", template: "%s · Panel" }, robots: { index: false } };
 
 export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
-  const user = await requirePanelUser();
+  // the Güvenlik page must open for an account that still has to set up two-step verification;
+  // every other page checks again on its own
+  const user = await requirePanelUser({ setup: true });
   const repo = getRepository();
   return (
     <div className="min-h-dvh bg-kirik-beyaz text-antrasit">

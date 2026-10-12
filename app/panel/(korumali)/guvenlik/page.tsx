@@ -1,4 +1,4 @@
-import { requirePanelUser } from "@/lib/auth/panel";
+import { requirePanelUser, twoFactorRequired } from "@/lib/auth/panel";
 import { PageHeader } from "@/components/panel/ui";
 import { TwoFactorSetup } from "@/components/panel/TwoFactorSetup";
 import { PasswordForm } from "@/components/panel/PasswordForm";
@@ -7,11 +7,17 @@ export const metadata = { title: "Güvenlik" };
 
 export default async function SecurityPage() {
   // checked here, not only in the layout: a layout check does not stop the page from rendering
-  const user = await requirePanelUser();
+  const user = await requirePanelUser({ setup: true });
+  const required = twoFactorRequired();
   const live = user.mode === "supabase";
   return (
     <>
       <PageHeader title="Güvenlik" eyebrow={user.email} />
+      {required && !user.twoFactor && (
+        <p role="alert" className="mb-6 rounded-xl bg-[#F4E9DD] px-4 py-3 text-[14px] text-ceviz">
+          Panelde iki adımlı doğrulama zorunlu. Diğer sayfalar, aşağıdan doğrulamayı açtıktan sonra açılır.
+        </p>
+      )}
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-cizgi bg-kagit p-6">
           <h2 className="font-display text-[22px]">İki adımlı doğrulama</h2>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getPanelUser, panelLoginAvailable } from "@/lib/auth/panel";
+import { getSetupUser, panelLoginAvailable } from "@/lib/auth/panel";
 import { supabaseEnabled } from "@/lib/supabase/config";
 import { BrandMark } from "@/components/configurator/BrandMark";
 import { LoginForm } from "./LoginForm";
@@ -8,7 +8,7 @@ import { LoginForm } from "./LoginForm";
 export const metadata: Metadata = { title: "Panel girişi", robots: { index: false } };
 
 export default async function LoginPage() {
-  if (await getPanelUser()) redirect("/panel");
+  if (await getSetupUser()) redirect("/panel");
   const demoHint =
     !supabaseEnabled() && process.env.NODE_ENV !== "production" && !process.env.PANEL_DEMO_EMAIL
       ? "Yerel geliştirme: demo@ormen.local / ormen-demo"

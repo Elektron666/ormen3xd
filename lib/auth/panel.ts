@@ -103,10 +103,30 @@ export async function panelAccess(): Promise<PanelAccess> {
       serviceClient().from("profiles").select("id").eq("id", data.user.id).maybeSingle(),
       sb.auth.mfa.getAuthenticatorAssuranceLevel(),
     ]);
-    return decideAccess({ email: data.user.email ?? "", isPanelUser: !!profile, currentLevel: aal?.currentLevel ?? null, nextLevel: aal?.nextLevel ?? null });
+    return decideAccess({
+      email: data.user.email ?? "",
+      isPanelUser: !!profile,
+      currentLevel: aal?.currentLevel ?? null,
+      nextLevel: aal?.nextLevel ?? null,
+      require2fa: twoFactorRequired(),
+    });
   }
   const demo = await demoUser();
   return demo ? { state: "tamam", user: demo } : { state: "yok" };
+}
+
+/**
+ * Pilot day (11 Oct meeting): with PANEL_2FA_ZORUNLU=1 every panel account must
+ * use two-step verification; one without it can only reach the Güvenlik page.
+ */
+export function twoFactorRequired(): boolean {
+  return supabaseEnabled() && process.env.PANEL_2FA_ZORUNLU === "1";
+}
+
+/** Like getPanelUser, but also an account that still has to set up two-step verification (Güvenlik page). */
+export async function getSetupUser(): Promise<PanelUser | null> {
+  const a = await panelAccess();
+  return a.state === "tamam" || a.state === "kurulum" ? a.user : null;
 }
 
 /** The panel user of a fully signed-in session (both steps when two-step verification is on). */
@@ -132,10 +152,12 @@ async function demoUser(): Promise<PanelUser | null> {
 }
 
 /** For pages and actions: the signed-in panel user, or a redirect to the login page (or to the code step). */
-export async function requirePanelUser(): Promise<PanelUser> {
+export async function requirePanelUser(opts: { setup?: boolean } = {}): Promise<PanelUser> {
   const a = await panelAccess();
   if (a.state === "ikinci-adim") redirect("/panel/giris/dogrulama");
   if (a.state === "yok") redirect("/panel/giris");
+  // two-step verification required but not set up: only the Güvenlik page (and the layout around it)
+  if (a.state === "kurulum" && !opts.setup) redirect("/panel/guvenlik");
   return a.user;
 }
 
@@ -164,7 +186,7 @@ export async function verifyLoginCode(code: string): Promise<{ ok: true } | { ok
 /** Starts turning it on: a QR code for the app and the same key as text. Leftover unfinished attempts are cleared first. */
 export async function startTwoFactor(): Promise<{ ok: true; factorId: string; qr: string; secret: string } | { ok: false; error: string }> {
   if (!supabaseEnabled()) return { ok: false, error: "İki adımlı doğrulama yalnızca Supabase ile çalışır." };
-  if (!(await getPanelUser())) return { ok: false, error: "Oturum süresi doldu. Yeniden giriş yapın." };
+  if (!(await getSetupUser())) return { ok: false, error: "Oturum süresi doldu. Yeniden giriş yapın." };
   const sb = await sessionClient();
   const { data: list } = await sb.auth.mfa.listFactors();
   for (const f of list?.all ?? []) if (f.factor_type === "totp" && f.status !== "verified") await sb.auth.mfa.unenroll({ factorId: f.id });
@@ -175,7 +197,7 @@ export async function startTwoFactor(): Promise<{ ok: true; factorId: string; qr
 
 /** Finishes turning it on with the first code the app shows. */
 export async function confirmTwoFactor(factorId: string, code: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  if (!(await getPanelUser())) return { ok: false, error: "Oturum süresi doldu. Yeniden giriş yapın." };
+  if (!(await getSetupUser())) return { ok: false, error: "Oturum süresi doldu. Yeniden giriş yapın." };
   if (!CODE.test(code.trim())) return { ok: false, error: "Uygulamadaki 6 haneli kodu yazın." };
   const { error } = await (await sessionClient()).auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
   return error ? { ok: false, error: tr(error.message) } : { ok: true };
@@ -185,6 +207,7 @@ export async function confirmTwoFactor(factorId: string, code: string): Promise<
 export async function disableTwoFactor(code: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const user = await getPanelUser();
   if (!user?.twoFactor) return { ok: false, error: "İki adımlı doğrulama zaten kapalı." };
+  if (twoFactorRequired()) return { ok: false, error: "İki adımlı doğrulama zorunlu; kapatılamaz." };
   if (!CODE.test(code.trim())) return { ok: false, error: "Uygulamadaki 6 haneli kodu yazın." };
   const sb = await sessionClient();
   const factor = await verifiedTotp(sb);
@@ -200,7 +223,7 @@ export const PASSWORD_MIN = 10;
 /** Changes the password after checking the current one (on a separate, throwaway client: the panel session is untouched). */
 export async function changePassword(current: string, next: string): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!supabaseEnabled()) return { ok: false, error: "Şifre değiştirme yalnızca Supabase ile çalışır; demo şifresi ortam değişkeninden gelir." };
-  const user = await getPanelUser();
+  const user = await getSetupUser();
   if (!user) return { ok: false, error: "Oturum süresi doldu. Yeniden giriş yapın." };
   if (next.length < PASSWORD_MIN) return { ok: false, error: `Yeni şifre en az ${PASSWORD_MIN} karakter olmalı.` };
   if (next === current) return { ok: false, error: "Yeni şifre eskisiyle aynı." };

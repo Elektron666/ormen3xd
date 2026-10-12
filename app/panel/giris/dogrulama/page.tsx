@@ -11,6 +11,7 @@ export default async function CodePage() {
   const a = await panelAccess();
   if (a.state === "tamam") redirect("/panel");
   if (a.state === "yok") redirect("/panel/giris");
+  if (a.state === "kurulum") redirect("/panel/guvenlik");
   return (
     <main className="flex min-h-dvh items-center justify-center bg-kirik-beyaz px-4">
       <div className="w-full max-w-sm rounded-2xl border border-cizgi bg-kagit p-7 shadow-[0_24px_60px_-30px_rgba(42,42,40,0.35)]">
