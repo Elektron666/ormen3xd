@@ -40,6 +40,14 @@ test("usta föyü firmanın metrajını yalnızca uygun kumaşta gösterir; ger�
   await s.getByRole("button", { name: "Paylaş" }).click();
   await s.getByRole("button", { name: /Föyü yazdır/ }).click();
   await s.emulateMedia({ media: "print" });
+  // the customer's page shows the fabric at real size: 5 cm = 189 CSS px; the page stays one A4
+  const square = s.getByRole("img", { name: /LUMA-02, gerçek boyutta 5 × 5 cm/ });
+  await expect(square).toHaveCount(1);
+  const box = await square.evaluate((el) => el.getBoundingClientRect().width);
+  expect(Math.round(box)).toBe(189);
+  const sheetHeightMm = await s.locator(".foy-sheet").first().evaluate((el) => (el.getBoundingClientRect().height * 25.4) / 96);
+  expect(sheetHeightMm).toBeLessThanOrEqual(273);
+  await s.locator(".foy-sheet").first().screenshot({ path: "test-results/foy-gercek-boyut.png" });
   const sheet = s.getByTestId("usta-foyu");
   await expect(sheet).toBeVisible();
   await expect(sheet).toContainText("METRAJ TAHMİNİDİR, USTA TEYİT EDER");

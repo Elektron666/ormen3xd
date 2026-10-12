@@ -122,7 +122,8 @@ body {
     min-height: 268mm;
   }
   .foy-shot {
-    max-height: 105mm;
+    /* 105 mm before the real-size squares (5 cm) took their share of the page */
+    max-height: 80mm;
     background: radial-gradient(120% 80% at 50% 30%, #fcfaf6 0%, #f1ece4 55%, #e6dfd4 100%);
   }
   .foy-plan {

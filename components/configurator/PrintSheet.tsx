@@ -97,6 +97,8 @@ function Sheet({ data }: { data: PrintData }) {
         </div>
       </section>
 
+      <TrueSizeStrip data={data} />
+
       <footer className="mt-auto flex items-end justify-between gap-6 border-t border-cizgi pt-4">
         <div className="flex items-center gap-4">
           <div className="h-[26mm] w-[26mm]" dangerouslySetInnerHTML={{ __html: qr }} />
@@ -111,6 +113,50 @@ function Sheet({ data }: { data: PrintData }) {
         </div>
       </footer>
     </article>
+  );
+}
+
+/**
+ * The fabrics at their real size (gece toplantısı, 12 Oct): a 5 × 5 cm square of
+ * each (up to three), so the customer sees how big the pattern is on paper too.
+ * Printed in centimetres, which a printer at 100 % scale keeps exactly.
+ */
+const TRUE_SIZE_CM = 5;
+function TrueSizeStrip({ data }: { data: PrintData }) {
+  const seen = new Set<string>();
+  const fabrics = rowsOf(data)
+    .map((r) => r.fabric)
+    .filter((f) => !seen.has(f.code) && !!seen.add(f.code))
+    .slice(0, 3);
+  return (
+    <section className="foy-gercek mt-4 flex items-start gap-5" data-testid="foy-gercek-boyut">
+      {fabrics.map((f) => (
+        <figure key={f.code} className="flex flex-col gap-1">
+          <div
+            role="img"
+            aria-label={`${f.code}, gerçek boyutta ${TRUE_SIZE_CM} × ${TRUE_SIZE_CM} cm`}
+            className="rounded-sm border border-cizgi"
+            style={{
+              width: `${TRUE_SIZE_CM}cm`,
+              height: `${TRUE_SIZE_CM}cm`,
+              backgroundImage: `url("${f.texture.maps.albedo["1k"]}")`,
+              backgroundSize: `${f.texture.repeatCm.w}cm ${f.texture.repeatCm.h}cm`,
+              backgroundRepeat: "repeat",
+            }}
+          />
+          <figcaption className="text-[10px] leading-tight text-antrasit-70">{f.code}</figcaption>
+        </figure>
+      ))}
+      <div className="flex flex-col gap-1 self-end text-[10px] leading-snug text-antrasit-50">
+        {/* a ruler under the squares: if it is not 5 cm, the page was scaled when printed */}
+        <div className="h-[1.2mm] bg-antrasit" style={{ width: `${TRUE_SIZE_CM}cm` }} />
+        <p>
+          Kareler gerçek boyutta: {TRUE_SIZE_CM} × {TRUE_SIZE_CM} cm.
+          <br />
+          Çizgi {TRUE_SIZE_CM} cm değilse baskı ölçeklenmiştir (%100 basın).
+        </p>
+      </div>
+    </section>
   );
 }
 

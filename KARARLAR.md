@@ -878,3 +878,6 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
     - Bulunan 2 sorun düzeltildi:
       1. Varsayılan altın vurgunun üstündeki beyaz yazı 3,1:1'di; koyu yazı yapıldı (4,6:1). `inkFor()` zaten bunu seçiyordu.
       2. Kiosk düğmesi saydamlıkla yanıp sönüyordu; yazısı soluklaşıyordu. Artık boyutça "nefes alıyor" ve "hareketi azalt"a uyuyor. Hazır olmayan "Görseli indir" bağlantısı ekran okuyucuya da pasif bildiriliyor.
+  - **Föyde gerçek boyut:** Müşteri föyünde her kumaşın 5 × 5 cm gerçek boyut karesi var (en çok 3). Kareler santimetre biriminde basılıyor.
+    - Yanında 5 cm'lik kontrol çizgisi var; tutmazsa baskı ölçeklenmiştir.
+    - Yer açmak için görsel 105 mm'den 80 mm'ye indi. Föy hâlâ tek A4.
