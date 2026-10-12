@@ -80,7 +80,7 @@ export function KioskShell({ idleSeconds, firm, children }: { idleSeconds: numbe
           </span>
           <span className="font-display text-[clamp(2rem,4vw,3.5rem)] leading-tight text-antrasit">Kumaşı koltuğun üstünde görün</span>
           <span className="text-[clamp(1rem,1.6vw,1.375rem)] text-antrasit-70">Dokunun, ORMEN kumaşlarını tek tek deneyin.</span>
-          <span className="mt-2 animate-pulse rounded-full bg-accent px-8 py-4 text-[clamp(1rem,1.6vw,1.25rem)] text-accent-ink">Başlamak için dokunun</span>
+          <span className="mt-2 rounded-full motion-safe:animate-[nefes_1.8s_ease-in-out_infinite] bg-accent px-8 py-4 text-[clamp(1rem,1.6vw,1.25rem)] text-accent-ink">Başlamak için dokunun</span>
         </button>
       )}
 

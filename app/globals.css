@@ -26,7 +26,7 @@
 :root {
   --accent: #b08d57;
   /* text colour used on top of the accent */
-  --accent-ink: #ffffff;
+  --accent-ink: #2a2a28; /* what inkFor() picks for the gold: white on it is only 3.1:1 */
 }
 
 html {
@@ -131,5 +131,16 @@ body {
   /* the workshop page: its own sheet, black on white (colour is judged on the stapled sample) */
   .foy-usta {
     break-before: page;
+  }
+}
+
+/* the kiosk's "touch to start": breathes in size, not in opacity, so the text keeps its contrast */
+@keyframes nefes {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
   }
 }

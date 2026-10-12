@@ -873,3 +873,8 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
     - Sayfa başına en çok 5 bildirim gidiyor; hız sınırlı.
     - KVKK metnine bir cümle eklendi.
   - **Kart bulunamazsa:** Kaç işaretin görüldüğüne göre somut öneri veriliyor (hiç / 1–3 / kare oluşmuyor).
+  - **Erişilebilirlik:** axe denetimi WCAG 2.1 AA'ya çıkarıldı.
+    - Yeni ekranlar da denetleniyor: Gerçek boyutta, Bize fikir verin, Paylaş, Model değiştir, kiosk karşılaması, bulunamayan sayfa, yeni panel sayfaları. Telefon görünümü de dahil.
+    - Bulunan 2 sorun düzeltildi:
+      1. Varsayılan altın vurgunun üstündeki beyaz yazı 3,1:1'di; koyu yazı yapıldı (4,6:1). `inkFor()` zaten bunu seçiyordu.
+      2. Kiosk düğmesi saydamlıkla yanıp sönüyordu; yazısı soluklaşıyordu. Artık boyutça "nefes alıyor" ve "hareketi azalt"a uyuyor. Hazır olmayan "Görseli indir" bağlantısı ekran okuyucuya da pasif bildiriliyor.

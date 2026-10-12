@@ -85,7 +85,7 @@ export function ShareDialog({ open, onClose, image, url, text, fileName, onPrint
           >
             {copied ? "Kopyalandı" : "Bağlantıyı kopyala"}
           </button>
-          <a className={`${btn} ${preview ? "" : "pointer-events-none opacity-50"}`} href={preview ?? undefined} download={fileName} onClick={() => onShared?.("indir")}>
+          <a className={`${btn} ${preview ? "" : "pointer-events-none opacity-50"}`} aria-disabled={!preview} href={preview ?? undefined} download={fileName} onClick={() => onShared?.("indir")}>
             Görseli indir
           </a>
           <button type="button" className={btn} onClick={onPrint} disabled={!preview}>
