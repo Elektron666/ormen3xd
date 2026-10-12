@@ -864,3 +864,12 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
     - Doğrulaması kurulmamış hesap yalnızca Güvenlik sayfasına girer. Diğer sayfalar ve panel uç noktaları onu içeri almaz.
     - Doğrulama açıkken kapatılamaz.
     - Ayar silinince eski hâl.
+  - **İçerik güvenlik politikası:** Betikler yalnızca siteden; bağlantılar yalnızca site ve Supabase'e.
+    - Nonce kullanılmadı: her sayfayı dinamik yapardı. Next'in kendi satır içi betikleri için `'unsafe-inline'` kaldı.
+    - Her uçtan uca test politika ihlalini yakalıyor; 69 testte ihlal yok.
+  - **3B bağlamı kaybolursa:** Telefon arka plana atılıp dönünce ya da ekran kartı sıfırlanınca sahne yeni tuvalde kendiliğinden kuruluyor. Tarayıcı bağlamı geri verirse hemen, vermezse 2,5 sn sonra. Arada "3B görüntü yeniden hazırlanıyor…" yazıyor.
+  - **İstemci hataları:** Ziyaretçinin tarayıcısındaki yakalanmamış hatalar ve bağlam kaybı `/api/hata`'ya gidiyor, yalnızca sunucu kaydına (Vercel) yazılıyor. Veritabanına yazılmıyor.
+    - E-posta, telefon benzeri sayılar ve adres sorguları siliniyor.
+    - Sayfa başına en çok 5 bildirim gidiyor; hız sınırlı.
+    - KVKK metnine bir cümle eklendi.
+  - **Kart bulunamazsa:** Kaç işaretin görüldüğüne göre somut öneri veriliyor (hiç / 1–3 / kare oluşmuyor).

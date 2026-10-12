@@ -18,6 +18,7 @@ import { PlanView } from "./PlanView";
 import { PlacedFurniture, type PieceActions } from "./PlacedFurniture";
 import { enableAllLayers, renderSplit, showPrimary } from "@/lib/three/layers";
 import { zoneFabricsOf } from "@/lib/three/zones";
+import { reportClientError } from "@/components/ErrorReporter";
 
 /** Imperative handle for the page: grab a clean picture of the current view. */
 export interface StageApi {
@@ -281,95 +282,126 @@ export function Stage({
   const tallest = Math.max(0.5, ...items.map((p) => prepared[p.id]?.size.y ?? 0));
   const fabricKey = items.map((p) => p.fabricCode).join(",");
 
+  // The graphics context can be lost (phone sent to the background, GPU reset; gece
+  // toplantısı, 12 Oct). Then the scene is rebuilt on a fresh canvas: at once when the
+  // browser hands the context back, after a short wait when it does not.
+  const [glKey, setGlKey] = useState(0);
+  const [contextLost, setContextLost] = useState(false);
+  const lostTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(lostTimer.current), []);
+  const watchContext = useCallback((canvas: HTMLCanvasElement) => {
+    canvas.addEventListener("webglcontextlost", (e) => {
+      e.preventDefault(); // lets the browser restore it
+      setContextLost(true);
+      reportClientError("3b-baglam", "WebGL bağlamı kayboldu");
+      window.clearTimeout(lostTimer.current);
+      lostTimer.current = window.setTimeout(() => setGlKey((k) => k + 1), 2500);
+    });
+    canvas.addEventListener("webglcontextrestored", () => {
+      window.clearTimeout(lostTimer.current);
+      setGlKey((k) => k + 1);
+    });
+  }, []);
+
   return (
-    <Canvas
-      frameloop="demand"
-      shadows={{ type: THREE.PCFShadowMap, enabled: true, autoUpdate: false }}
-      dpr={[1, maxDpr]}
-      camera={{ fov: FOV, near: 0.05, far: 60, position: [0, 1.2, 5] }}
-      gl={{
-        antialias: true,
-        alpha: true,
-        toneMapping: THREE.NeutralToneMapping,
-        toneMappingExposure: 1,
-        outputColorSpace: THREE.SRGBColorSpace,
-        preserveDrawingBuffer: false,
-      }}
-      style={{ touchAction: "none" }}
-      onCreated={(state) => {
-        showPrimary(state.camera);
-        // furniture lives on its own layer; pointer picking must see it
-        state.raycaster.layers.enableAll();
-        setOrbitCamera(state.camera);
-        // Exposed for automated tests (colour check, screenshots); harmless in production.
-        (window as unknown as { __ormenStage?: unknown }).__ormenStage = state;
-      }}
-      aria-label="3B sahne. Döndürmek için boş alanı, mobilyayı taşımak için mobilyayı sürükleyin."
-      // a group, not an image: the piece toolbar inside must stay reachable
-      role="group"
-    >
-      <StudioLights ambient={ambient} shadowMap={quality.shadowMap} />
-      <AdaptiveDpr onLower={lowerDpr} />
-      {items.map((p) => {
-        const model = models.get(p.modelSlug);
-        const fabric = fabrics.get(p.fabricCode);
-        if (!model || !fabric) return null;
-        const selected = p.id === selectedId;
-        return (
-          <PlacedFurniture
-            key={p.id}
-            p={p}
-            model={model}
-            fabric={fabric}
-            zoneFabrics={zoneFabricsOf(p, fabrics)}
-            compareFabric={selected ? compareFabric : compareFabric ? fabric : null}
-            textureSize={textureSize}
-            selected={selected}
-            overlapping={overlapIds.has(p.id)}
-            showDimensions={showDimensions && !plan}
-            showToolbar={pieceToolbar && !dragging && !compareFabric}
-            plan={plan}
-            canDelete={items.length > 1}
-            actions={actions}
-            onSelect={actions.onSelect}
-            onMove={actions.onMove}
-            onDrag={handleDrag}
-            onPrepared={handlePrepared}
-            onFabricShown={handleShown}
-            onError={onError}
-          />
-        );
-      })}
-      {compareFabric && <SplitRender split={split} />}
-      {onApi && <SnapshotBridge onApi={onApi} split={compareFabric ? split : null} />}
-      {visible && plan && (
-        <PlanView room={room} pieces={footprints} selected={footprints[selectedIndex] ?? null} others={obstacles} tallest={tallest} controlsEnabled={!dragging} />
+    <>
+      <Canvas
+        key={glKey}
+        frameloop="demand"
+        shadows={{ type: THREE.PCFShadowMap, enabled: true, autoUpdate: false }}
+        dpr={[1, maxDpr]}
+        camera={{ fov: FOV, near: 0.05, far: 60, position: [0, 1.2, 5] }}
+        gl={{
+          antialias: true,
+          alpha: true,
+          toneMapping: THREE.NeutralToneMapping,
+          toneMappingExposure: 1,
+          outputColorSpace: THREE.SRGBColorSpace,
+          preserveDrawingBuffer: false,
+        }}
+        style={{ touchAction: "none" }}
+        onCreated={(state) => {
+          setContextLost(false);
+          watchContext(state.gl.domElement);
+          showPrimary(state.camera);
+          // furniture lives on its own layer; pointer picking must see it
+          state.raycaster.layers.enableAll();
+          setOrbitCamera(state.camera);
+          // Exposed for automated tests (colour check, screenshots); harmless in production.
+          (window as unknown as { __ormenStage?: unknown }).__ormenStage = state;
+        }}
+        aria-label="3B sahne. Döndürmek için boş alanı, mobilyayı taşımak için mobilyayı sürükleyin."
+        // a group, not an image: the piece toolbar inside must stay reachable
+        role="group"
+      >
+        <StudioLights ambient={ambient} shadowMap={quality.shadowMap} />
+        <AdaptiveDpr onLower={lowerDpr} />
+        {items.map((p) => {
+          const model = models.get(p.modelSlug);
+          const fabric = fabrics.get(p.fabricCode);
+          if (!model || !fabric) return null;
+          const selected = p.id === selectedId;
+          return (
+            <PlacedFurniture
+              key={p.id}
+              p={p}
+              model={model}
+              fabric={fabric}
+              zoneFabrics={zoneFabricsOf(p, fabrics)}
+              compareFabric={selected ? compareFabric : compareFabric ? fabric : null}
+              textureSize={textureSize}
+              selected={selected}
+              overlapping={overlapIds.has(p.id)}
+              showDimensions={showDimensions && !plan}
+              showToolbar={pieceToolbar && !dragging && !compareFabric}
+              plan={plan}
+              canDelete={items.length > 1}
+              actions={actions}
+              onSelect={actions.onSelect}
+              onMove={actions.onMove}
+              onDrag={handleDrag}
+              onPrepared={handlePrepared}
+              onFabricShown={handleShown}
+              onError={onError}
+            />
+          );
+        })}
+        {compareFabric && <SplitRender split={split} />}
+        {onApi && <SnapshotBridge onApi={onApi} split={compareFabric ? split : null} />}
+        {visible && plan && (
+          <PlanView room={room} pieces={footprints} selected={footprints[selectedIndex] ?? null} others={obstacles} tallest={tallest} controlsEnabled={!dragging} />
+        )}
+        {visible && inRoom && <Room spec={room} backZ={0} onBuilt={onRoomBuilt} />}
+        <ShadowMapRefresh version={`${encodeLayout(items)}:${fabricKey}:${compareFabric?.code}:${encodeRoom(room)}:${Object.keys(prepared).length}`} />
+        <OrbitControls
+          makeDefault
+          camera={orbitCamera ?? undefined}
+          enabled={!plan && !dragging}
+          enablePan={false}
+          enableDamping
+          dampingFactor={0.08}
+          rotateSpeed={0.65}
+          zoomSpeed={0.8}
+          minPolarAngle={0.35}
+          maxPolarAngle={Math.PI / 2 - 0.06}
+          autoRotate={spin && !plan}
+          autoRotateSpeed={0.6}
+        />
+        {spin && !plan && <KeepRendering />}
+        <CameraRig
+          prepared={items[0] ? prepared[items[0].id] ?? null : null}
+          closeTarget={prepared[selectedId] ?? null}
+          started={visible}
+          roomExtent={inRoom ? roomExtent : 0}
+          closeUp={closeUp && !plan}
+        />
+        <DepthRange />
+      </Canvas>
+      {contextLost && (
+        <div role="status" className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <p className="rounded-full bg-kagit/90 px-4 py-2 text-sm text-antrasit-70 shadow-sm">3B görüntü yeniden hazırlanıyor…</p>
+        </div>
       )}
-      {visible && inRoom && <Room spec={room} backZ={0} onBuilt={onRoomBuilt} />}
-      <ShadowMapRefresh version={`${encodeLayout(items)}:${fabricKey}:${compareFabric?.code}:${encodeRoom(room)}:${Object.keys(prepared).length}`} />
-      <OrbitControls
-        makeDefault
-        camera={orbitCamera ?? undefined}
-        enabled={!plan && !dragging}
-        enablePan={false}
-        enableDamping
-        dampingFactor={0.08}
-        rotateSpeed={0.65}
-        zoomSpeed={0.8}
-        minPolarAngle={0.35}
-        maxPolarAngle={Math.PI / 2 - 0.06}
-        autoRotate={spin && !plan}
-        autoRotateSpeed={0.6}
-      />
-      {spin && !plan && <KeepRendering />}
-      <CameraRig
-        prepared={items[0] ? prepared[items[0].id] ?? null : null}
-        closeTarget={prepared[selectedId] ?? null}
-        started={visible}
-        roomExtent={inRoom ? roomExtent : 0}
-        closeUp={closeUp && !plan}
-      />
-      <DepthRange />
-    </Canvas>
+    </>
   );
 }

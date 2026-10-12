@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { siteUrl } from "@/lib/site";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
+import { ErrorReporter } from "@/components/ErrorReporter";
 
 // Both families cover Latin Extended, so ı İ ş ğ ç ö ü render natively.
 const fraunces = Fraunces({
@@ -36,7 +37,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="tr" className={`${fraunces.variable} ${inter.variable} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <ErrorReporter />
+      </body>
     </html>
   );
 }

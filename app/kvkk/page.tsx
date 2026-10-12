@@ -19,7 +19,7 @@ export default function KvkkPage() {
         <p>
           <strong className="text-antrasit">Hangi veriler:</strong> Numune talep formunda yazdığınız ad ve telefon numarası, seçtiğiniz kumaş kodları ve isteğe bağlı üç seçim (ne için, kaç parça, ne zaman). Formda serbest metin alanı yoktur.
           Bu araç; adınızı ve telefonunuzu yalnızca numune talebiyle birlikte saklar. Kumaş denemeleri gibi kullanım kayıtları kimliğinizle ilişkilendirilmez,
-          bu araç IP adresi ve tarayıcı bilgisi tutmaz. Sitenin barındırıldığı sağlayıcılar (Vercel, Supabase) güvenlik ve işletim için kendi teknik erişim kayıtlarını kısa süreli tutar; bu kayıtlar ORMEN TEKSTİL tarafından kullanıcıyı tanımak için kullanılmaz. Ziyaretleri saymak için tarayıcı sekmesinde, sekme kapanınca silinen rastgele bir numara kullanılır; çerez
+          bu araç IP adresi ve tarayıcı bilgisi tutmaz. Sitenin barındırıldığı sağlayıcılar (Vercel, Supabase) güvenlik ve işletim için kendi teknik erişim kayıtlarını kısa süreli tutar; bu kayıtlar ORMEN TEKSTİL tarafından kullanıcıyı tanımak için kullanılmaz. Sayfa tarayıcıda hata verirse hatanın türü, sayfanın adresi ve cihaz türü (telefon, tablet, bilgisayar) bu kayıtlara yazılır; içindeki e-posta ve telefon numarası benzeri bilgiler silinerek gönderilir. Ziyaretleri saymak için tarayıcı sekmesinde, sekme kapanınca silinen rastgele bir numara kullanılır; çerez
           kullanılmaz. Sayfadaki “Bize fikir verin” bağlantısıyla gönderdiğiniz mesaj isimsiz kaydedilir. Size dönmemizi isterseniz bıraktığınız firma adı, ad soyad ve telefon yalnızca bu mesaja dönüş için kullanılır, onayınızla kaydedilir ve numune talepleriyle aynı süre sonunda silinir.
         </p>
         <p>
