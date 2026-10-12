@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from "react";
 import type { Fabric, Firm, FurnitureModel } from "@/lib/types";
-import { prefetchFabric, preferredTextureSize } from "@/lib/three/fabric-material";
+import { preferredTextureSize } from "@/lib/three/texture-size";
 import { t } from "@/lib/i18n/tr";
 import { CopyCodeButton, FabricHeadline, FabricSpecs } from "./FabricInfo";
 import { QuickStrip } from "./QuickStrip";
@@ -18,7 +18,6 @@ import { cleanZones, fabricParts, pieceCodes, zoneCode, zoneFabricsOf, type Zone
 import { useMedia } from "@/lib/use-media";
 import { FabricPicker } from "./FabricPicker";
 import { BrandMark } from "./BrandMark";
-import { RoomPanel } from "./RoomPanel";
 import { CompareDivider, SceneTools } from "./SceneTools";
 import { useFavorites } from "@/lib/favorites";
 import { IconAr, IconClose, IconHeart, IconShare } from "@/components/ui/icons";
@@ -29,22 +28,33 @@ import { encodeShare } from "@/lib/share";
 import { shortenShare } from "@/lib/share-client";
 import { accentStyle } from "@/lib/firm";
 import { composeShareImage, groupByFabric } from "@/lib/share-image";
-import { SampleDialog } from "./SampleDialog";
-import { ArDialog } from "./ArDialog";
-import { QrDialog } from "@/components/ui/QrDialog";
 import { arPath } from "@/lib/ar/device";
 import { track } from "@/lib/track";
 import { fabricsForModel, seriesOf, startFabric } from "@/lib/fabric/allowed";
-import { ShareDialog } from "./ShareDialog";
-import { FeedbackDialog } from "./FeedbackDialog";
-import { TrueScaleDialog } from "./TrueScaleDialog";
-import { ModelSwapDialog } from "./ModelSwapDialog";
-import { PrintSheet, type PrintData } from "./PrintSheet";
+import type { PrintData } from "./PrintSheet";
 
 const Stage = dynamic(() => import("@/components/three/Stage").then((m) => m.Stage), {
   ssr: false,
   loading: () => null,
 });
+// Dialogs, the offer sheet and the room panel: their code is fetched the first time they
+// open, not with the page (gece toplantısı, 12 Oct: less JavaScript before the first view)
+const SampleDialog = dynamic(() => import("./SampleDialog").then((m) => m.SampleDialog), { ssr: false, loading: () => null });
+const ShareDialog = dynamic(() => import("./ShareDialog").then((m) => m.ShareDialog), { ssr: false, loading: () => null });
+const PrintSheet = dynamic(() => import("./PrintSheet").then((m) => m.PrintSheet), { ssr: false, loading: () => null });
+const QrDialog = dynamic(() => import("@/components/ui/QrDialog").then((m) => m.QrDialog), { ssr: false, loading: () => null });
+const ArDialog = dynamic(() => import("./ArDialog").then((m) => m.ArDialog), { ssr: false, loading: () => null });
+const FeedbackDialog = dynamic(() => import("./FeedbackDialog").then((m) => m.FeedbackDialog), { ssr: false, loading: () => null });
+const TrueScaleDialog = dynamic(() => import("./TrueScaleDialog").then((m) => m.TrueScaleDialog), { ssr: false, loading: () => null });
+const ModelSwapDialog = dynamic(() => import("./ModelSwapDialog").then((m) => m.ModelSwapDialog), { ssr: false, loading: () => null });
+const RoomPanel = dynamic(() => import("./RoomPanel").then((m) => m.RoomPanel), { ssr: false, loading: () => null });
+
+/** True from the first time `on` is true: a lazily loaded part stays mounted (and keeps its state) after that. */
+function useOnceOn(on: boolean): boolean {
+  const [was, setWas] = useState(on);
+  if (on && !was) setWas(true);
+  return was || on;
+}
 
 export interface ConfiguratorProps {
   models: FurnitureModel[];
@@ -295,7 +305,10 @@ export function Configurator({
 
   const shownFabric = compare?.active === "sag" ? compare.right : active;
 
-  const intent = useCallback((f: Fabric) => prefetchFabric(f, preferredTextureSize()), []);
+  // a fabric the visitor is about to pick starts loading; the loader (and three.js) comes with the scene anyway
+  const intent = useCallback((f: Fabric) => {
+    void import("@/lib/three/fabric-material").then((m) => m.prefetchFabric(f, preferredTextureSize()));
+  }, []);
 
   // ---------------------------------------------------------------- share, sample, print
   const stageApi = useRef<StageApi | null>(null);
@@ -373,6 +386,10 @@ export function Configurator({
   }, []);
 
   const style = accentStyle(firm) as React.CSSProperties | undefined;
+  const roomTabUsed = useOnceOn(tab === "oda");
+  const swapUsed = useOnceOn(swapFor !== null);
+  const trueScaleUsed = useOnceOn(trueScaleOpen);
+  const feedbackUsed = useOnceOn(feedbackOpen);
 
   return (
     <div style={style} className="kiosk-grid relative h-dvh w-full overflow-hidden bg-kirik-beyaz md:grid md:grid-cols-[minmax(0,1fr)_380px] lg:grid-cols-[minmax(0,1fr)_420px]">
@@ -673,7 +690,7 @@ export function Configurator({
               rules out real AI, so it was a promise we could not keep. lib/ai/reupholster.ts stays for Faz 3. */}
         </div>
         <div id="bolum-oda" role="tabpanel" aria-labelledby="sekme-oda" hidden={tab !== "oda"}>
-          <RoomPanel spec={room} onChange={changeRoom} furnitureCm={selectedModel.dimensionsCm} />
+          {roomTabUsed && <RoomPanel spec={room} onChange={changeRoom} furnitureCm={selectedModel.dimensionsCm} />}
         </div>
         <p className="mt-10 border-t border-cizgi pt-4 text-center text-[11px] tracking-[0.12em] text-antrasit-50 uppercase">
           {firm ? (
@@ -728,6 +745,7 @@ export function Configurator({
           url={takeHome}
         />
       )}
+      {swapUsed && (
       <ModelSwapDialog
         open={swapFor !== null}
         onClose={() => setSwapFor(null)}
@@ -738,8 +756,9 @@ export function Configurator({
           setSwapFor(null);
         }}
       />
-      <TrueScaleDialog open={trueScaleOpen} onClose={() => setTrueScaleOpen(false)} fabric={shownFabric} />
-      <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} firmSlug={firm?.slug ?? null} />
+      )}
+      {trueScaleUsed && <TrueScaleDialog open={trueScaleOpen} onClose={() => setTrueScaleOpen(false)} fabric={shownFabric} />}
+      {feedbackUsed && <FeedbackDialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} firmSlug={firm?.slug ?? null} />}
       {arOpen && <ArDialog open onClose={() => setArOpen(false)} model={selectedModel} fabric={selected} zoneFabrics={zoneFabricsOf(selectedItem, byCode)} legFinish={selectedItem.ayak} turned={selectedItem.yon === "donuk"} phoneUrl={arUrl} firmSlug={firm?.slug ?? null} />}
     </div>
   );

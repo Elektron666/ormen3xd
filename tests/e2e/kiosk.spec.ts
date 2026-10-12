@@ -69,14 +69,24 @@ test("kiosk: karşılama ekranında koltuk gerçek kumaşları sırayla giyer", 
   test.setTimeout(120_000);
   await page.goto("/?kiosk");
   await expect(page.getByRole("button", { name: "Başlamak için dokunun" })).toBeVisible();
-  // only real fabrics (MISSO) take part; placeholders never do
-  const onlyReal = async () => {
-    const codes = await sceneFabrics(page);
-    return codes.length === 1 && codes[0].startsWith("MISSO-") ? codes[0] : null;
-  };
-  await expect.poll(onlyReal, { timeout: 60_000, intervals: [500] }).not.toBeNull();
-  const first = await onlyReal();
-  await expect.poll(onlyReal, { timeout: 20_000, intervals: [500] }).toMatch(new RegExp(`^MISSO-(?!${first!.slice(6)}$)`));
+  // only real fabrics (MISSO) take part; placeholders never do. (Without a graphics card
+  // the cross-fade between two fabrics lasts seconds, so both can be on the scene at once.)
+  await expect.poll(async () => (await sceneFabrics(page)).some((c) => c.startsWith("MISSO-")), { timeout: 60_000, intervals: [500] }).toBe(true);
+  const first = (await sceneFabrics(page)).find((c) => c.startsWith("MISSO-"))!;
+  const seen = new Set<string>();
+  await expect
+    .poll(
+      async () => {
+        const codes = await sceneFabrics(page);
+        codes.forEach((c) => seen.add(c));
+        return codes.some((c) => c.startsWith("MISSO-") && c !== first);
+      },
+      { timeout: 30_000, intervals: [500] },
+    )
+    .toBe(true);
+  // after the first real fabric, nothing but real fabrics
+  seen.delete("LUMA-02"); // the model's own starting fabric, before the loop began
+  expect([...seen].every((c) => c.startsWith("MISSO-"))).toBe(true);
   // nothing written to the address: the loop is not a visitor's choice
   expect(page.url()).not.toContain("y=");
 });

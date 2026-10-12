@@ -3,6 +3,8 @@ import type { Fabric, TextureSize } from "@/lib/types";
 import { MATERIAL_PRESETS } from "@/lib/fabric/presets";
 import { hexToRgb } from "@/lib/fabric/maps";
 
+export { preferredTextureSize } from "./texture-size";
+
 export interface FabricTextures {
   albedo: THREE.Texture;
   normal?: THREE.Texture;
@@ -13,12 +15,6 @@ const loader = new THREE.TextureLoader();
 const cache = new Map<string, Promise<FabricTextures>>();
 
 /** Picks 2K textures on large, fine-pointer screens and 1K everywhere else. */
-export function preferredTextureSize(): TextureSize {
-  if (typeof window === "undefined") return "1k";
-  const desktop = window.matchMedia("(min-width: 1024px) and (pointer: fine)").matches;
-  return desktop ? "2k" : "1k";
-}
-
 function load(url: string, colorSpace: THREE.ColorSpace, anisotropy: number): Promise<THREE.Texture> {
   return loader.loadAsync(url).then((tex) => {
     tex.colorSpace = colorSpace;
