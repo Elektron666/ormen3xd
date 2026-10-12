@@ -245,6 +245,25 @@ export function findCard(px: Pixels): CardFound | null {
 }
 
 /**
+ * Why the card was not found, in words the person holding the phone can act on
+ * (gece toplantısı, 12 Oct): how many of the four markers were seen decides the advice.
+ */
+export function explainNoCard(px: Pixels): { markers: number; advice: string } {
+  const n = candidates(px).length;
+  if (n === 0)
+    return { markers: 0, advice: "Kartın siyah işaretleri hiç görünmüyor. Kart kadrajda mı, fotoğraf karanlık ya da bulanık mı? Kartı aydınlıkta, tepeden yeniden çekin." };
+  if (n < 4)
+    return {
+      markers: n,
+      advice: `Dört işaretten yalnızca ${n} tanesi görüldü. Kartın dört köşesi de kadrajda olsun; işaretlerin üstüne gölge, parmak ya da kumaş gelmesin.`,
+    };
+  return {
+    markers: n,
+    advice: "İşaretler görüldü ama bir kare oluşturmuyor. Kart düz dursun, kırışmasın; telefonu tepeden tutun, çok açılı çekmeyin.",
+  };
+}
+
+/**
  * The fabric inside the window, flat and square, at `pxPerCm` (default: the
  * photo's own resolution there, so nothing is invented), a little inset from
  * the cut edge so no paper shows.

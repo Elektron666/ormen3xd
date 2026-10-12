@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { apply, applyGains, findCard, markerCentresMm, paperWhite, rectifyWindow, type Point } from "@/lib/fabric/calibration";
+import { apply, applyGains, explainNoCard, findCard, markerCentresMm, paperWhite, rectifyWindow, type Point } from "@/lib/fabric/calibration";
 import { repeatPeriod } from "@/lib/fabric/measure";
 import { photo } from "../fixtures/card-photo";
 
@@ -34,6 +34,17 @@ describe("kalibrasyon kartı", () => {
     const pxPerCm = pixels.width / sizeCm;
     expect(Math.abs(repeatPeriod(pixels, "x", pxPerCm * 1.2)! / pxPerCm - 1)).toBeLessThan(0.02);
     expect(repeatPeriod(pixels, "y", pxPerCm)).toBeNull();
+  });
+
+  it("kart bulunamayınca neden söylenir: kaç işaret görüldü", () => {
+    // the card mostly out of frame: only the top two markers are in the picture
+    const { px } = photo([[400, 700], [1000, 700], [1000, 1550], [400, 1550]]);
+    expect(findCard(px)).toBeNull();
+    const why = explainNoCard(px);
+    expect(why.markers).toBe(2);
+    expect(why.advice).toMatch(/yalnızca 2 tanesi/);
+    const none = photo([[-5000, -5000], [-4000, -5000], [-4000, -4000], [-5000, -4000]]).px;
+    expect(explainNoCard(none)).toMatchObject({ markers: 0 });
   });
 
   it("kart yoksa bulunmaz", () => {

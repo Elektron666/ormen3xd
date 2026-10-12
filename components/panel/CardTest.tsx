@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { applyGains, findCard, paperWhite, rectifyWindow, type CardFound, type PaperWhite } from "@/lib/fabric/calibration";
+import { applyGains, explainNoCard, findCard, paperWhite, rectifyWindow, type CardFound, type PaperWhite } from "@/lib/fabric/calibration";
 import { readPixels } from "@/lib/fabric/process-browser";
 import { repeatPeriod } from "@/lib/fabric/measure";
 import type { Pixels } from "@/lib/fabric/process";
@@ -65,7 +65,7 @@ export function CardTest() {
       try {
         const photo = await readPixels(file, 3000);
         const found = findCard(photo);
-        if (!found) throw new Error("Kartın dört işareti bulunamadı. Dört siyah kare de fotoğrafta, keskin ve gölgesiz görünmeli.");
+        if (!found) throw new Error(explainNoCard(photo).advice);
         const paper = paperWhite(photo, found);
         const { pixels: flat, sizeCm } = rectifyWindow(photo, found, { maxSide: 1400 });
         if (!paper.clipped) applyGains(flat, paper.gains);

@@ -2,7 +2,7 @@
 
 import type { FabricType } from "@/lib/types";
 import { averageColor, deriveMaps, makeSeamless, seamScore, type Pixels } from "./process";
-import { CARD_FABRIC_CM, applyGains, findCard, paperWhite, rectifyWindow, type PaperWhite } from "./calibration";
+import { CARD_FABRIC_CM, applyGains, explainNoCard, findCard, paperWhite, rectifyWindow, type PaperWhite } from "./calibration";
 
 // Browser side of the fabric pipeline: read the photo, prepare 2K and 1K
 // maps, encode them, and hand back blobs for upload plus object URLs for the
@@ -25,8 +25,8 @@ export interface ProcessedFabric {
 
 /** The calibration card was asked for but its four markers were not found. */
 export class CardNotFound extends Error {
-  constructor() {
-    super("Kalibrasyon kartının dört işareti bulunamadı.");
+  constructor(advice?: string) {
+    super(advice ?? "Kalibrasyon kartının dört işareti bulunamadı.");
     this.name = "CardNotFound";
   }
 }
@@ -76,7 +76,7 @@ export async function processFabricPhoto(
   if (opts.card) {
     // Ar-Ge A1: perspective undone and the scale taken from the card's markers (ARGE.md)
     const found = findCard(px);
-    if (!found) throw new CardNotFound();
+    if (!found) throw new CardNotFound(explainNoCard(px).advice);
     paper = paperWhite(px, found);
     px = rectifyWindow(px, found).pixels;
     // Ar-Ge A2: the light's colour and the exposure taken out by the card's paper

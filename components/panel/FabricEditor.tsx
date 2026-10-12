@@ -154,7 +154,7 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
           ...e,
           photo:
             err instanceof Error && err.name === "CardNotFound"
-              ? "Kalibrasyon kartının dört siyah işareti bulunamadı. Dördü de kadrajda, gölgesiz ve net olacak şekilde yeniden çekin."
+              ? `Kalibrasyon kartı bulunamadı. ${err.message}`
               : "Fotoğraf okunamadı. JPG, PNG ya da WebP deneyin.",
         }));
       } finally {
