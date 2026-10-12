@@ -881,3 +881,7 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
   - **Föyde gerçek boyut:** Müşteri föyünde her kumaşın 5 × 5 cm gerçek boyut karesi var (en çok 3). Kareler santimetre biriminde basılıyor.
     - Yanında 5 cm'lik kontrol çizgisi var; tutmazsa baskı ölçeklenmiştir.
     - Yer açmak için görsel 105 mm'den 80 mm'ye indi. Föy hâlâ tek A4.
+  - **Bulanık fotoğraf uyarısı (panel):** İnce ayrıntının kaba ayrıntıya oranı ölçülüyor. 30 katalog görselinde net olanların hiçbiri uyarı almıyor; belirgin bulanıklığın yarısı yakalanıyor. Hafif bulanıklık ve düz kumaş yakalanmıyor. Yalnızca uyarı, kaydı engellemez. Ayrıntı `ARGE.md`.
+  - **Daha az JavaScript:** Diyaloglar, föy ve oda paneli ilk açılışta değil, kullanılınca yükleniyor. three.js artık sayfa açılışında değil, 3B sahneyle geliyor.
+    - Telefonda açılışta inen JavaScript 303 kB'tan 179 kB'a indi (%41, sıkıştırılmış). Toplam değişmedi (506 kB); sahne zaten three.js istiyor.
+    - Ölçüm: `scripts/olc-js.ts`.

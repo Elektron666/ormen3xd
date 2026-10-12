@@ -1,6 +1,7 @@
 "use client";
 
 import type { FabricType } from "@/lib/types";
+import { looksBlurred } from "./sharpness";
 import { averageColor, deriveMaps, makeSeamless, seamScore, type Pixels } from "./process";
 import { CARD_FABRIC_CM, applyGains, explainNoCard, findCard, paperWhite, rectifyWindow, type PaperWhite } from "./calibration";
 
@@ -19,6 +20,8 @@ export interface ProcessedFabric {
   aspect: number;
   /** Set when the photo was flattened by the calibration card: the fabric square's real side, cm. */
   cardCm?: number;
+  /** The photo looks out of focus (lib/fabric/sharpness.ts): a warning, not a refusal. */
+  blurred: boolean;
   /** Set with `cardCm`: the card's paper as photographed, and whether the colour was balanced by it. */
   paper?: PaperWhite;
 }
@@ -84,6 +87,7 @@ export async function processFabricPhoto(
     cardCm = CARD_FABRIC_CM;
     opts = { ...opts, repeatWidthCm: cardCm };
   }
+  const blurred = looksBlurred(px);
   const seam = seamScore(px);
   if (opts.fixSeam) px = makeSeamless(px);
   const { normal, roughness } = deriveMaps(px, opts.type, opts.repeatWidthCm);
@@ -107,7 +111,7 @@ export async function processFabricPhoto(
     thumb: await encode(scaled(thumbSrc, 192, 192), "photo"),
   };
   const urls = Object.fromEntries(Object.entries(files).map(([k, b]) => [k, URL.createObjectURL(b)])) as Record<MapKey, string>;
-  return { files, urls, avgColor: averageColor(px), seam, aspect: px.height / px.width, cardCm, paper };
+  return { files, urls, avgColor: averageColor(px), seam, aspect: px.height / px.width, cardCm, paper, blurred };
 }
 
 export function revoke(p: ProcessedFabric | null | undefined) {

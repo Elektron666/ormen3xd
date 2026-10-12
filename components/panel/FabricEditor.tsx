@@ -301,6 +301,11 @@ export function FabricEditor({ fabric, models }: { fabric?: Fabric | null; model
               {processed.paper && !processed.paper.clipped && <> Renk, kartın beyaz kâğıdına göre dengelendi (ışığın rengi ve parlaklık).</>}
             </p>
           )}
+          {processed?.blurred && (
+            <p role="status" className="mt-1.5 rounded-xl bg-[#F4E9DD] px-3 py-2 text-[13px] text-ceviz">
+              Fotoğraf bulanık görünüyor; koltukta dokusu net çıkmaz. Telefonu sabit tutun, ekranda kumaşa dokunup odaklayın ve yeniden çekin.
+            </p>
+          )}
           {useCard && processed?.paper?.clipped && (
             <p className="mt-1.5 rounded-xl bg-[#F4E9DD] px-3 py-2 text-[13px] text-ceviz">
               Kartın kâğıdı fotoğrafta bembeyaz patlamış; renk düzeltilemedi. Işığı biraz azaltıp ya da ekranda pozlamayı düşürüp yeniden çekin.

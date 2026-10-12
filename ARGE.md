@@ -170,6 +170,31 @@ Eski hâlde gömülü yarı da %3–17 oranında öne çıkıyordu. Yenide fark 
 - Kesiklik pikselin altına düşen ince geometriden (örtüşme) de gelebilir. Bu ölçüm onu ayırmıyor; 24 bitte de kalan 6–10 parçanın bir kısmı köşelerde ve çizgi aralarında.
 - **Sıradaki adım:** Cihaz testinde (Samsung, iPhone) aynı sahnenin ekran görüntüsü, düzeltmeden önce ve sonra.
 
+## Altıncı adım: bulanık fotoğraf uyarısı (gece toplantısı, 12 Ekim)
+
+**Sorun (Hakan):** Depoda hızlı çekimde bulanık kare gözden kaçıyor; koltukta doku net çıkmıyor.
+
+**Ölçü (`lib/fabric/sharpness.ts`):**
+- Görüntünün en ince ayrıntısının enerjisi, yarı boyuttaki ayrıntının enerjisine bölünür (Laplace enerjisi oranı).
+- Bulanıklık önce en ince ayrıntıyı götürür; oran düşer.
+- Oran kumaşın desenine ve kontrastına göre değil, odağa göre değişir. Düz bir kumaş da net çekildiyse geçer.
+
+**Kalibrasyon** (`scripts/olc-keskinlik.ts`): Katalogdaki 30 kumaş görseli olduğu gibi ve bilerek bulanıklaştırılarak ölçüldü.
+
+| | Olduğu gibi | σ=1 | σ=1,5 | σ=2 | σ=3 |
+|---|---|---|---|---|---|
+| MISSO (6, gerçek fotoğraf) | 0,156–0,555 | 0,119–0,382 | 0,092–0,245 | 0,081–0,165 | 0,075–0,103 |
+| LUMA, SIENA, VERSO (17) | 0,355–0,700 | 0,228–0,409 | 0,157–0,349 | 0,121–0,289 | 0,094–0,245 |
+| PIETRA (6, neredeyse düz) | 0,386–0,453 | düşmüyor | düşmüyor | düşmüyor | düşmüyor |
+
+**Eşik 0,12:**
+- Net görsellerin hiçbiri uyarı almıyor (en düşük 0,156).
+- σ=3 bulanığın yarısı yakalanıyor.
+- Hafif bulanıklık (σ ≤ 1,5) ve düz kumaşlar yakalanmıyor.
+- Uyarı yalnızca belirgin bulanıklık içindir (titreyen el, yanlış odak). Kaydı engellemez.
+
+**Dürüst sınır:** Bu 30 görsel hazırlanmış dokular, ham telefon fotoğrafı değil. Eşik, ilk gerçek çekimlerle yeniden bakılacak.
+
 ## Gerçek bir Ar-Ge'ci bulmak
 
 **Kim aranıyor:** Bilgisayarlı görü ya da grafik konusunda deneyimli; tarayıcıda (WebGL/three.js) ya da Python/OpenCV ile çalışmış biri. Tekstil bilgisi şart değil; Hüseyin Usta ve Hakan bunu sağlar.
