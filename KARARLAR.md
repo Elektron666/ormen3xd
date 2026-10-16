@@ -885,3 +885,7 @@ Ayrıntı: `TOPLANTI-2026-10-11-genis.md`.
   - **Daha az JavaScript:** Diyaloglar, föy ve oda paneli ilk açılışta değil, kullanılınca yükleniyor. three.js artık sayfa açılışında değil, 3B sahneyle geliyor.
     - Telefonda açılışta inen JavaScript 303 kB'tan 179 kB'a indi (%41, sıkıştırılmış). Toplam değişmedi (506 kB); sahne zaten three.js istiyor.
     - Ölçüm: `scripts/olc-js.ts`.
+- **Acil toplantı (16 Ekim, `TOPLANTI-2026-10-16-acil.md`):** Kod dondurma; pilot firma gelene kadar yeni özellik yok.
+  - **Canlı veri:** 65 ziyaret, son 4 günde 10; QR/paylaşım/kiosk kaynağı 0; pilot firma yok; 6 gerçek kumaş.
+  - **Açık talep:** 9 gündür bekleyen 1 numune talebi.
+  - **Güvenlik:** Panel şifresi hâlâ sohbetteki geçici şifre, iki adımlı doğrulama kapalı. Bugün Fatih Bey'de.
