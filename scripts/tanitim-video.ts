@@ -119,16 +119,6 @@ const HIDE_UI = `
   section.studio-backdrop { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 5; }
   #film { position: fixed; inset: 0; z-index: 20; pointer-events: none; }`;
 
-async function fabricsOnScene(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
-    type O = { isMesh?: boolean; material?: { name?: string } };
-    const s = (window as unknown as { __ormenStage?: { get(): { scene: { traverse(cb: (o: O) => void): void } } } }).__ormenStage;
-    const n = new Set<string>();
-    s?.get().scene.traverse((o) => o.isMesh && o.material?.name?.startsWith("kumas:") && n.add(o.material.name.slice(6)));
-    return [...n];
-  });
-}
-
 async function showFabric(page: Page, code: string) {
   await page.getByRole("radio", { name: new RegExp(code), includeHidden: true }).first().dispatchEvent("click");
   await page.waitForFunction(
